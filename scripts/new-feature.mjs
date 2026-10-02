@@ -11,11 +11,11 @@ if (!name || !entity || !/^[a-z][a-z0-9-]*$/.test(name) || !/^[A-Z][A-Za-z0-9]*$
 }
 const camel = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 const dir = path.join('src', 'features', name);
-if (fs.existsSync(dir)) {
-  console.error('Feature "' + name + '" đã tồn tại.');
-  process.exit(1);
-}
 const write = (file, content) => {
+  if (fs.existsSync(file)) {
+    console.log('Bỏ qua (đã có): ' + file);
+    return;
+  }
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, content);
 };
@@ -73,9 +73,13 @@ export const ${camel}Feature: Feature = {
 
 const reg = path.join('src', 'features', 'index.ts');
 let s = fs.readFileSync(reg, 'utf8');
-s = s.replace('// [new-feature:imports]', `import { ${camel}Feature } from './${name}';\n// [new-feature:imports]`);
-s = s.replace('// [new-feature:list]', `${camel}Feature,\n  // [new-feature:list]`);
-fs.writeFileSync(reg, s);
+if (!s.includes(camel + 'Feature')) {
+  s = s.replace('// [new-feature:imports]', `import { ${camel}Feature } from './${name}';
+// [new-feature:imports]`);
+  s = s.replace('// [new-feature:list]', `${camel}Feature,
+  // [new-feature:list]`);
+  fs.writeFileSync(reg, s);
+}
 
 console.log('Đã tạo src/features/' + name + ' và đăng ký vào src/features/index.ts');
 console.log('Mở http://localhost:5173/' + name + ' để xem.');

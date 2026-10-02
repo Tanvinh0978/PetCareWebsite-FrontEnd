@@ -27,7 +27,10 @@ export default function ServiceListPage() {
 
   return (
     <section className="page">
-      <h1>Dịch vụ</h1>
+      <div className="page-head">
+        <h1>Quản lý dịch vụ</h1>
+        <Link to="/dich-vu/moi" className="btn">Thêm dịch vụ</Link>
+      </div>
       <div className="filters">
         <button className={!type ? 'chip on' : 'chip'} onClick={() => setParams({})}>Tất cả</button>
         {(Object.keys(SERVICE_TYPE_LABEL) as ServiceType[]).map((t) => (
@@ -39,7 +42,7 @@ export default function ServiceListPage() {
       {loading && <p>Đang tải dịch vụ...</p>}
       {error && <p className="msg error">{error}</p>}
       {!loading && !error && shown.length === 0 && (
-        <p>Chưa có dịch vụ nào trong nhóm này. <Link to="/quan-ly/dich-vu/moi">Thêm dịch vụ đầu tiên</Link>.</p>
+        <p>Chưa có dịch vụ nào trong nhóm này. <Link to="/dich-vu/moi">Thêm dịch vụ đầu tiên</Link>.</p>
       )}
       <div className="grid">
         {shown.map((s) => (

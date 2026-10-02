@@ -8,15 +8,8 @@ h1, h2, .brand { font-family: 'Bricolage Grotesque', Figtree, system-ui, sans-se
 a { color: var(--leaf); }
 :focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
 
-.site-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 1rem 2rem; background: var(--pine); }
-.brand { color: var(--sun); font-size: 1.5rem; font-weight: 800; text-decoration: none; }
-.site-header nav { display: flex; gap: 1.25rem; }
-.site-header nav a { color: #fff; text-decoration: none; padding: .25rem 0; border-bottom: 2px solid transparent; }
-.site-header nav a.active { border-color: var(--sun); }
-main { min-height: 70vh; }
-.site-footer { padding: 2rem; text-align: center; color: #50706a; }
 
-.hero { max-width: 760px; padding: 4rem 2rem 2rem; margin: 0 auto 0 max(2rem, 8vw); }
+.hero { max-width: 760px; padding: 3rem 2rem 2rem; margin: 0; }
 .hero h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; margin: 0 0 1rem; }
 .hero p { font-size: 1.15rem; max-width: 60ch; }
 .btn { display: inline-block; background: var(--sun); color: var(--pine); font: 700 1rem Figtree, sans-serif; padding: .7rem 1.4rem; border: 0; border-radius: 999px; text-decoration: none; cursor: pointer; }
@@ -51,7 +44,25 @@ legend { font-weight: 700; padding: 0 .4rem; }
 .msg.ok { background: var(--mint); color: var(--leaf); }
 
 @media (max-width: 640px) {
-  .site-header { padding: 1rem; }
-  .hero, .page, .tiles { padding-left: 1rem; padding-right: 1rem; margin-left: 0; }
+  .hero, .page, .tiles { padding-left: 1rem; padding-right: 1rem; }
   .price-row { grid-template-columns: 1fr 1fr; }
+}
+
+.shell { display: flex; min-height: 100vh; }
+.shell main { flex: 1; min-width: 0; }
+.sidebar { width: 250px; flex-shrink: 0; background: var(--pine); padding: 1.5rem 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.brand { display: block; padding: 0 1.5rem 1.25rem; color: var(--sun); font-size: 1.6rem; font-weight: 800; text-decoration: none; }
+.sidebar nav { display: flex; flex-direction: column; }
+.sidebar nav a { color: #dcebe3; text-decoration: none; padding: .65rem 1.5rem; border-left: 4px solid transparent; }
+.sidebar nav a:hover { background: rgba(255, 255, 255, .08); }
+.sidebar nav a.active { background: rgba(255, 255, 255, .12); border-left-color: var(--sun); color: #fff; font-weight: 700; }
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.page-head h1 { margin: 0; }
+@media (max-width: 760px) {
+  .shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: static; padding: .75rem 0 0; }
+  .brand { padding-bottom: .5rem; }
+  .sidebar nav { flex-direction: row; overflow-x: auto; }
+  .sidebar nav a { white-space: nowrap; padding: .6rem 1rem; border-left: 0; border-bottom: 4px solid transparent; }
+  .sidebar nav a.active { border-bottom-color: var(--sun); }
 }

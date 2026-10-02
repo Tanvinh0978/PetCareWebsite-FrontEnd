@@ -3,18 +3,17 @@ import { featureNav } from '../../features';
 
 export default function Layout() {
   return (
-    <>
-      <header className="site-header">
+    <div className="shell">
+      <aside className="sidebar">
         <Link to="/" className="brand">PetCare</Link>
-        <nav>
-          <NavLink to="/" end>Trang chủ</NavLink>
+        <nav aria-label="Menu chính">
+          <NavLink to="/" end>Tổng quan</NavLink>
           {featureNav.map((n) => (
             <NavLink key={n.to} to={n.to}>{n.label}</NavLink>
           ))}
         </nav>
-      </header>
+      </aside>
       <main><Outlet /></main>
-      <footer className="site-footer">PetCare Booking. Đặt lịch spa, lưu trú và chăm sóc cho thú cưng.</footer>
-    </>
+    </div>
   );
 }
