@@ -15,7 +15,7 @@ src/
     api/client.ts        axios và getErrorMessage
     types/api.ts         ApiResponse<T>
     types/feature.ts     kiểu Feature
-    components/Layout.tsx
+    components/Layout.tsx   khung trang có sidebar
   pages/                 trang không thuộc model nào (Home, NotFound)
   App.tsx                ghép route, thường không cần sửa
 ```
@@ -35,6 +35,16 @@ Lệnh tạo `src/features/pets/` gồm `types.ts`, `api.ts`, `pages/PetListPage
 2. `api.ts`: sửa đường dẫn cho khớp controller và thêm hàm create, update, delete.
 3. `pages/`: làm giao diện. Thêm trang mới thì thêm vào mảng `routes` trong `index.tsx` của feature.
 4. `index.tsx`: đặt lại `label` của menu bằng tiếng Việt, và `path` nếu muốn URL tiếng Việt như `dich-vu`.
+
+## Sidebar và các trang trống có sẵn
+
+Sidebar tự lấy mục menu từ `nav` trong `index.tsx` của từng feature, thứ tự theo `src/features/index.ts`. Các feature `staff`, `customers`, `pets`, `bookings`, `rooms`, `promotions`, `reviews`, `profile` đã có trang trống (chỉ có tiêu đề) để bấm từ sidebar. Khi bắt đầu làm một feature có sẵn, chạy lại lệnh tạo feature để thêm `types.ts` và `api.ts`. Lệnh không ghi đè file đã có:
+
+```bash
+npm run new:feature -- pets Pet
+```
+
+Sau đó sửa trang trong `pages/` theo nhu cầu.
 
 ## Quy ước
 
