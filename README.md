@@ -23,12 +23,17 @@ Khi backend có `GET /api/services`, đặt `VITE_USE_MOCK=false` trong `.env`. 
 
 ## Cấu trúc
 
+Chia theo feature (mỗi model một thư mục). Xem `CONTRIBUTING.md` để biết cách thêm chức năng mới:
+
+```bash
+npm run new:feature -- pets Pet
+```
+
 ```
 src/
-  api/         axios client, hàm gọi API
-  types/       kiểu TS khớp enum và ApiResponse của backend
-  components/  Layout
-  pages/       Home, Services, CreateService, NotFound
+  features/   services/ (mẫu), ... mỗi feature có types, api, pages, index
+  shared/     client axios, ApiResponse, Layout
+  pages/      Home, NotFound
 ```
 
 ## Bước tiếp theo gợi ý

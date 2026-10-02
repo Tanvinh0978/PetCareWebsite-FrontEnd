@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import { featureNav } from '../../features';
 
 export default function Layout() {
   return (
@@ -7,8 +8,9 @@ export default function Layout() {
         <Link to="/" className="brand">PetCare</Link>
         <nav>
           <NavLink to="/" end>Trang chủ</NavLink>
-          <NavLink to="/dich-vu">Dịch vụ</NavLink>
-          <NavLink to="/quan-ly/dich-vu/moi">Thêm dịch vụ</NavLink>
+          {featureNav.map((n) => (
+            <NavLink key={n.to} to={n.to}>{n.label}</NavLink>
+          ))}
         </nav>
       </header>
       <main><Outlet /></main>

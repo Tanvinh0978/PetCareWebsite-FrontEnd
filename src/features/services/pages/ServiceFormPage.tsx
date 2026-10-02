@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { createService } from '../api/services';
-import { getErrorMessage } from '../api/client';
+import { createService } from '../api';
+import { getErrorMessage } from '../../../shared/api/client';
 import {
   PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL,
   type PricingUnit, type ServiceType,
@@ -25,7 +25,7 @@ function validate(name: string, rows: PriceRow[]): string {
   return '';
 }
 
-export default function CreateService() {
+export default function ServiceFormPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [serviceType, setServiceType] = useState<ServiceType>('Grooming');

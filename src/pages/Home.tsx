@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { SERVICE_TYPE_LABEL, type ServiceType } from '../types';
+import { SERVICE_TYPE_LABEL, type ServiceType } from '../features/services/types';
 
 const blurbs: Record<ServiceType, string> = {
   Grooming: 'Tắm, sấy, tỉa lông theo giống.',

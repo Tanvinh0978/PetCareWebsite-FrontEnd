@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { getServices } from '../api/services';
-import { getErrorMessage } from '../api/client';
+import { getServices } from '../api';
+import { getErrorMessage } from '../../../shared/api/client';
 import { PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL, type Service, type ServiceType } from '../types';
 
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
@@ -12,7 +12,7 @@ function priceLabel(s: Service) {
   return `Từ ${vnd.format(lowest.price)} / ${PRICING_UNIT_LABEL[lowest.pricingUnit]}`;
 }
 
-export default function Services() {
+export default function ServiceListPage() {
   const [params, setParams] = useSearchParams();
   const type = params.get('loai') as ServiceType | null;
   const [items, setItems] = useState<Service[]>([]);

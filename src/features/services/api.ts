@@ -1,5 +1,6 @@
-import { http } from './client';
-import type { ApiResponse, CreateServicePayload, Service } from '../types';
+import { http } from '../../shared/api/client';
+import type { ApiResponse } from '../../shared/types/api';
+import type { CreateServicePayload, Service } from './types';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
