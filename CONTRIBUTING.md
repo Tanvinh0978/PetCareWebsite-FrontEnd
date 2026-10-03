@@ -52,7 +52,7 @@ Sau đó sửa trang trong `pages/` theo nhu cầu.
 - Chỉ đưa vào `shared/` thứ được từ 2 feature trở lên dùng. Feature này không import trực tiếp từ feature khác, nếu cần dùng chung thì chuyển lên `shared/`.
 - Tên file trang: `<Entity>ListPage`, `<Entity>FormPage`, `<Entity>DetailPage`.
 - Backend trả `ApiResponse<T>` (`isSuccess`, `statusCode`, `message`, `result`). Dùng `getErrorMessage(err)` để hiện lỗi.
-- Backend chưa có endpoint thì làm dữ liệu mẫu trong `api.ts` giống `features/services/api.ts` (cờ `VITE_USE_MOCK`).
+- Backend chưa có endpoint thì để trang trống, đừng làm dữ liệu giả lẫn vào `api.ts`.
 
 ## Gợi ý phân công theo entity backend
 

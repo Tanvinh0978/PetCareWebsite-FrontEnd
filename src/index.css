@@ -66,3 +66,16 @@ legend { font-weight: 700; padding: 0 .4rem; }
   .sidebar nav a { white-space: nowrap; padding: .6rem 1rem; border-left: 0; border-bottom: 4px solid transparent; }
   .sidebar nav a.active { border-bottom-color: var(--sun); }
 }
+
+.toolbar { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0 .5rem; }
+.toolbar input { flex: 1; min-width: 200px; width: auto; }
+.toolbar select { width: auto; }
+.card.off { opacity: .7; }
+.off-tag { background: #f3d9d6; color: var(--danger); margin-left: .4rem; }
+.actions { display: flex; gap: 1rem; align-items: center; }
+.pager { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-top: 1.5rem; }
+.chip:disabled { opacity: .5; cursor: not-allowed; }
+.table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); }
+.table th, .table td { text-align: left; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
+.form label.check { display: flex; align-items: center; gap: .5rem; font-weight: 400; }
+.form label.check input { width: auto; }

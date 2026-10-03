@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react';
-import { createService } from '../api';
+import { useEffect, useState, type FormEvent } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createService, getServiceById, updateService } from '../api';
 import { getErrorMessage } from '../../../shared/api/client';
 import {
   PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL,
@@ -26,6 +27,11 @@ function validate(name: string, rows: PriceRow[]): string {
 }
 
 export default function ServiceFormPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const editing = Boolean(id);
+  const [isActive, setIsActive] = useState(true);
+  const [loading, setLoading] = useState(editing);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [serviceType, setServiceType] = useState<ServiceType>('Grooming');
@@ -33,6 +39,21 @@ export default function ServiceFormPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    getServiceById(id)
+      .then((s) => {
+        setName(s.name); setDescription(s.description ?? ''); setServiceType(s.serviceType); setIsActive(s.isActive);
+        setRows(s.prices.length ? s.prices.map((p) => ({
+          minWeight: p.minWeight === null ? '' : String(p.minWeight),
+          maxWeight: p.maxWeight === null ? '' : String(p.maxWeight),
+          price: String(p.price), pricingUnit: p.pricingUnit,
+        })) : [emptyRow()]);
+      })
+      .catch((e) => setError(getErrorMessage(e)))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   const setRow = (i: number, patch: Partial<PriceRow>) =>
     setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
@@ -45,11 +66,17 @@ export default function ServiceFormPage() {
     if (problem) return;
     setSaving(true);
     try {
-      const id = await createService({
+      const payload = {
         name: name.trim(), description, serviceType,
         prices: rows.map((r) => ({ minWeight: num(r.minWeight), maxWeight: num(r.maxWeight), price: Number(r.price), pricingUnit: r.pricingUnit })),
-      });
-      setSuccess(`Đã tạo dịch vụ. Mã: ${id}`);
+      };
+      if (id) {
+        await updateService(id, { ...payload, isActive });
+        navigate('/dich-vu/' + id);
+        return;
+      }
+      const newId = await createService(payload);
+      setSuccess('Đã tạo dịch vụ. Mã: ' + newId);
       setName(''); setDescription(''); setRows([emptyRow()]);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -60,8 +87,9 @@ export default function ServiceFormPage() {
 
   return (
     <section className="page narrow">
-      <h1>Thêm dịch vụ</h1>
-      <form onSubmit={onSubmit} className="form">
+      <h1>{editing ? 'Sửa dịch vụ' : 'Thêm dịch vụ'}</h1>
+      {loading && <p>Đang tải...</p>}
+      <form onSubmit={onSubmit} className="form" hidden={loading}>
         <label>Tên dịch vụ
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={150} />
         </label>
@@ -73,6 +101,10 @@ export default function ServiceFormPage() {
         <label>Mô tả
           <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
         </label>
+
+        {editing && (
+          <label className="check"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> Đang hoạt động</label>
+        )}
 
         <fieldset>
           <legend>Bảng giá</legend>
@@ -92,7 +124,7 @@ export default function ServiceFormPage() {
 
         {error && <p className="msg error" role="alert">{error}</p>}
         {success && <p className="msg ok" role="status">{success}</p>}
-        <button className="btn" disabled={saving}>{saving ? 'Đang lưu...' : 'Lưu dịch vụ'}</button>
+        <button className="btn" disabled={saving}>{saving ? 'Đang lưu...' : editing ? 'Lưu thay đổi' : 'Lưu dịch vụ'}</button>
       </form>
     </section>
   );

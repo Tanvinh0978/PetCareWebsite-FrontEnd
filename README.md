@@ -12,14 +12,9 @@ npm run dev          # http://localhost:5173
 
 Chạy backend bằng profile `https` (`https://localhost:7287`). Vite proxy `/api` sang địa chỉ này (xem `vite.config.ts`).
 
-## Trạng thái kết nối API
+## Kết nối API
 
-| Chức năng | Endpoint | Trạng thái |
-|---|---|---|
-| Thêm dịch vụ | `POST /api/services` | Đã nối API thật |
-| Danh sách dịch vụ | `GET /api/services` | Backend chưa có (code đang bị comment), dùng dữ liệu mẫu |
-
-Khi backend có `GET /api/services`, đặt `VITE_USE_MOCK=false` trong `.env`. Hình dạng dữ liệu mong đợi nằm ở `src/types/index.ts` (`Service`); nếu DTO backend khác, sửa tại `src/api/services.ts`.
+Feature Dịch vụ đã nối API thật: tìm kiếm có phân trang (`GET /api/services/admin/search`), xem chi tiết, thêm, sửa, xóa mềm. Cần chạy backend bằng profile `https` và đã `dotnet ef database update`. Các feature khác đang là trang trống.
 
 ## Cấu trúc
 

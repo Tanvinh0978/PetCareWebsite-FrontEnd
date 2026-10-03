@@ -15,6 +15,25 @@ export const PRICING_UNIT_LABEL: Record<PricingUnit, string> = {
   Item: 'món',
 };
 
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+// Dòng trong danh sách (backend không trả bảng giá ở danh sách).
+export interface ServiceListItem {
+  id: string;
+  name: string;
+  description?: string;
+  serviceType: ServiceType;
+  isActive: boolean;
+}
+
 export interface ServicePrice {
   minWeight: number | null;
   maxWeight: number | null;
@@ -22,13 +41,8 @@ export interface ServicePrice {
   pricingUnit: PricingUnit;
 }
 
-export interface Service {
-  id: string;
-  name: string;
-  description?: string;
-  serviceType: ServiceType;
-  isActive: boolean;
-  prices: ServicePrice[];
+export interface ServiceDetail extends ServiceListItem {
+  prices: (ServicePrice & { id: string })[];
 }
 
 export interface CreateServicePayload {
@@ -36,4 +50,8 @@ export interface CreateServicePayload {
   description: string;
   serviceType: ServiceType;
   prices: ServicePrice[];
+}
+
+export interface UpdateServicePayload extends CreateServicePayload {
+  isActive: boolean;
 }
