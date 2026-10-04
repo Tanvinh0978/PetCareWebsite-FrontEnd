@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { deleteService, searchServices } from '../api';
-import { getErrorMessage } from '../../../shared/api/client';
-import { SERVICE_TYPE_LABEL, type PagedResult, type ServiceListItem, type ServiceType } from '../types';
+import { deleteService, searchServices } from '../../api';
+import { getErrorMessage } from '../../../../shared/api/client';
+import { SERVICE_TYPE_LABEL, type PagedResult, type ServiceListItem, type ServiceType } from '../../types';
 
 const PAGE_SIZE = 9;
 
@@ -46,7 +46,7 @@ export default function ServiceListPage() {
     <section className="page">
       <div className="page-head">
         <h1>Services</h1>
-        <Link to="/services/new" className="btn">Add service</Link>
+        <Link to="/admin/services/new" className="btn">Add service</Link>
       </div>
 
       <form className="toolbar" onSubmit={onSearch}>
@@ -80,8 +80,8 @@ export default function ServiceListPage() {
             <h2>{s.name}</h2>
             <p>{s.description}</p>
             <div className="actions">
-              <Link to={'/services/' + s.id}>View</Link>
-              <Link to={'/services/' + s.id + '/edit'}>Edit</Link>
+              <Link to={'/admin/services/' + s.id}>View</Link>
+              <Link to={'/admin/services/' + s.id + '/edit'}>Edit</Link>
               {s.isActive && <button className="link" onClick={() => onDelete(s)}>Delete</button>}
             </div>
           </article>

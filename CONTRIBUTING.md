@@ -1,77 +1,63 @@
 # Hướng dẫn thêm chức năng (feature) mới
 
-Code chia theo **feature**, mỗi feature tương ứng một model của backend. Mọi thứ của model đó nằm trong một thư mục, nên mỗi người làm một feature sẽ ít đụng file của nhau.
+Code chia theo **feature** (mỗi model của backend một thư mục), và trong mỗi feature các màn hình chia theo **vai trò**.
+
+## Vai trò và khu vực
+
+| Vai trò | URL | Ghi chú |
+|---|---|---|
+| guest | `/` | Chưa đăng nhập, chỉ xem. Người đã đăng nhập vào `/` sẽ được chuyển về khu vực của họ |
+| customer | `/customer/...` | Chỉ customer vào được |
+| admin | `/admin/...` | Chỉ admin vào được |
+
+Backend chưa có API đăng nhập, nên `/login` hiện chỉ cho chọn vai trò để xem thử (`src/shared/auth/AuthContext.tsx`). Khi có API thật, chỉ cần sửa file này. `RequireRole` đã chặn truy cập sai khu vực.
+
+## Cấu trúc
 
 ```
 src/
   features/
-    services/            <- mẫu hoàn chỉnh, xem để làm theo
-      types.ts           kiểu dữ liệu và enum của model
-      api.ts             các hàm gọi API của model
-      pages/             các màn hình (ServiceListPage, ServiceFormPage)
-      index.tsx          khai báo route và menu của feature
-    index.ts             danh sách feature (tự động ghép route và menu)
-  shared/                dùng chung nhiều feature
-    api/client.ts        axios và getErrorMessage
-    types/api.ts         ApiResponse<T>
-    types/feature.ts     kiểu Feature
-    components/Layout.tsx   khung trang có sidebar
-  pages/                 trang không thuộc model nào (Home, NotFound)
-  App.tsx                ghép route, thường không cần sửa
+    services/                 <- feature mẫu hoàn chỉnh
+      types.ts                kiểu dữ liệu và enum
+      api.ts                  hàm gọi API
+      components/             phần giao diện dùng chung giữa các vai trò
+      pages/
+        admin/                màn của admin
+        customer/             màn của customer
+        guest/                màn của guest
+      index.tsx               khai báo route và menu cho từng vai trò
+    index.ts                  danh sách feature
+  shared/
+    auth/                     roles, AuthContext, RequireRole
+    api/client.ts             axios và getErrorMessage
+    components/Layout.tsx     khung có sidebar theo vai trò
+  pages/                      Home, Dashboard, Login, NotFound
 ```
 
-## Tạo feature mới bằng 1 lệnh
+## Tạo feature mới
 
 ```bash
-npm run new:feature -- pets Pet
+npm run new:feature -- pets Pet customer,admin
 ```
 
-- `pets`: tên thư mục và đường dẫn URL (chữ thường, có thể có dấu `-`).
-- `Pet`: tên entity, viết hoa chữ đầu (PascalCase).
+- `pets`: tên thư mục và URL, `Pet`: tên entity, `customer,admin`: các vai trò có màn hình (guest, customer, admin; mặc định chỉ admin).
+- Lệnh tạo `types.ts`, `api.ts`, `pages/<vai trò>/PetListPage.tsx`, `index.tsx` và tự đăng ký vào `src/features/index.ts`. File đã có sẽ không bị ghi đè.
+- Trong `index.tsx`, `routes` và `nav` khai báo theo từng vai trò. Mục menu hiện ở sidebar của vai trò đó.
 
-Lệnh tạo `src/features/pets/` gồm `types.ts`, `api.ts`, `pages/PetListPage.tsx`, `index.tsx` và tự đăng ký vào `src/features/index.ts`. Chạy `npm run dev` rồi mở `/pets` là thấy trang. Sau đó bạn làm theo thứ tự:
-
-1. `types.ts`: khai báo trường theo entity backend (đối chiếu `PetCareBooking.Domain/Entities`). Enum ở backend là chuỗi, ví dụ `'Dog' | 'Cat'`.
-2. `api.ts`: sửa đường dẫn cho khớp controller và thêm hàm create, update, delete.
-3. `pages/`: làm giao diện. Thêm trang mới thì thêm vào mảng `routes` trong `index.tsx` của feature.
-4. `index.tsx`: đặt lại `label` của menu cho gọn, và `path` nếu muốn đổi URL.
-
-## Sidebar và các trang trống có sẵn
-
-Sidebar tự lấy mục menu từ `nav` trong `index.tsx` của từng feature, thứ tự theo `src/features/index.ts`. Các feature `staff`, `customers`, `pets`, `bookings`, `rooms`, `promotions`, `reviews`, `profile` đã có trang trống (chỉ có tiêu đề) để bấm từ sidebar. Khi bắt đầu làm một feature có sẵn, chạy lại lệnh tạo feature để thêm `types.ts` và `api.ts`. Lệnh không ghi đè file đã có:
-
-```bash
-npm run new:feature -- pets Pet
-```
-
-Sau đó sửa trang trong `pages/` theo nhu cầu.
+Sau đó làm lần lượt: `types.ts` (đối chiếu entity backend), `api.ts` (đường dẫn khớp controller), rồi giao diện trong `pages/<vai trò>/`. Phần giao diện giống nhau giữa các vai trò thì đưa vào `components/` và truyền props (xem `ServiceCatalog`, `ServiceDetail`).
 
 ## Quy ước
 
-- Mọi chữ hiển thị trên giao diện (nhãn, nút, thông báo) dùng tiếng Anh, URL cũng tiếng Anh (`/services`, `/pets`).
+- Mọi chữ hiển thị trên giao diện (nhãn, nút, thông báo) dùng tiếng Anh, URL cũng tiếng Anh.
 - Trang chỉ gọi hàm trong `api.ts` của feature, không gọi axios trực tiếp.
-- Chỉ đưa vào `shared/` thứ được từ 2 feature trở lên dùng. Feature này không import trực tiếp từ feature khác, nếu cần dùng chung thì chuyển lên `shared/`.
-- Tên file trang: `<Entity>ListPage`, `<Entity>FormPage`, `<Entity>DetailPage`.
+- Chỉ đưa vào `shared/` thứ được từ 2 feature trở lên dùng. Feature này không import trực tiếp từ feature khác.
 - Backend trả `ApiResponse<T>` (`isSuccess`, `statusCode`, `message`, `result`). Dùng `getErrorMessage(err)` để hiện lỗi.
-- Backend chưa có endpoint thì để trang trống, đừng làm dữ liệu giả lẫn vào `api.ts`.
-
-## Gợi ý phân công theo entity backend
-
-| Feature | Entity | Lệnh tạo |
-|---|---|---|
-| Thú cưng | Pet | `npm run new:feature -- pets Pet` |
-| Đặt lịch | Booking, BookingItem | `npm run new:feature -- bookings Booking` |
-| Phòng | Room, RoomType | `npm run new:feature -- rooms Room` |
-| Khuyến mãi | Promotion | `npm run new:feature -- promotions Promotion` |
-| Đánh giá | Review | `npm run new:feature -- reviews Review` |
-| Khách hàng | Customer | `npm run new:feature -- customers Customer` |
-| Nhân viên | Staff | `npm run new:feature -- staff Staff` |
+- Frontend không sửa được backend: nếu endpoint lỗi, xử lý tạm ở `api.ts` kèm chú thích lý do (xem `searchServices`).
 
 ## Quy trình git gợi ý
 
 ```bash
 git checkout -b feature/pets
-# làm việc, rồi:
 git add -A && git commit -m "Add pets feature"
-git push -u origin feature/pets     # sau đó mở Pull Request vào main
+git push -u origin feature/pets     # rồi mở Pull Request vào main
 ```

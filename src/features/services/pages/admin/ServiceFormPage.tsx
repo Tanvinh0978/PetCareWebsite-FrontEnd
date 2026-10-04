@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createService, getServiceById, updateService } from '../api';
-import { getErrorMessage } from '../../../shared/api/client';
+import { createService, getServiceById, updateService } from '../../api';
+import { getErrorMessage } from '../../../../shared/api/client';
 import {
   PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL,
   type PricingUnit, type ServiceType,
-} from '../types';
+} from '../../types';
 
 interface PriceRow { minWeight: string; maxWeight: string; price: string; pricingUnit: PricingUnit }
 const emptyRow = (): PriceRow => ({ minWeight: '', maxWeight: '', price: '', pricingUnit: 'Per_Turn' });
@@ -72,7 +72,7 @@ export default function ServiceFormPage() {
       };
       if (id) {
         await updateService(id, { ...payload, isActive });
-        navigate('/services/' + id);
+        navigate('/admin/services/' + id);
         return;
       }
       const newId = await createService(payload);

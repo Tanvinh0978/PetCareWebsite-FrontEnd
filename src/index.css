@@ -79,3 +79,17 @@ legend { font-weight: 700; padding: 0 .4rem; }
 .table th, .table td { text-align: left; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
 .form label.check { display: flex; align-items: center; gap: .5rem; font-weight: 400; }
 .form label.check input { width: auto; }
+
+.role-badge { margin: -1rem 1.5rem 1rem; color: #9fc4b3; font-size: .9rem; }
+.signout { margin: 1.5rem 1.5rem 0; background: none; border: 1px solid #5d807a; color: #dcebe3; padding: .45rem 1rem; border-radius: 999px; cursor: pointer; font: 500 .95rem Figtree, sans-serif; }
+.signout:hover { background: rgba(255, 255, 255, .08); }
+.login { max-width: 460px; margin: 12vh auto; padding: 2rem; text-align: center; }
+.login h1 { font-size: 2.4rem; margin: 0 0 .5rem; }
+.login-actions { display: grid; gap: .75rem; margin-top: 1.5rem; }
+
+.sidebar { display: flex; flex-direction: column; }
+.sidebar-foot { margin-top: auto; padding: 1rem 1.5rem 0; color: #bcd5c9; }
+.sidebar-foot p { margin: 0 0 .25rem; }
+.link.light { color: var(--sun); padding: 0; }
+.actions { flex-wrap: wrap; }
+@media (max-width: 760px) { .sidebar-foot { padding: .5rem 1rem; display: flex; gap: 1rem; align-items: center; } .sidebar-foot p { margin: 0; } }
