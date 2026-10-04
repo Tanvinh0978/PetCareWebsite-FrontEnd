@@ -29,7 +29,7 @@ export default function ServiceDetailPage() {
     <section className="page narrow">
       <div className="page-head">
         <h1>{service.name}</h1>
-        <Link to={'/services/' + service.id + '/sua'} className="btn">Edit</Link>
+        <Link to={'/services/' + service.id + '/edit'} className="btn">Edit</Link>
       </div>
       <p>
         <span className="tag">{SERVICE_TYPE_LABEL[service.serviceType]}</span>

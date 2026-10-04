@@ -6,9 +6,9 @@ import type { Feature } from '../../shared/types/feature';
 export const servicesFeature: Feature = {
   routes: [
     { path: 'services', element: <ServiceListPage /> },
-    { path: 'services/moi', element: <ServiceFormPage /> },
+    { path: 'services/new', element: <ServiceFormPage /> },
     { path: 'services/:id', element: <ServiceDetailPage /> },
-    { path: 'services/:id/sua', element: <ServiceFormPage /> },
+    { path: 'services/:id/edit', element: <ServiceFormPage /> },
   ],
   nav: [{ label: 'Services', to: '/services' }],
 };

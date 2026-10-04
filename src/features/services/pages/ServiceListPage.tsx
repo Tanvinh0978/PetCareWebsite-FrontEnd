@@ -46,7 +46,7 @@ export default function ServiceListPage() {
     <section className="page">
       <div className="page-head">
         <h1>Services</h1>
-        <Link to="/services/moi" className="btn">Add service</Link>
+        <Link to="/services/new" className="btn">Add service</Link>
       </div>
 
       <form className="toolbar" onSubmit={onSearch}>
@@ -81,7 +81,7 @@ export default function ServiceListPage() {
             <p>{s.description}</p>
             <div className="actions">
               <Link to={'/services/' + s.id}>View</Link>
-              <Link to={'/services/' + s.id + '/sua'}>Edit</Link>
+              <Link to={'/services/' + s.id + '/edit'}>Edit</Link>
               {s.isActive && <button className="link" onClick={() => onDelete(s)}>Delete</button>}
             </div>
           </article>
