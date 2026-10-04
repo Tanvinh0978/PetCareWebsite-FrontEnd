@@ -34,7 +34,7 @@ Lệnh tạo `src/features/pets/` gồm `types.ts`, `api.ts`, `pages/PetListPage
 1. `types.ts`: khai báo trường theo entity backend (đối chiếu `PetCareBooking.Domain/Entities`). Enum ở backend là chuỗi, ví dụ `'Dog' | 'Cat'`.
 2. `api.ts`: sửa đường dẫn cho khớp controller và thêm hàm create, update, delete.
 3. `pages/`: làm giao diện. Thêm trang mới thì thêm vào mảng `routes` trong `index.tsx` của feature.
-4. `index.tsx`: đặt lại `label` của menu bằng tiếng Việt, và `path` nếu muốn URL tiếng Việt như `dich-vu`.
+4. `index.tsx`: đặt lại `label` của menu cho gọn, và `path` nếu muốn đổi URL.
 
 ## Sidebar và các trang trống có sẵn
 
@@ -48,6 +48,7 @@ Sau đó sửa trang trong `pages/` theo nhu cầu.
 
 ## Quy ước
 
+- Mọi chữ hiển thị trên giao diện (nhãn, nút, thông báo) dùng tiếng Anh, URL cũng tiếng Anh (`/services`, `/pets`).
 - Trang chỉ gọi hàm trong `api.ts` của feature, không gọi axios trực tiếp.
 - Chỉ đưa vào `shared/` thứ được từ 2 feature trở lên dùng. Feature này không import trực tiếp từ feature khác, nếu cần dùng chung thì chuyển lên `shared/`.
 - Tên file trang: `<Entity>ListPage`, `<Entity>FormPage`, `<Entity>DetailPage`.

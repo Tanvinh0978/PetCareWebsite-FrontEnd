@@ -1,8 +1,8 @@
 export default function ReviewListPage() {
-  // TODO: làm giao diện đánh giá
+  // TODO: build the reviews screen
   return (
     <section className="page">
-      <h1>Đánh giá</h1>
+      <h1>Reviews</h1>
     </section>
   );
 }

@@ -6,8 +6,8 @@ export default function Layout() {
     <div className="shell">
       <aside className="sidebar">
         <Link to="/" className="brand">PetCare</Link>
-        <nav aria-label="Menu chính">
-          <NavLink to="/" end>Tổng quan</NavLink>
+        <nav aria-label="Main menu">
+          <NavLink to="/" end>Overview</NavLink>
           {featureNav.map((n) => (
             <NavLink key={n.to} to={n.to}>{n.label}</NavLink>
           ))}

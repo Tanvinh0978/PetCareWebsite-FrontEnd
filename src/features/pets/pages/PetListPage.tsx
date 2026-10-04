@@ -1,8 +1,8 @@
 export default function PetListPage() {
-  // TODO: làm giao diện quản lý thú cưng
+  // TODO: build the pets screen
   return (
     <section className="page">
-      <h1>Quản lý thú cưng</h1>
+      <h1>Pets</h1>
     </section>
   );
 }

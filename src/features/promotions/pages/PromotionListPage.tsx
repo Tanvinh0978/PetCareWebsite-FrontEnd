@@ -1,8 +1,8 @@
 export default function PromotionListPage() {
-  // TODO: làm giao diện quản lý khuyến mãi
+  // TODO: build the promotions screen
   return (
     <section className="page">
-      <h1>Quản lý khuyến mãi</h1>
+      <h1>Promotions</h1>
     </section>
   );
 }

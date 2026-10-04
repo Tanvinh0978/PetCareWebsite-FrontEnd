@@ -5,10 +5,10 @@ import type { Feature } from '../../shared/types/feature';
 
 export const servicesFeature: Feature = {
   routes: [
-    { path: 'dich-vu', element: <ServiceListPage /> },
-    { path: 'dich-vu/moi', element: <ServiceFormPage /> },
-    { path: 'dich-vu/:id', element: <ServiceDetailPage /> },
-    { path: 'dich-vu/:id/sua', element: <ServiceFormPage /> },
+    { path: 'services', element: <ServiceListPage /> },
+    { path: 'services/moi', element: <ServiceFormPage /> },
+    { path: 'services/:id', element: <ServiceDetailPage /> },
+    { path: 'services/:id/sua', element: <ServiceFormPage /> },
   ],
-  nav: [{ label: 'Quản lý dịch vụ', to: '/dich-vu' }],
+  nav: [{ label: 'Services', to: '/services' }],
 };

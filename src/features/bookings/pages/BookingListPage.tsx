@@ -1,8 +1,8 @@
 export default function BookingListPage() {
-  // TODO: làm giao diện quản lý đặt lịch
+  // TODO: build the bookings screen
   return (
     <section className="page">
-      <h1>Quản lý đặt lịch</h1>
+      <h1>Bookings</h1>
     </section>
   );
 }

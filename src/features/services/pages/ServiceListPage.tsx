@@ -8,7 +8,7 @@ const PAGE_SIZE = 9;
 
 export default function ServiceListPage() {
   const [params, setParams] = useSearchParams();
-  const type = params.get('loai') as ServiceType | null;
+  const type = params.get('type') as ServiceType | null;
   const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [keywordInput, setKeywordInput] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -35,54 +35,54 @@ export default function ServiceListPage() {
   }, [keyword, type, status, page, reload]);
 
   const onSearch = (e: FormEvent) => { e.preventDefault(); setPage(1); setKeyword(keywordInput.trim()); };
-  const pickType = (t: ServiceType | null) => { setPage(1); setParams(t ? { loai: t } : {}); };
+  const pickType = (t: ServiceType | null) => { setPage(1); setParams(t ? { type: t } : {}); };
 
   async function onDelete(s: ServiceListItem) {
-    if (!window.confirm('Ngừng hoạt động dịch vụ "' + s.name + '"?')) return;
+    if (!window.confirm('Deactivate service "' + s.name + '"?')) return;
     try { await deleteService(s.id); setReload((n) => n + 1); } catch (e) { setError(getErrorMessage(e)); }
   }
 
   return (
     <section className="page">
       <div className="page-head">
-        <h1>Quản lý dịch vụ</h1>
-        <Link to="/dich-vu/moi" className="btn">Thêm dịch vụ</Link>
+        <h1>Services</h1>
+        <Link to="/services/moi" className="btn">Add service</Link>
       </div>
 
       <form className="toolbar" onSubmit={onSearch}>
-        <input placeholder="Tìm theo tên hoặc mô tả" value={keywordInput} onChange={(e) => setKeywordInput(e.target.value)} aria-label="Từ khóa" />
-        <select value={status} onChange={(e) => { setPage(1); setStatus(e.target.value as typeof status); }} aria-label="Trạng thái">
-          <option value="all">Mọi trạng thái</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="inactive">Ngừng hoạt động</option>
+        <input placeholder="Search by name or description" value={keywordInput} onChange={(e) => setKeywordInput(e.target.value)} aria-label="Keyword" />
+        <select value={status} onChange={(e) => { setPage(1); setStatus(e.target.value as typeof status); }} aria-label="Status">
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
         </select>
-        <button className="btn">Tìm</button>
+        <button className="btn">Search</button>
       </form>
 
       <div className="filters">
-        <button className={!type ? 'chip on' : 'chip'} onClick={() => pickType(null)}>Tất cả</button>
+        <button className={!type ? 'chip on' : 'chip'} onClick={() => pickType(null)}>All</button>
         {(Object.keys(SERVICE_TYPE_LABEL) as ServiceType[]).map((t) => (
           <button key={t} className={type === t ? 'chip on' : 'chip'} onClick={() => pickType(t)}>{SERVICE_TYPE_LABEL[t]}</button>
         ))}
       </div>
 
-      {loading && <p>Đang tải dịch vụ...</p>}
+      {loading && <p>Loading services...</p>}
       {error && <p className="msg error">{error}</p>}
-      {!loading && !error && data?.items.length === 0 && <p>Không có dịch vụ nào phù hợp.</p>}
+      {!loading && !error && data?.items.length === 0 && <p>No matching services.</p>}
 
       <div className="grid">
         {data?.items.map((s) => (
           <article key={s.id} className={s.isActive ? 'card' : 'card off'}>
             <div>
               <span className="tag">{SERVICE_TYPE_LABEL[s.serviceType]}</span>
-              {!s.isActive && <span className="tag off-tag">Ngừng hoạt động</span>}
+              {!s.isActive && <span className="tag off-tag">Inactive</span>}
             </div>
             <h2>{s.name}</h2>
             <p>{s.description}</p>
             <div className="actions">
-              <Link to={'/dich-vu/' + s.id}>Xem</Link>
-              <Link to={'/dich-vu/' + s.id + '/sua'}>Sửa</Link>
-              {s.isActive && <button className="link" onClick={() => onDelete(s)}>Xóa</button>}
+              <Link to={'/services/' + s.id}>View</Link>
+              <Link to={'/services/' + s.id + '/sua'}>Edit</Link>
+              {s.isActive && <button className="link" onClick={() => onDelete(s)}>Delete</button>}
             </div>
           </article>
         ))}
@@ -90,9 +90,9 @@ export default function ServiceListPage() {
 
       {data && data.totalPages > 1 && (
         <div className="pager">
-          <button className="chip" disabled={!data.hasPreviousPage} onClick={() => setPage(page - 1)}>Trang trước</button>
-          <span>Trang {data.pageNumber} / {data.totalPages}</span>
-          <button className="chip" disabled={!data.hasNextPage} onClick={() => setPage(page + 1)}>Trang sau</button>
+          <button className="chip" disabled={!data.hasPreviousPage} onClick={() => setPage(page - 1)}>Previous</button>
+          <span>Page {data.pageNumber} / {data.totalPages}</span>
+          <button className="chip" disabled={!data.hasNextPage} onClick={() => setPage(page + 1)}>Next</button>
         </div>
       )}
     </section>

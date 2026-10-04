@@ -1,8 +1,8 @@
 export default function RoomListPage() {
-  // TODO: làm giao diện quản lý phòng
+  // TODO: build the rooms screen
   return (
     <section className="page">
-      <h1>Quản lý phòng</h1>
+      <h1>Rooms</h1>
     </section>
   );
 }

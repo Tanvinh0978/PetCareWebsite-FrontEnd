@@ -1,8 +1,8 @@
 export default function StaffListPage() {
-  // TODO: làm giao diện quản lý nhân viên
+  // TODO: build the staff screen
   return (
     <section className="page">
-      <h1>Quản lý nhân viên</h1>
+      <h1>Staff</h1>
     </section>
   );
 }

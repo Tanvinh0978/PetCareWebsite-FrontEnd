@@ -10,7 +10,8 @@ export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as Partial<ApiResponse<unknown>> | undefined;
     if (data?.message) return data.message;
-    if (error.code === 'ERR_NETWORK') return 'Không kết nối được tới máy chủ. Hãy kiểm tra backend đã chạy chưa.';
+    if (error.code === 'ERR_NETWORK') return 'Cannot reach the server. Check that the backend is running.';
+    if (error.response) return 'Request failed (' + error.response.status + '): ' + (error.config?.method ?? '').toUpperCase() + ' ' + error.config?.baseURL + (error.config?.url ?? '');
   }
-  return 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+  return 'Something went wrong. Please try again.';
 }

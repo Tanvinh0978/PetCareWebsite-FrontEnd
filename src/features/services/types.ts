@@ -3,16 +3,16 @@ export type ServiceType = 'Grooming' | 'Boarding' | 'Diet' | 'Care';
 export type PricingUnit = 'Per_Turn' | 'Per_Day' | 'Item';
 
 export const SERVICE_TYPE_LABEL: Record<ServiceType, string> = {
-  Grooming: 'Spa & tỉa lông',
-  Boarding: 'Lưu trú',
-  Diet: 'Dinh dưỡng',
-  Care: 'Chăm sóc',
+  Grooming: 'Grooming',
+  Boarding: 'Boarding',
+  Diet: 'Diet',
+  Care: 'Care',
 };
 
 export const PRICING_UNIT_LABEL: Record<PricingUnit, string> = {
-  Per_Turn: 'lượt',
-  Per_Day: 'ngày',
-  Item: 'món',
+  Per_Turn: 'session',
+  Per_Day: 'day',
+  Item: 'item',
 };
 
 export interface PagedResult<T> {
