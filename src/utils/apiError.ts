@@ -15,7 +15,7 @@ interface BackendErrorShape {
 export const getApiErrorStatus = (error: unknown): number | undefined =>
   (error as BackendErrorShape).response?.status
 
-export const getApiErrorMessage = (error: unknown, fallback = 'An unexpected exception occurred.'): string => {
+export const getApiErrorMessage = (error: unknown, fallback = 'Something went wrong'): string => {
   const e = error as BackendErrorShape
   
   if (e.response?.data) {
@@ -31,21 +31,18 @@ export const getApiErrorMessage = (error: unknown, fallback = 'An unexpected exc
         return errorMessages.join(' | ')
       }
     }
-    if (data.title) {
-      if (data.title.includes('One or more validation errors occurred.')) return 'One or more validation errors occurred.'
-      return data.title
-    }
+    if (data.title) return data.title
   }
 
-  if (e.code === 'ERR_NETWORK') return 'Network exception: Cannot reach the server. Check that the backend is running.'
+  if (e.code === 'ERR_NETWORK') return 'Cannot reach the server. Check that the backend is running.'
   
   if (e.response?.status) {
-    return `Server exception (${e.response.status}): ${(e.config?.method ?? '').toUpperCase()} ${e.config?.url ?? ''}`
+    return `Request failed (${e.response.status}): ${(e.config?.method ?? '').toUpperCase()} ${e.config?.url ?? ''}`
   }
   
   // Also check if it's a direct Error object (like client side validation)
   if (error instanceof Error) {
-    return `Exception: ${error.message}`;
+    return error.message;
   }
   
   return fallback
