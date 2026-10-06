@@ -1,63 +1,59 @@
-# Hướng dẫn thêm chức năng (feature) mới
+# Hướng dẫn làm việc trong repo
 
-Code chia theo **feature** (mỗi model của backend một thư mục), và trong mỗi feature các màn hình chia theo **vai trò**.
-
-## Vai trò và khu vực
-
-| Vai trò | URL | Ghi chú |
-|---|---|---|
-| guest | `/` | Chưa đăng nhập, chỉ xem. Người đã đăng nhập vào `/` sẽ được chuyển về khu vực của họ |
-| customer | `/customer/...` | Chỉ customer vào được |
-| admin | `/admin/...` | Chỉ admin vào được |
-
-Backend chưa có API đăng nhập, nên `/login` hiện chỉ cho chọn vai trò để xem thử (`src/shared/auth/AuthContext.tsx`). Khi có API thật, chỉ cần sửa file này. `RequireRole` đã chặn truy cập sai khu vực.
+Kiến trúc bám theo dự án mẫu `djnd-cinema-react-ts`: React 19 + TypeScript + Vite, Ant Design 5 + ProComponents, Zustand, React Router 7. Thư mục chia theo **loại file**, trang chia theo **vai trò**.
 
 ## Cấu trúc
 
 ```
 src/
-  features/
-    services/                 <- feature mẫu hoàn chỉnh
-      types.ts                kiểu dữ liệu và enum
-      api.ts                  hàm gọi API
-      components/             phần giao diện dùng chung giữa các vai trò
-      pages/
-        admin/                màn của admin
-        customer/             màn của customer
-        guest/                màn của guest
-      index.tsx               khai báo route và menu cho từng vai trò
-    index.ts                  danh sách feature
-  shared/
-    auth/                     roles, AuthContext, RequireRole
-    api/client.ts             axios và getErrorMessage
-    components/Layout.tsx     khung có sidebar theo vai trò
-  pages/                      Home, Dashboard, Login, NotFound
+  main.tsx, App.tsx          ConfigProvider (theme), AntdApp, ProConfigProvider, BrowserRouter
+  routes/app.route.tsx       MỌI route của ứng dụng nằm ở đây
+  components/                component dùng chung (protected.route.tsx, ...)
+  layouts/                   admin.layout.tsx (ProLayout + menu), auth.layout.tsx
+  pages/
+    admin/<thực thể>/        màn của admin: <thực thể>.management.tsx (ProTable), <thực thể>.detail.tsx, components/ (modal)
+    user/                    màn của guest và customer: layout.tsx, header.tsx, footer.tsx, home/, services/
+    auth/                    Login
+    errors/                  forbidden (403), not.found (404)
+  services/                  axiosClient.ts và <thực thể>.service.ts (mỗi file một object gọi API)
+  store/useAuthStore.ts      Zustand: isAuthenticated, user, accessToken, role (lưu localStorage)
+  types/                     <thực thể>.types.ts (DTO, enum, nhãn) và backend.d.ts (kiểu toàn cục)
+  utils/                     apiError, format, roles
+  styles/theme.ts            theme Ant Design
 ```
 
-## Tạo feature mới
+## Vai trò và quyền
 
-```bash
-npm run new:feature -- pets Pet customer,admin
-```
+| Vai trò | Khu vực | Cách bảo vệ |
+|---|---|---|
+| guest (chưa đăng nhập) | `/`, `/services`... dùng `pages/user` | không cần |
+| customer (`ROLE_CUSTOMER`) | cùng khu vực user, thêm các route riêng | `ProtectedRoute requiredRole` |
+| admin (`ROLE_ADMIN`) | `/admin/...` dùng `AdminLayout` | `ProtectedRoute requiredRole` |
 
-- `pets`: tên thư mục và URL, `Pet`: tên entity, `customer,admin`: các vai trò có màn hình (guest, customer, admin; mặc định chỉ admin).
-- Lệnh tạo `types.ts`, `api.ts`, `pages/<vai trò>/PetListPage.tsx`, `index.tsx` và tự đăng ký vào `src/features/index.ts`. File đã có sẽ không bị ghi đè.
-- Trong `index.tsx`, `routes` và `nav` khai báo theo từng vai trò. Mục menu hiện ở sidebar của vai trò đó.
+`ProtectedRoute`: chưa đăng nhập thì về `/login`, sai vai trò thì về `/403`. Backend chưa có API đăng nhập, nên `pages/auth/Login.tsx` hiện chỉ cho chọn vai trò để xem thử. Khi có API, thêm `auth.service.ts` (như dự án mẫu), gọi `setAuth(token, user)` và bổ sung xử lý 401 trong `axiosClient.ts`.
 
-Sau đó làm lần lượt: `types.ts` (đối chiếu entity backend), `api.ts` (đường dẫn khớp controller), rồi giao diện trong `pages/<vai trò>/`. Phần giao diện giống nhau giữa các vai trò thì đưa vào `components/` và truyền props (xem `ServiceCatalog`, `ServiceDetail`).
+## Thêm một thực thể mới (ví dụ Pet), theo thứ tự
+
+1. `types/pet.types.ts`: DTO và enum, khớp backend. Enum dùng `as const`, không dùng `enum`.
+2. `services/pet.service.ts`: object `petService`, mỗi hàm một endpoint, có kiểu `IBackendRes<...>` (xem `service.service.ts`).
+3. `pages/admin/pet/pet.management.tsx` (ProTable), kèm `pet.detail.tsx` và `components/pet.form.modal.tsx` nếu cần. Màn cho customer đặt trong `pages/user/...`.
+4. Đăng ký route trong `routes/app.route.tsx`: route admin trong nhóm `ProtectedRoute requiredRole={ROLE.ADMIN}`, route customer trong nhóm customer.
+5. Thêm mục menu admin trong `layouts/admin.layout.tsx` (mảng `menuRoutes`), hoặc mục menu user trong `pages/user/header.tsx`.
 
 ## Quy ước
 
-- Mọi chữ hiển thị trên giao diện (nhãn, nút, thông báo) dùng tiếng Anh, URL cũng tiếng Anh.
-- Trang chỉ gọi hàm trong `api.ts` của feature, không gọi axios trực tiếp.
-- Chỉ đưa vào `shared/` thứ được từ 2 feature trở lên dùng. Feature này không import trực tiếp từ feature khác.
-- Backend trả `ApiResponse<T>` (`isSuccess`, `statusCode`, `message`, `result`). Dùng `getErrorMessage(err)` để hiện lỗi.
-- Frontend không sửa được backend: nếu endpoint lỗi, xử lý tạm ở `api.ts` kèm chú thích lý do (xem `searchServices`).
+- Import dùng alias `@/` (ví dụ `@/services/service.service`).
+- Chữ hiển thị trên giao diện (nhãn, nút, thông báo) dùng tiếng Anh, URL tiếng Anh.
+- Trang không gọi axios trực tiếp, chỉ gọi hàm trong `services/`. Lỗi hiển thị bằng `getApiErrorMessage(err)`.
+- Thông báo dùng `App.useApp()` của Ant Design (`message`, `notification`).
+- Backend trả `{ isSuccess, statusCode, message, result }`, kiểu `IBackendRes<T>`. Danh sách phân trang là `IPagedResult<T>`.
+- Frontend không sửa được backend: nếu endpoint lỗi, xử lý tạm trong `services/` kèm chú thích lý do (xem `fetchAllForAdmin`).
+- Chạy `npm run build` và `npm run lint` trước khi mở Pull Request.
 
 ## Quy trình git gợi ý
 
 ```bash
 git checkout -b feature/pets
-git add -A && git commit -m "Add pets feature"
+git add -A && git commit -m "Add pets screens"
 git push -u origin feature/pets     # rồi mở Pull Request vào main
 ```

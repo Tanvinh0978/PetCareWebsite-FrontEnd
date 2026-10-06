@@ -1,14 +1,18 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { fileURLToPath } from 'node:url'
 
 // Proxy /api -> backend .NET (profile "https" trong launchSettings.json).
 // Dùng proxy để tránh lỗi CORS và lỗi chứng chỉ dev tự ký.
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
   server: {
     port: 5173,
     proxy: {
       '/api': { target: 'https://localhost:7287', changeOrigin: true, secure: false },
     },
   },
-});
+})

@@ -6,31 +6,22 @@ Giao diện React (Vite + TypeScript) cho backend `PetCareBooking` (.NET 8).
 
 ```bash
 npm install
-cp .env.example .env
 npm run dev          # http://localhost:5173
 ```
 
-Chạy backend bằng profile `https` (`https://localhost:7287`). Vite proxy `/api` sang địa chỉ này (xem `vite.config.ts`).
+Chạy backend bằng profile `https` (`https://localhost:7287`). Vite proxy `/api` sang địa chỉ này (xem `vite.config.ts`). Cần backend đã `dotnet ef database update`.
 
-## Kết nối API
+Backend chưa có API đăng nhập: vào `/login` và chọn Customer hoặc Admin để xem thử các màn.
 
-Feature Dịch vụ đã nối API thật: tìm kiếm có phân trang (`GET /api/services/admin/search`), xem chi tiết, thêm, sửa, xóa mềm. Cần chạy backend bằng profile `https` và đã `dotnet ef database update`. Các feature khác đang là trang trống.
+## Kiến trúc
 
-## Cấu trúc
+Bám theo dự án mẫu (Ant Design + ProComponents + Zustand + React Router). Xem `CONTRIBUTING.md` để biết cấu trúc thư mục, phân quyền và cách thêm một thực thể mới.
 
-Chia theo feature (mỗi model một thư mục). Xem `CONTRIBUTING.md` để biết cách thêm chức năng mới:
+## Trạng thái
 
-```bash
-npm run new:feature -- pets Pet
-```
+| Màn | Vai trò | API |
+|---|---|---|
+| Danh sách, chi tiết dịch vụ | guest, customer | `GET /api/services`, `GET /api/services/{id}` |
+| Quản lý dịch vụ (tìm, lọc, thêm, sửa, xóa) | admin | `GET /api/services/admin`, `POST`, `PUT`, `DELETE` |
 
-```
-src/
-  features/   services/ (mẫu), ... mỗi feature có types, api, pages, index
-  shared/     client axios, ApiResponse, Layout
-  pages/      Home, NotFound
-```
-
-## Bước tiếp theo gợi ý
-
-Backend đã có entity Customer, Pet, Booking, Room, Promotion, Review nhưng chưa có endpoint. Khi có, thêm lần lượt: đăng nhập, quản lý thú cưng, luồng đặt lịch.
+Lọc và phân trang của admin làm ở frontend vì `GET /api/services/admin/search` của backend đang trả 500 khi bộ lọc để trống.
