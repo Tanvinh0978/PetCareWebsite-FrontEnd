@@ -9,6 +9,7 @@ import HomePage from "@/pages/customer/HomePage";
 import AdminDashboardPage from "@/pages/admin/DashboardPage";
 import AdminServiceListPage from "@/pages/admin/service/ServiceListPage";
 import AdminServiceFormPage from "@/pages/admin/service/ServiceFormPage";
+import AdminCustomerListPage from "@/pages/admin/customer/CustomerListPage";
 import StaffDashboardPage from "@/pages/staff/StaffDashboardPage";
 // [new-page:imports]
 
@@ -32,6 +33,7 @@ export default function AppRoutes() {
         { path: "services/new", element: <AdminServiceFormPage /> },   // Add: màn riêng
         { path: "services/:id", element: <ServiceDetail backTo="/admin/services" editTo={(id) => `/admin/services/${id}/edit`} /> },
         { path: "services/:id/edit", element: <AdminServiceFormPage /> }, // Edit: màn riêng
+        { path: "customers", element: <AdminCustomerListPage /> },
         // [new-page:admin]
         notFound,
       ],
