@@ -1,7 +1,35 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "types": ["vite/client"],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "vite.config.ts"],
+  "exclude": [
+    "node_modules",
+    "src/pages/Home.tsx",
+    "src/pages/CreateService.tsx",
+    "src/pages/Services.tsx",
+    "src/pages/LoginPage.tsx",
+    "src/pages/NotFound.tsx",
+    "src/pages/DashboardPage.tsx",
+    "src/pages/user/**",
+    "src/pages/auth/Login.tsx",
+    "src/pages/errors/forbidden.tsx",
+    "src/pages/errors/not.found.tsx",
+    "src/pages/admin/service/service.management.tsx",
+    "src/pages/admin/service/service.detail.tsx",
+    "src/pages/admin/service/components/**",
+    "src/routes/app.route.tsx",
+    "src/shared/**",
+    "src/services/**"
   ]
 }

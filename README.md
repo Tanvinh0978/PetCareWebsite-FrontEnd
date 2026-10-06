@@ -6,22 +6,35 @@ Giao diện React (Vite + TypeScript) cho backend `PetCareBooking` (.NET 8).
 
 ```bash
 npm install
+cp .env.example .env
 npm run dev          # http://localhost:5173
 ```
 
-Chạy backend bằng profile `https` (`https://localhost:7287`). Vite proxy `/api` sang địa chỉ này (xem `vite.config.ts`). Cần backend đã `dotnet ef database update`.
+Chạy backend bằng profile `https` (`https://localhost:7287`). Vite proxy `/api` sang địa chỉ này (xem `vite.config.ts`).
 
-Backend chưa có API đăng nhập: vào `/login` và chọn Customer hoặc Admin để xem thử các màn.
+## Kết nối API
 
-## Kiến trúc
+Phần Services đã nối API thật: danh sách có phân trang, xem chi tiết, thêm, sửa, xóa mềm. Thêm và sửa là **màn riêng** (`/admin/services/new`, `/admin/services/:id/edit`), không dùng popup. Các phần khác đang là trang trống.
 
-Bám theo dự án mẫu (Ant Design + ProComponents + Zustand + React Router). Xem `CONTRIBUTING.md` để biết cấu trúc thư mục, phân quyền và cách thêm một thực thể mới.
+## Cấu trúc
 
-## Trạng thái
+```
+src/
+  pages/          mỗi vai trò một thư mục
+    admin/        DashboardPage, service/ (List, Form, Detail)
+    staff/        StaffDashboardPage
+    customer/     HomePage (guest dùng chung)
+    auth/         LoginPage
+    errors/       NotFoundPage
+  components/     Layout và component dùng chung (service/ServiceCatalog, ServiceDetail)
+  api/            client axios và hàm gọi API (serviceApi.ts, ...)
+  routes/         index.tsx (toàn bộ route), nav.ts (menu theo vai trò)
+  auth/           roles, AuthContext, RequireRole
+  types/          kiểu dữ liệu (api.ts, service.ts, ...)
+```
 
-| Màn | Vai trò | API |
-|---|---|---|
-| Danh sách, chi tiết dịch vụ | guest, customer | `GET /api/services`, `GET /api/services/{id}` |
-| Quản lý dịch vụ (tìm, lọc, thêm, sửa, xóa) | admin | `GET /api/services/admin`, `POST`, `PUT`, `DELETE` |
+Import dùng alias `@/` trỏ tới `src/` (ví dụ `@/api/client`). Xem `CONTRIBUTING.md` để thêm màn hình mới:
 
-Lọc và phân trang của admin làm ở frontend vì `GET /api/services/admin/search` của backend đang trả 500 khi bộ lọc để trống.
+```bash
+npm run new:page -- admin pets Pet
+```

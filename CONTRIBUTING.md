@@ -1,59 +1,58 @@
-# Hướng dẫn làm việc trong repo
+# Hướng dẫn thêm màn hình mới
 
-Kiến trúc bám theo dự án mẫu `djnd-cinema-react-ts`: React 19 + TypeScript + Vite, Ant Design 5 + ProComponents, Zustand, React Router 7. Thư mục chia theo **loại file**, trang chia theo **vai trò**.
+Code chia theo **vai trò**: mỗi vai trò một thư mục trong `src/pages/`.
 
-## Cấu trúc
+## Vai trò và khu vực
 
-```
-src/
-  main.tsx, App.tsx          ConfigProvider (theme), AntdApp, ProConfigProvider, BrowserRouter
-  routes/app.route.tsx       MỌI route của ứng dụng nằm ở đây
-  components/                component dùng chung (protected.route.tsx, ...)
-  layouts/                   admin.layout.tsx (ProLayout + menu), auth.layout.tsx
-  pages/
-    admin/<thực thể>/        màn của admin: <thực thể>.management.tsx (ProTable), <thực thể>.detail.tsx, components/ (modal)
-    user/                    màn của guest và customer: layout.tsx, header.tsx, footer.tsx, home/, services/
-    auth/                    Login
-    errors/                  forbidden (403), not.found (404)
-  services/                  axiosClient.ts và <thực thể>.service.ts (mỗi file một object gọi API)
-  store/useAuthStore.ts      Zustand: isAuthenticated, user, accessToken, role (lưu localStorage)
-  types/                     <thực thể>.types.ts (DTO, enum, nhãn) và backend.d.ts (kiểu toàn cục)
-  utils/                     apiError, format, roles
-  styles/theme.ts            theme Ant Design
-```
-
-## Vai trò và quyền
-
-| Vai trò | Khu vực | Cách bảo vệ |
+| Vai trò | URL | Thư mục |
 |---|---|---|
-| guest (chưa đăng nhập) | `/`, `/services`... dùng `pages/user` | không cần |
-| customer (`ROLE_CUSTOMER`) | cùng khu vực user, thêm các route riêng | `ProtectedRoute requiredRole` |
-| admin (`ROLE_ADMIN`) | `/admin/...` dùng `AdminLayout` | `ProtectedRoute requiredRole` |
+| guest | `/` | dùng lại `pages/customer` và `components/` |
+| customer | `/customer/...` | `src/pages/customer/` |
+| staff | `/staff/...` | `src/pages/staff/` |
+| admin | `/admin/...` | `src/pages/admin/` |
 
-`ProtectedRoute`: chưa đăng nhập thì về `/login`, sai vai trò thì về `/403`. Backend chưa có API đăng nhập, nên `pages/auth/Login.tsx` hiện chỉ cho chọn vai trò để xem thử. Khi có API, thêm `auth.service.ts` (như dự án mẫu), gọi `setAuth(token, user)` và bổ sung xử lý 401 trong `axiosClient.ts`.
+Backend chưa có API đăng nhập, nên `/login` hiện chỉ cho chọn vai trò để xem thử (`src/auth/AuthContext.tsx`). Khi có API thật, chỉ cần sửa file này. `RequireRole` chặn truy cập sai khu vực.
 
-## Thêm một thực thể mới (ví dụ Pet), theo thứ tự
+## Quy tắc đặt file
 
-1. `types/pet.types.ts`: DTO và enum, khớp backend. Enum dùng `as const`, không dùng `enum`.
-2. `services/pet.service.ts`: object `petService`, mỗi hàm một endpoint, có kiểu `IBackendRes<...>` (xem `service.service.ts`).
-3. `pages/admin/pet/pet.management.tsx` (ProTable), kèm `pet.detail.tsx` và `components/pet.form.modal.tsx` nếu cần. Màn cho customer đặt trong `pages/user/...`.
-4. Đăng ký route trong `routes/app.route.tsx`: route admin trong nhóm `ProtectedRoute requiredRole={ROLE.ADMIN}`, route customer trong nhóm customer.
-5. Thêm mục menu admin trong `layouts/admin.layout.tsx` (mảng `menuRoutes`), hoặc mục menu user trong `pages/user/header.tsx`.
+- Trang của vai trò nào nằm trong `pages/<vai trò>/<tên nhóm>/`.
+- Thứ gì nhiều trang dùng thì để ở `components/`, `types/` hoặc `api/`.
+- Thứ gì chỉ một trang dùng thì để cạnh trang đó.
+- Hàm gọi API nằm trong `src/api/<tên>Api.ts`. Trang không gọi axios trực tiếp.
+- Toàn bộ route khai báo trong `src/routes/index.tsx`, menu trong `src/routes/nav.ts`.
+
+## Thêm / sửa dữ liệu
+
+Không dùng popup. Mỗi nhóm có 3 route riêng, ví dụ:
+
+```
+/admin/services              danh sách
+/admin/services/new          màn Add
+/admin/services/:id/edit     màn Edit
+```
+
+Một `ServiceFormPage` dùng chung cho Add và Edit (có `:id` thì là Edit). Lưu xong thì quay về danh sách. Xem `src/pages/admin/service/` làm mẫu.
+
+## Tạo nhóm màn hình mới
+
+```bash
+npm run new:page -- admin pets Pet
+```
+
+- Tham số: vai trò (`admin`, `staff`, `customer`), tên thư mục và URL, tên entity.
+- Lệnh tạo `types/pets.ts`, `api/petsApi.ts`, `pages/admin/pets/PetListPage.tsx`, rồi tự thêm route và menu. File đã có sẽ không bị ghi đè.
+- Sau đó sửa `types`, đường dẫn trong `api` cho khớp controller, rồi làm giao diện.
 
 ## Quy ước
 
-- Import dùng alias `@/` (ví dụ `@/services/service.service`).
-- Chữ hiển thị trên giao diện (nhãn, nút, thông báo) dùng tiếng Anh, URL tiếng Anh.
-- Trang không gọi axios trực tiếp, chỉ gọi hàm trong `services/`. Lỗi hiển thị bằng `getApiErrorMessage(err)`.
-- Thông báo dùng `App.useApp()` của Ant Design (`message`, `notification`).
-- Backend trả `{ isSuccess, statusCode, message, result }`, kiểu `IBackendRes<T>`. Danh sách phân trang là `IPagedResult<T>`.
-- Frontend không sửa được backend: nếu endpoint lỗi, xử lý tạm trong `services/` kèm chú thích lý do (xem `fetchAllForAdmin`).
-- Chạy `npm run build` và `npm run lint` trước khi mở Pull Request.
+- Mọi chữ hiển thị trên giao diện dùng tiếng Anh, URL cũng tiếng Anh.
+- Backend trả `ApiResponse<T>` (`isSuccess`, `statusCode`, `message`, `result`). Dùng `getErrorMessage(err)` để hiện lỗi.
+- Frontend không sửa được backend: nếu endpoint lỗi, xử lý tạm trong `api/` kèm chú thích lý do (xem `searchServices`).
 
 ## Quy trình git gợi ý
 
 ```bash
 git checkout -b feature/pets
-git add -A && git commit -m "Add pets screens"
+git add -A && git commit -m "Add pets page"
 git push -u origin feature/pets     # rồi mở Pull Request vào main
 ```
