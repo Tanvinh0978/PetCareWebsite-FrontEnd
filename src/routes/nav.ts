@@ -15,6 +15,7 @@ export const NAV: Record<Role, NavItem[]> = {
   admin: [
     { label: "Services", to: "services" },
     { label: "Customers", to: "customers" },
+    { label: "Room Types", to: "room-types" },
     // [new-page:nav-admin]
   ],
 };
