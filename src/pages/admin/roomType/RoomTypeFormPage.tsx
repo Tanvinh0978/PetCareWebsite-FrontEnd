@@ -1,55 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState, type FormEvent } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { roomTypeService } from '@/services/roomType.service';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const AdminRoomTypeFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const isEditMode = Boolean(id);
+  const editing = Boolean(id);
+
+  const [loading, setLoading] = useState(editing);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
-    if (isEditMode && id) {
-      loadRoomType(id);
-    }
-  }, [id, isEditMode]);
+    if (!id) return;
+    roomTypeService.fetchById(id)
+      .then((res) => {
+        if (res.isSuccess && res.result) {
+          setName(res.result.name);
+          setDescription(res.result.description || '');
+        } else {
+          setError(res.message || 'Failed to load room type details');
+        }
+      })
+      .catch((err) => setError(getApiErrorMessage(err)))
+      .finally(() => setLoading(false));
+  }, [id]);
 
-  const loadRoomType = async (roomId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await roomTypeService.fetchById(roomId);
-      if (res.isSuccess && res.result) {
-        setName(res.result.name);
-        setDescription(res.result.description || '');
-      } else {
-        setError(res.message || 'Failed to load room type details');
-      }
-    } catch (err: any) {
-      setError(getApiErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError('');
     if (!name.trim()) {
       setError('Room Type Name is required.');
       return;
     }
 
+    setSaving(true);
     try {
-      setLoading(true);
-      setError(null);
-
-      if (isEditMode) {
+      if (editing) {
         await roomTypeService.update(id!, {
           name: name.trim(),
           description: description.trim() || undefined,
@@ -60,75 +51,65 @@ const AdminRoomTypeFormPage: React.FC = () => {
           description: description.trim() || undefined,
         });
       }
-
       navigate('/admin/room-types');
-    } catch (err: any) {
+    } catch (err) {
       setError(getApiErrorMessage(err));
-      setLoading(false);
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <section className="page max-w-2xl">
-      <div className="page-head">
+    <section className="page" style={{ maxWidth: '840px' }}>
+      <div className="page-head" style={{ marginBottom: '1.5rem' }}>
         <div>
-          <Link to="/admin/room-types" className="back-link">
-            &larr; Back to room types
-          </Link>
-          <h1>{isEditMode ? 'Edit Room Type' : 'Create New Room Type'}</h1>
+          <h1>{editing ? 'Edit Room Type' : 'Add New Room Type'}</h1>
           <p className="page-subtitle">
-            {isEditMode
+            {editing
               ? 'Update the details of the selected room type.'
               : 'Add a new category of rooms for pet boarding.'}
           </p>
         </div>
+        <Link to="/admin/room-types" className="btn btn-secondary">
+          ← Back to room types
+        </Link>
       </div>
 
-      <div className="card form-card">
-        {error && (
-          <div className="msg error" role="alert" style={{ marginBottom: '1.5rem' }}>
-            {error}
-          </div>
-        )}
+      {loading && <p>Loading room type details...</p>}
 
-        <form onSubmit={handleSubmit} className="app-form">
-          <div className="form-group">
-            <label htmlFor="name">
-              Room Type Name <span className="text-danger">*</span>
-            </label>
-            <input
-              id="name"
-              type="text"
-              className="form-control"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Standard Room, VIP Suite, Cat Condo"
-              required
-            />
-          </div>
+      <form onSubmit={onSubmit} className="form" hidden={loading}>
+        <label>
+          Room Type Name <span style={{ color: 'var(--danger)' }}>*</span>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Standard Room, VIP Suite, Cat Condo"
+            required
+          />
+        </label>
 
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              className="form-control"
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Detailed description of what this room type offers..."
-            />
-          </div>
+        <label>
+          Description
+          <textarea
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Detailed description of what this room type offers..."
+          />
+        </label>
 
-          <div className="form-actions" style={{ marginTop: '2rem' }}>
-            <Link to="/admin/room-types" className="btn btn-secondary">
-              Cancel
-            </Link>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Saving...' : isEditMode ? 'Update Room Type' : 'Create Room Type'}
-            </button>
-          </div>
-        </form>
-      </div>
+        {error && <p className="msg error" role="alert">{error}</p>}
+
+        <div className="form-actions">
+          <button type="submit" className="btn" disabled={saving}>
+            {saving ? 'Saving changes...' : editing ? 'Save changes' : 'Create room type'}
+          </button>
+          <Link to="/admin/room-types" className="btn btn-secondary">
+            Cancel
+          </Link>
+        </div>
+      </form>
     </section>
   );
 };
