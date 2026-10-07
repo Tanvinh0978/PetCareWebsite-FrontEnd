@@ -1,13 +1,13 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
 import { App } from 'antd'
+import { useNavigate } from 'react-router-dom'
 import { customerService } from '@/services/customer.service'
-import type { CustomerDTO, CustomerDetailDTO } from '@/types/customer.types'
+import type { CustomerDTO } from '@/types/customer.types'
 import { getApiErrorMessage } from '@/utils/apiError'
-import CustomerFormModal from '@/pages/admin/customer/components/customer.form.modal'
 
 const CustomerManagement: React.FC = () => {
+  const navigate = useNavigate()
   const { message } = App.useApp()
-  const [modal, setModal] = useState<{ open: boolean; customer: CustomerDetailDTO | null }>({ open: false, customer: null })
 
   const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all')
   const [keywordInput, setKeywordInput] = useState('')
@@ -47,13 +47,8 @@ const CustomerManagement: React.FC = () => {
     return () => { cancelled = true }
   }, [page, pageSize, keyword, status, reload])
 
-  const openEdit = async (id: string) => {
-    try {
-      const res = await customerService.fetchById(id)
-      setModal({ open: true, customer: res.result })
-    } catch (e) {
-      message.error(getApiErrorMessage(e))
-    }
+  const openEdit = (id: string) => {
+    navigate(`/admin/customers/${id}/edit`)
   }
 
   const onSearch = (e: FormEvent) => {
@@ -119,7 +114,7 @@ const CustomerManagement: React.FC = () => {
           <h1>Customers Management</h1>
           <p className="page-subtitle">View, search, and manage customers in table format.</p>
         </div>
-        <button type="button" className="btn" onClick={() => setModal({ open: true, customer: null })}>
+        <button type="button" className="btn" onClick={() => navigate('/admin/customers/new')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -227,7 +222,7 @@ const CustomerManagement: React.FC = () => {
                           Clear filters
                         </button>
                       ) : (
-                        <button type="button" className="btn" onClick={() => setModal({ open: true, customer: null })}>
+                        <button type="button" className="btn" onClick={() => navigate('/admin/customers/new')}>
                           + Add first customer
                         </button>
                       )}
@@ -387,14 +382,6 @@ const CustomerManagement: React.FC = () => {
         </div>
       )}
 
-      {modal.open && (
-        <CustomerFormModal
-          open={modal.open}
-          customer={modal.customer}
-          onClose={() => setModal({ open: false, customer: null })}
-          onSuccess={() => { setModal({ open: false, customer: null }); setReload(r => r + 1) }}
-        />
-      )}
     </section>
   )
 }
