@@ -2,7 +2,7 @@ import React from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ProLayout } from '@ant-design/pro-components'
 import { Dropdown } from 'antd'
-import { CustomerServiceOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons'
+import { CustomerServiceOutlined, LogoutOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons'
 import { useAuthStore } from '@/store/useAuthStore'
 
 const AdminLayout: React.FC = () => {
@@ -15,9 +15,14 @@ const AdminLayout: React.FC = () => {
     navigate('/login')
   }
 
+  const iconMap: Record<string, React.ReactNode> = {
+    '/admin/services': <CustomerServiceOutlined />,
+    '/admin/customers': <TeamOutlined />,
+  }
+
   // Thêm mục menu admin mới ở đây (mỗi feature một mục).
   const menuRoutes = [
-    { path: '/admin/services', name: 'Services', icon: <CustomerServiceOutlined /> },
+    { path: '/admin/services', name: 'Services' },
     { path: '/admin/customers', name: 'Customers' },
   ]
 
@@ -29,7 +34,12 @@ const AdminLayout: React.FC = () => {
       fixSiderbar
       location={{ pathname: location.pathname }}
       route={{ path: '/admin', routes: menuRoutes }}
-      menuItemRender={(item, dom) => <a onClick={() => item.path && navigate(item.path)}>{dom}</a>}
+      menuItemRender={(item, _dom) => (
+        <a onClick={() => item.path && navigate(item.path)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {item.path && iconMap[item.path]}
+          <span>{item.name}</span>
+        </a>
+      )}
       avatarProps={{
         icon: <UserOutlined />,
         title: user?.name ?? 'Admin',
