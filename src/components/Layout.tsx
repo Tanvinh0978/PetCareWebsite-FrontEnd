@@ -1,13 +1,19 @@
 
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { ROLE_BASE, ROLE_LABEL, type Role } from "@/auth/roles";
 import { NAV } from "@/routes/nav";
 
 export default function Layout({ role }: { role: Role }) {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
   const base = ROLE_BASE[role];
   const isAdminOrStaff = role === "admin" || role === "staff";
+
+  const handleSignOut = () => {
+    signOut();
+    navigate("/login");
+  };
 
   // Admin & Staff: Left Sidebar navigation layout
   if (isAdminOrStaff) {
@@ -73,7 +79,7 @@ export default function Layout({ role }: { role: Role }) {
               type="button"
               className="btn-action danger"
               style={{ width: '100%', justifyContent: 'center', padding: '0.45rem', fontSize: '0.85rem' }}
-              onClick={signOut}
+              onClick={handleSignOut}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -118,9 +124,14 @@ export default function Layout({ role }: { role: Role }) {
 
           <div className="customer-header-actions">
             {role === "guest" ? (
-              <Link to="/login" className="btn btn-sm">
-                Sign in
-              </Link>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Link to="/login" className="btn btn-sm" style={{ background: 'transparent', color: '#059669', border: '1px solid #059669' }}>
+                  Sign in
+                </Link>
+                <Link to="/register" className="btn btn-sm">
+                  Sign up
+                </Link>
+              </div>
             ) : (
               <div className="customer-auth-status">
                 <span className="customer-role-badge">👤 Customer</span>
@@ -128,7 +139,7 @@ export default function Layout({ role }: { role: Role }) {
                   type="button"
                   className="btn-action danger"
                   style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
-                  onClick={signOut}
+                  onClick={handleSignOut}
                 >
                   Sign out
                 </button>

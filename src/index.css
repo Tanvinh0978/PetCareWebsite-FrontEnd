@@ -1234,3 +1234,4 @@ legend {
   font-size: 0.82rem;
   font-weight: 700;
 }
+@media (max-width: 768px) { .login-banner, .register-banner { display: none !important; } }
