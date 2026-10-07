@@ -10,6 +10,9 @@ import AdminDashboardPage from "@/pages/admin/DashboardPage";
 import AdminServiceListPage from "@/pages/admin/service/ServiceListPage";
 import AdminServiceFormPage from "@/pages/admin/service/ServiceFormPage";
 import AdminCustomerListPage from "@/pages/admin/customer/CustomerListPage";
+// import AdminCustomerFormPage from "@/pages/admin/customer/CustomerFormPage";
+import AdminRoomTypeListPage from "@/pages/admin/roomType/RoomTypeListPage";
+import AdminRoomTypeFormPage from "@/pages/admin/roomType/RoomTypeFormPage";
 import StaffDashboardPage from "@/pages/staff/StaffDashboardPage";
 // [new-page:imports]
 
@@ -34,6 +37,11 @@ export default function AppRoutes() {
         { path: "services/:id", element: <ServiceDetail backTo="/admin/services" editTo={(id) => `/admin/services/${id}/edit`} /> },
         { path: "services/:id/edit", element: <AdminServiceFormPage /> }, // Edit: màn riêng
         { path: "customers", element: <AdminCustomerListPage /> },
+        // { path: "customers/new", element: <AdminCustomerFormPage /> },
+        // { path: "customers/:id/edit", element: <AdminCustomerFormPage /> },
+        { path: "room-types", element: <AdminRoomTypeListPage /> },
+        { path: "room-types/new", element: <AdminRoomTypeFormPage /> },
+        { path: "room-types/:id/edit", element: <AdminRoomTypeFormPage /> },
         // [new-page:admin]
         notFound,
       ],
