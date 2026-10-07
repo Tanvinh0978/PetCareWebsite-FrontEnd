@@ -4,6 +4,8 @@ import RequireRole, { GuestOnly } from "@/auth/RequireRole";
 import ServiceCatalog from "@/components/service/ServiceCatalog";
 import ServiceDetail from "@/components/service/ServiceDetail";
 import LoginPage from "@/pages/auth/LoginPage";
+import RegisterPage from "@/pages/auth/RegisterPage";
+import VerifyOtpPage from "@/pages/auth/VerifyOtpPage";
 import NotFoundPage from "@/pages/errors/NotFoundPage";
 import HomePage from "@/pages/customer/HomePage";
 import AdminDashboardPage from "@/pages/admin/DashboardPage";
@@ -29,9 +31,11 @@ const publicServiceRoutes = (base: string, guest = false): RouteObject[] => [
 export default function AppRoutes() {
   return useRoutes([
     { path: "/login", element: <LoginPage /> },
+    { path: "/register", element: <RegisterPage /> },
+    { path: "/verify-otp", element: <VerifyOtpPage /> },
     {
       path: "/admin",
-      element: <RequireRole role="admin"><Layout role="admin" /></RequireRole>,
+      element: <Layout role="admin" />,
       children: [
         { index: true, element: <AdminDashboardPage /> },
         { path: "services", element: <AdminServiceListPage /> },
