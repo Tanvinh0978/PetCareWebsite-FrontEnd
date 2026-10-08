@@ -152,11 +152,15 @@ export default function PawstayAuthPage() {
     const font = '"Nunito", sans-serif';
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: colors.bg, fontFamily: font }}>
+        <div style={{ 
+            display: 'flex', minHeight: '100vh', backgroundColor: colors.bg, fontFamily: font,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23244c3c' fill-opacity='0.05' d='M12,2C10.5,2 9,3 9,4.5C9,5 9,6.5 12,9C15,6.5 15,5 15,4.5C15,3 13.5,2 12,2M6,6C4.5,6 3,7 3,8.5C3,9 3,10.5 6,13C9,10.5 9,9 9,8.5C9,7 7.5,6 6,6M18,6C16.5,6 15,7 15,8.5C15,9 15,10.5 18,13C21,10.5 21,9 21,8.5C21,7 19.5,6 18,6M12,11.5C9,11.5 5,14.5 5,19C5,21.5 8.5,22 12,22C15.5,22 19,21.5 19,19C19,14.5 15,11.5 12,11.5Z'/%3E%3C/svg%3E")`,
+            backgroundSize: '48px 48px'
+        }}>
             {/* NỬA TRÁI: ẢNH CHÚ CHÓ */}
-            <div style={{ flex: 1.2, padding: 16, display: 'flex' }}>
+            <div style={{ flex: 1, padding: '24px 24px 24px 6vw', display: 'flex' }}>
                 <div style={{
-                    width: '100%', height: '100%', minHeight: 'calc(100vh - 32px)', borderRadius: 24, overflow: 'hidden', position: 'relative',
+                    width: '100%', height: '100%', minHeight: 'calc(100vh - 48px)', borderRadius: 24, overflow: 'hidden', position: 'relative',
                     backgroundImage: 'url("https://images.unsplash.com/photo-1668180540678-e6ccd67d1c17?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=1200")',
                     backgroundSize: 'cover', backgroundPosition: 'center',
                 }}>
@@ -164,8 +168,8 @@ export default function PawstayAuthPage() {
                         position: 'absolute', bottom: 24, left: 24, right: 24,
                         backgroundColor: colors.accent, borderRadius: 16, padding: '24px 32px', color: colors.white
                     }}>
-                        <h2 style={{ margin: '0 0 8px 0', fontSize: 24, fontWeight: 800 }}>Good care. Happy pets.<br/>Peace of mind.</h2>
-                        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, opacity: 0.9 }}>
+                        <h2 style={{ margin: '0 0 8px 0', fontSize: 24, fontWeight: 800, color: colors.white }}>Good care. Happy pets.<br/>Peace of mind.</h2>
+                        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, opacity: 0.9, color: colors.white }}>
                             From fresh trims to cozy stays, their next little adventure starts here.
                         </p>
                     </div>
@@ -174,9 +178,9 @@ export default function PawstayAuthPage() {
 
             {/* NỬA PHẢI: FORM */}
             <div style={{ 
-                flex: 1, display: 'flex', flexDirection: 'column', 
-                alignItems: 'center', padding: '16px 8%', boxSizing: 'border-box',
-                overflowY: 'auto', maxHeight: '100vh'
+                width: '100%', maxWidth: 550, flexShrink: 0, display: 'flex', flexDirection: 'column', 
+                alignItems: 'center', padding: 24, boxSizing: 'border-box',
+                overflowY: 'auto', maxHeight: '100vh',
             }}>
                 <div style={{ maxWidth: 400, width: '100%', margin: 'auto 0' }}>
                     
@@ -229,7 +233,7 @@ export default function PawstayAuthPage() {
                                 </div>
 
                                 <Button type="primary" htmlType="submit" loading={loading} block
-                                    style={{ height: 40, borderRadius: 10, background: colors.accent, fontWeight: 700 }}
+                                    style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700 }}
                                 >
                                     Sign In
                                 </Button>
@@ -282,7 +286,7 @@ export default function PawstayAuthPage() {
                                 </Form.Item>
 
                                 <Button type="primary" htmlType="submit" loading={loading} block
-                                    style={{ height: 40, borderRadius: 10, background: colors.accent, fontWeight: 700, marginTop: 8 }}
+                                    style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700, marginTop: 8 }}
                                 >
                                     Create Account
                                 </Button>
@@ -311,7 +315,7 @@ export default function PawstayAuthPage() {
                                 </div>
 
                                 <Button type="primary" loading={loading} disabled={!isOtpComplete} onClick={onOtpSubmit} block
-                                    style={{ height: 40, borderRadius: 10, background: isOtpComplete ? colors.accent : '#d1d5db', fontWeight: 700 }}
+                                    style={{ height: 50, borderRadius: 10, background: isOtpComplete ? colors.accent : '#d1d5db', fontWeight: 700 }}
                                 >
                                     Verify & Activate
                                 </Button>
