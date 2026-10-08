@@ -16,6 +16,8 @@ import AdminRoomTypeFormPage from "@/pages/admin/roomType/RoomTypeFormPage";
 import AdminRoomListPage from "@/pages/admin/room/RoomListPage";
 import AdminRoomFormPage from "@/pages/admin/room/RoomFormPage";
 import StaffDashboardPage from "@/pages/staff/StaffDashboardPage";
+import MyPetsPage from "@/pages/customer/MyPetsPage";
+import PetFormPage from "@/pages/customer/PetFormPage";
 // [new-page:imports]
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -68,6 +70,9 @@ export default function AppRoutes() {
       children: [
         { index: true, element: <HomePage /> },
         ...publicServiceRoutes("/customer"),
+        { path: "pets", element: <MyPetsPage /> },
+        { path: "pets/new", element: <PetFormPage /> },
+        { path: "pets/:id/edit", element: <PetFormPage /> },
         // [new-page:customer]
         notFound,
       ],
