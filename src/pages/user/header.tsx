@@ -25,6 +25,7 @@ const HomeHeader = () => {
         <Dropdown
           menu={{ items: [
             ...(role === ROLE.ADMIN ? [{ key: 'admin', label: 'Admin panel', onClick: () => navigate('/admin') }] : []),
+            { key: 'my-pets', label: 'My Pets', onClick: () => navigate('/my-pets') },
             { key: 'logout', label: 'Sign out', onClick: () => { logout(); navigate('/') } },
           ] }}
         >
