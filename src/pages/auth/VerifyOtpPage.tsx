@@ -1,56 +1,85 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Form, Input, Button, Card, Typography, message } from "antd";
-import { SafetyOutlined } from "@ant-design/icons";
+import { Button, Typography, message } from "antd";
 import { verifyOtp, resendOtp } from "@/api/authApi";
 import { getErrorMessage } from "@/api/client";
+import "./auth.css";
 
 const { Title, Text } = Typography;
 
 export default function VerifyOtpPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const email = searchParams.get("email");
+  const email = new URLSearchParams(location.search).get("email");
 
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    if (!email) {
-      navigate("/register");
-    }
+    if (!email) navigate("/register");
+    else inputRefs.current[0]?.focus();
   }, [email, navigate]);
 
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setCountdown(c => c - 1), 1000);
+      return () => clearTimeout(t);
     }
   }, [countdown]);
 
-  const onFinish = async (values: any) => {
+  const handleChange = (index: number, val: string) => {
+    if (!/^\d*$/.test(val)) return;
+    const newOtp = [...otp];
+    newOtp[index] = val.slice(-1);
+    setOtp(newOtp);
+    if (val && index < 5) inputRefs.current[index + 1]?.focus();
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasted.length === 6) {
+      setOtp(pasted.split(""));
+      inputRefs.current[5]?.focus();
+    }
+    e.preventDefault();
+  };
+
+  const handleSubmit = async () => {
+    const code = otp.join("");
+    if (code.length < 6) { message.warning("Please enter all 6 digits"); return; }
     if (!email) return;
     setLoading(true);
     try {
-      const res = await verifyOtp({ email, otpCode: values.otpCode });
-      message.success(res.message || "Account activated successfully! You can now sign in.");
+      const res = await verifyOtp({ email, otpCode: code });
+      message.success(res.message || "Account activated! Welcome to PetCare.");
       navigate("/login");
     } catch (error: any) {
       message.error(getErrorMessage(error));
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResendOtp = async () => {
+  const handleResend = async () => {
     if (!email) return;
     setResending(true);
     try {
       const res = await resendOtp({ email });
-      message.success(res.message || "A new OTP has been sent to your email.");
-      setCountdown(60); // 60 seconds cooldown
+      message.success(res.message || "New OTP sent to your email.");
+      setCountdown(60);
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
     } catch (error: any) {
       message.error(getErrorMessage(error));
     } finally {
@@ -58,91 +87,79 @@ export default function VerifyOtpPage() {
     }
   };
 
+  const isComplete = otp.every(d => d !== "");
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
-      
-      {/* Left side: Image and Branding */}
-      <div style={{ 
-        flex: 1, 
-        background: '#059669', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        color: 'white', 
-        padding: '40px',
-      }} className="register-banner">
-        <Title level={1} style={{ margin: 0, color: 'white', fontWeight: 'bold', fontSize: '3rem' }}>
-          🐾 PetCare
-        </Title>
-        <p style={{ fontSize: '1.2rem', marginTop: 16, textAlign: 'center', maxWidth: '400px', opacity: 0.9 }}>
-          Just one more step to activate your account and start booking services.
-        </p>
-        <img 
-          src="https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-          alt="Cute Cat" 
-          style={{ 
-            marginTop: 40, 
-            borderRadius: 16, 
-            width: '100%', 
-            maxWidth: 400,
-            aspectRatio: '4/3',
-            objectFit: 'cover', 
-            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' 
-          }} 
+    <div className="auth-shell">
+      {/* ══ LEFT PANEL ══ */}
+      <div className="auth-left">
+        <div className="auth-left-bg-image"
+          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80")' }}
         />
+        <div className="auth-left-overlay" />
+
+        <div className="auth-left-content">
+          <div className="auth-left-logo">
+            🐾 PetCare
+          </div>
+          <p className="auth-left-sub">
+            Just one more step to activate your account and start booking services.
+          </p>
+        </div>
       </div>
 
-      {/* Right side: Form */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '24px' }}>
-        <Card style={{ width: '100%', maxWidth: 450, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)', borderRadius: 12, border: 'none' }}>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Title level={2} style={{ margin: 0, color: '#1e293b' }}>
-              Verify Your Email
-            </Title>
-            <Text type="secondary">We've sent an OTP to <strong>{email}</strong></Text>
+      {/* ══ RIGHT PANEL ══ */}
+      <div className="auth-right">
+        <div className="auth-form-card">
+          <div className="auth-form-header">
+            <Title level={2} className="auth-form-title">📩 Verify Your Email</Title>
+            <Text className="auth-form-subtitle">
+              We sent a 6-digit OTP to<br/>
+              <strong style={{ color: '#111827' }}>{email}</strong>
+            </Text>
           </div>
 
-          <Form
-            name="verify-otp"
-            onFinish={onFinish}
-            layout="vertical"
-            size="large"
-          >
-            <Form.Item
-              name="otpCode"
-              rules={[
-                { required: true, message: 'Please input the OTP code!' },
-                { len: 6, message: 'OTP code must be exactly 6 digits!' }
-              ]}
-            >
-              <Input prefix={<SafetyOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="6-digit OTP Code" maxLength={6} style={{ textAlign: 'center', letterSpacing: '0.5em', fontSize: '1.2rem' }} />
-            </Form.Item>
+          {/* OTP Input Boxes */}
+          <div className="otp-input-row" onPaste={handlePaste}>
+            {otp.map((digit, i) => (
+              <input
+                key={i}
+                ref={el => { inputRefs.current[i] = el; }}
+                className={`otp-box ${digit ? "otp-box--filled" : ""}`}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={e => handleChange(i, e.target.value)}
+                onKeyDown={e => handleKeyDown(i, e)}
+                autoComplete="off"
+              />
+            ))}
+          </div>
 
-            <Form.Item style={{ marginTop: 24, marginBottom: 16 }}>
-              <Button type="primary" htmlType="submit" style={{ width: '100%', background: '#059669', borderColor: '#059669', height: '48px', fontSize: '16px', fontWeight: 600 }} loading={loading}>
-                Verify & Activate
-              </Button>
-            </Form.Item>
-          </Form>
-          
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <Text type="secondary">Didn't receive the code? </Text>
-            <Button 
-              type="link" 
-              onClick={handleResendOtp} 
-              disabled={countdown > 0 || resending}
-              style={{ padding: 0, color: '#059669', fontWeight: 600 }}
-              loading={resending}
-            >
-              {countdown > 0 ? `Resend in ${countdown}s` : 'Resend OTP'}
+          <Button
+            type="primary"
+            className="auth-btn-primary"
+            style={{ marginTop: 24 }}
+            loading={loading}
+            disabled={!isComplete}
+            onClick={handleSubmit}
+            block
+          >
+            Verify & Activate
+          </Button>
+
+          <div className="otp-resend-box">
+            <Text className="auth-footer-text" style={{ marginRight: 8 }}>Didn't receive the code?</Text>
+            <Button type="link" onClick={handleResend} disabled={countdown > 0 || resending} loading={resending} className="auth-link-bold" style={{ padding: 0 }}>
+              {countdown > 0 ? `Resend in ${countdown}s` : "Resend OTP"}
             </Button>
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: 24 }}>
-            <Link to="/login" style={{ color: '#64748b', fontSize: 14 }}>&larr; Back to Login</Link>
+          <div className="auth-footer">
+            <Link to="/login" className="auth-back-link">← Back to Login</Link>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );
