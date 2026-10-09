@@ -11,17 +11,17 @@ const MyPetsPage: React.FC = () => {
   const [pets, setPets] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const customerId = useAuthStore(state => state.user?.id);
 
   const fetchPets = async () => {
     try {
       setLoading(true);
       const res = await petService.getAllPets();
-      const items = res.items || res.result?.items;
-      if (items) {
-        // Filter pets belonging to the logged-in user
-        const myPets = items.filter((p: any) => p.customerId === customerId);
-        setPets(myPets);
+      const items = res.result || res.data || res;
+      // It returns the list directly via my-pets endpoint
+      if (Array.isArray(items)) {
+        setPets(items);
+      } else if (items.items) {
+        setPets(items.items);
       }
     } catch (error) {
       message.error('Failed to load pets');
@@ -31,10 +31,8 @@ const MyPetsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (customerId) {
-      fetchPets();
-    }
-  }, [customerId]);
+    fetchPets();
+  }, []);
 
   const handleDelete = (id: string) => {
     Modal.confirm({
@@ -54,51 +52,48 @@ const MyPetsPage: React.FC = () => {
     });
   };
 
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>;
+  }
+
   return (
-    <div style={{ padding: '24px 48px', maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <div style={{ padding: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <Title level={2} style={{ margin: 0 }}>My Pets</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/customer/pets/new')} size="large" style={{ borderRadius: 8, backgroundColor: '#059669', borderColor: '#059669' }}>
+        <Button type="primary" style={{ backgroundColor: '#059669' }} icon={<PlusOutlined />} onClick={() => navigate('/customer/pets/new')}>
           Add New Pet
         </Button>
       </div>
 
-      {loading && pets.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '50px 0' }}><Spin size="large" /></div>
-      ) : pets.length === 0 ? (
-        <Empty description="You have not added any pets yet." />
+      {pets.length === 0 ? (
+        <Empty description="You haven't added any pets yet." />
       ) : (
-        <Row gutter={[24, 24]}>
+        <Row gutter={[16, 16]}>
           {pets.map(pet => (
-            <Col xs={24} sm={12} md={8} lg={8} key={pet.id}>
+            <Col xs={24} sm={12} md={8} lg={6} key={pet.id}>
               <Card
                 hoverable
-                style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
                 actions={[
-                  <Button type="text" icon={<EditOutlined />} onClick={() => navigate(`/customer/pets/${pet.id}/edit`)}>Edit</Button>,
-                  <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDelete(pet.id)}>Delete</Button>
+                  <EditOutlined key="edit" onClick={() => navigate(`/customer/pets/${pet.id}/edit`)} />,
+                  <DeleteOutlined key="delete" onClick={() => handleDelete(pet.id)} style={{ color: 'red' }} />
                 ]}
               >
-                <div style={{ display: 'flex', gap: 16 }}>
-                  <div style={{
-                    width: 80, height: 80, borderRadius: '50%', backgroundColor: '#f0fdf4',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32
-                  }}>
-                    {pet.species === 'Cat' ? '🐱' : pet.species === 'Dog' ? '🐶' : '🐾'}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <Title level={4} style={{ margin: '0 0 4px 0' }}>{pet.name}</Title>
-                    <Space size={[0, 4]} wrap>
+                <Card.Meta
+                  title={
+                    <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span>{pet.name}</span>
                       <Tag color="blue">{pet.species}</Tag>
-                      <Tag color={pet.gender === 'Female' ? 'magenta' : 'cyan'}>{pet.gender}</Tag>
                     </Space>
-                    <div style={{ marginTop: 12 }}>
-                      <Text type="secondary" style={{ display: 'block' }}>Breed: <Text strong>{pet.breed}</Text></Text>
-                      <Text type="secondary" style={{ display: 'block' }}>Age: <Text strong>{pet.age} years</Text></Text>
-                      <Text type="secondary" style={{ display: 'block' }}>Weight: <Text strong>{pet.weight} kg</Text></Text>
+                  }
+                  description={
+                    <div style={{ marginTop: '10px' }}>
+                      <p><strong>Breed:</strong> {pet.breed || 'N/A'}</p>
+                      <p><strong>Weight:</strong> {pet.weight} kg</p>
+                      <p><strong>Age:</strong> {pet.age ? pet.age + ' years' : 'N/A'}</p>
+                      <p><strong>Status:</strong> {pet.isActive ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>}</p>
                     </div>
-                  </div>
-                </div>
+                  }
+                />
               </Card>
             </Col>
           ))}

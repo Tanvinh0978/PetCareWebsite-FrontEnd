@@ -2,8 +2,7 @@ import axiosClient from './axiosClient';
 
 export const petService = {
   getAllPets: async () => {
-    // Note: The backend doesn't have a GetMyPets endpoint, so we fetch all and filter on frontend
-    return axiosClient.get<any, any>('/api/Pets?PageSize=100');
+    return axiosClient.get<any, any>('/api/Pets/my-pets');
   },
   getPetById: async (id: string) => {
     return axiosClient.get<any, any>(`/api/Pets/${id}`);
