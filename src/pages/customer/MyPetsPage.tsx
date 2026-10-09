@@ -2,30 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { Button, Card, Col, Row, Typography, Space, Modal, message, Spin, Empty, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { IPet } from '@/types/pet.types';
-// import { petService } from '@/services/pet.service';
+import { petService } from '@/services/pet.service';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const { Title, Text } = Typography;
 
 const MyPetsPage: React.FC = () => {
-  const [pets, setPets] = useState<IPet[]>([]);
+  const [pets, setPets] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const customerId = useAuthStore(state => state.user?.id);
 
   const fetchPets = async () => {
     try {
       setLoading(true);
-      // MOCK DATA WITH LOCALSTORAGE:
-      const stored = localStorage.getItem('mock_pets');
-      if (stored) {
-        setPets(JSON.parse(stored));
-      } else {
-        const initialMock = [
-          { id: 1, name: 'Lulu', species: 'Dog', breed: 'Poodle', age: 2, weight: 5, gender: 'Female' },
-          { id: 2, name: 'Mimi', species: 'Cat', breed: 'British Shorthair', age: 1, weight: 3, gender: 'Female' },
-        ];
-        localStorage.setItem('mock_pets', JSON.stringify(initialMock));
-        setPets(initialMock);
+      const res = await petService.getAllPets();
+      const items = res.items || res.result?.items;
+      if (items) {
+        // Filter pets belonging to the logged-in user
+        const myPets = items.filter((p: any) => p.customerId === customerId);
+        setPets(myPets);
       }
     } catch (error) {
       message.error('Failed to load pets');
@@ -35,10 +31,12 @@ const MyPetsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchPets();
-  }, []);
+    if (customerId) {
+      fetchPets();
+    }
+  }, [customerId]);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     Modal.confirm({
       title: 'Are you sure you want to delete this pet?',
       content: 'This action cannot be undone.',
@@ -46,10 +44,8 @@ const MyPetsPage: React.FC = () => {
       okType: 'danger',
       onOk: async () => {
         try {
-          // await petService.deletePet(id);
-          const updatedPets = pets.filter(p => p.id !== id);
-          localStorage.setItem('mock_pets', JSON.stringify(updatedPets));
-          setPets(updatedPets);
+          await petService.deletePet(id);
+          setPets(pets.filter(p => p.id !== id));
           message.success('Pet deleted successfully');
         } catch (error) {
           message.error('Failed to delete pet');
