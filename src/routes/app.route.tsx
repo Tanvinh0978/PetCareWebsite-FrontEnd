@@ -12,6 +12,7 @@ import ServiceListPage from '@/pages/user/services/service.list.page.tsx'
 import ServiceDetailPage from '@/pages/user/services/service.detail.page.tsx'
 import ServiceManagement from '@/pages/admin/service/service.management.tsx'
 import AdminServiceDetail from '@/pages/admin/service/service.detail.tsx'
+import MyPetsPage from '@/pages/customer/MyPetsPage.tsx'
 import { useAuthStore } from '@/store/useAuthStore'
 import { ROLE } from '@/utils/roles'
 
@@ -41,6 +42,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServiceListPage />} />
         <Route path="/services/:id" element={<ServiceDetailPage />} />
+        <Route path="/my-pets" element={<MyPetsPage />} />
         <Route path="/403" element={<ForbiddenPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
