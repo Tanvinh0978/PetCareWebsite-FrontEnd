@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/store/useAuthStore'
 
 // Để trống = gọi qua proxy của Vite. Khi deploy đặt VITE_API_URL.
-export const baseURL: string = import.meta.env.VITE_API_URL ?? '/api'
+export const baseURL: string = import.meta.env.VITE_API_URL ?? ''
 
 const axiosClient = axios.create({
   baseURL,
