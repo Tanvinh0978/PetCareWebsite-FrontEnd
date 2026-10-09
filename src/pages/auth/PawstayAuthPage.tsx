@@ -56,8 +56,9 @@ export default function PawstayAuthPage() {
         setLoading(true);
         try {
             const res = await loginCustomer({ email: values.email, password: values.password });
-            
-            // Save to AuthContext for layout 
+            if (res.result?.customerId) {
+                localStorage.setItem('petcare.customerId', res.result.customerId);
+            }
             signIn("customer");
             
             // Save to Zustand for API token & customer ID
