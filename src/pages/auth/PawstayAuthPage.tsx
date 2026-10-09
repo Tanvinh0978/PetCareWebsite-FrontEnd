@@ -6,6 +6,7 @@ import { loginCustomer, registerCustomer, verifyOtp, resendOtp } from '@/api/aut
 import { useAuth } from "@/auth/AuthContext";
 import { ROLE_BASE } from "@/auth/roles";
 import { getErrorMessage } from "@/api/client";
+import { useAuthStore } from "@/store/useAuthStore";
 import "./auth.css"; // Keep their original CSS for AntD overrides
 
 const { Title, Text } = Typography;
@@ -55,7 +56,19 @@ export default function PawstayAuthPage() {
         setLoading(true);
         try {
             const res = await loginCustomer({ email: values.email, password: values.password });
+            
+            // Save to AuthContext for layout 
             signIn("customer");
+            
+            // Save to Zustand for API token & customer ID
+            useAuthStore.getState().setAuth(res.result.token, {
+                id: res.result.customerId,
+                login: res.result.email,
+                name: res.result.fullName,
+                email: res.result.email,
+                role: "customer"
+            });
+            
             const userName = res.result?.fullName || "there";
             message.success(`Hello, ${userName}! Welcome back.`);
             navigate(ROLE_BASE["customer"] || "/");

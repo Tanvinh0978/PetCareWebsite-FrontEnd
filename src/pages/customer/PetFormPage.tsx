@@ -1,12 +1,15 @@
 import React, { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { message } from 'antd';
 import { getApiErrorMessage } from '@/utils/apiError';
-import { IPet } from '@/types/pet.types';
+import { petService } from '@/services/pet.service';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const PetFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const editing = Boolean(id);
+  const customerId = useAuthStore(state => state.user?.id);
 
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
@@ -14,7 +17,7 @@ const PetFormPage: React.FC = () => {
 
   // Form states
   const [name, setName] = useState('');
-  const [species, setSpecies] = useState('Dog');
+  const [species, setSpecies] = useState('Dog'); // Assuming Dog=1, Cat=2 etc in backend Enum, but sending string works if backend binds correctly
   const [breed, setBreed] = useState('');
   const [gender, setGender] = useState('Unknown');
   const [age, setAge] = useState<string>('');
@@ -25,24 +28,22 @@ const PetFormPage: React.FC = () => {
     if (!id) return;
     
     setLoading(true);
-    // Load from localStorage mock
-    setTimeout(() => {
-      const stored = localStorage.getItem('mock_pets');
-      if (stored) {
-        const pets: IPet[] = JSON.parse(stored);
-        const pet = pets.find(p => p.id.toString() === id);
-        if (pet) {
-          setName(pet.name);
-          setSpecies(pet.species);
-          setBreed(pet.breed);
-          setGender(pet.gender);
-          setAge(pet.age.toString());
-          setWeight(pet.weight.toString());
-          setNotes(pet.notes || '');
+    petService.getPetById(id)
+      .then((res) => {
+        if (res.isSuccess && res.result) {
+          setName(res.result.name);
+          setSpecies(res.result.species);
+          setBreed(res.result.breed || '');
+          // setGender(res.result.gender); // Backend doesn't support gender right now
+          setAge(res.result.age?.toString() || '');
+          setWeight(res.result.weight?.toString() || '');
+          setNotes(res.result.healthNotes || '');
+        } else {
+          setError(res.message || 'Failed to load pet details');
         }
-      }
-      setLoading(false);
-    }, 300);
+      })
+      .catch((err) => setError(getApiErrorMessage(err)))
+      .finally(() => setLoading(false));
   }, [id, editing]);
 
   const onSubmit = async (e: FormEvent) => {
@@ -51,7 +52,6 @@ const PetFormPage: React.FC = () => {
 
     setSaving(true);
     try {
-      // Giả lập backend chặn lỗi khi người dùng cố tình nhập chữ
       const parsedAge = Number(age);
       const parsedWeight = Number(weight);
 
@@ -67,33 +67,36 @@ const PetFormPage: React.FC = () => {
       if (parsedAge < 0 || parsedWeight < 0) {
         throw new Error("Age and Weight cannot be negative.");
       }
+      
+      if (!customerId) {
+         throw new Error("You must be logged in to add a pet.");
+      }
 
-      const payload: IPet = {
-        id: editing ? Number(id) : Date.now(),
+      // Map string species to integer enum for backend
+      // PetSpecies: Dog = 0, Cat = 1
+      let speciesEnum = 0;
+      if (species === 'Cat') speciesEnum = 1;
+
+      const payload = {
+        customerId: customerId,
         name: name.trim(),
-        species,
+        species: speciesEnum,
         breed: breed.trim(),
-        gender,
+        // gender: gender, // backend doesn't support gender
         age: parsedAge,
         weight: parsedWeight,
-        notes: notes.trim()
+        healthNotes: notes.trim()
       };
 
-      // Save to localStorage mock
-      const stored = localStorage.getItem('mock_pets');
-      let pets: IPet[] = stored ? JSON.parse(stored) : [];
-      
       if (editing) {
-        pets = pets.map(p => p.id === payload.id ? payload : p);
+        await petService.updatePet(id!, payload);
+        message.success('Pet updated successfully!');
       } else {
-        pets.push(payload);
+        await petService.createPet(payload);
+        message.success('Pet added successfully!');
       }
-      
-      localStorage.setItem('mock_pets', JSON.stringify(pets));
 
-      setTimeout(() => {
-        navigate('/customer/pets');
-      }, 300);
+      navigate('/customer/pets');
     } catch (err) {
       setError(getApiErrorMessage(err));
       setSaving(false);
@@ -134,8 +137,6 @@ const PetFormPage: React.FC = () => {
             <select value={species} onChange={(e) => setSpecies(e.target.value)} style={inputStyle}>
               <option value="Dog">Dog</option>
               <option value="Cat">Cat</option>
-              <option value="Bird">Bird</option>
-              <option value="Other">Other</option>
             </select>
           </label>
         </div>

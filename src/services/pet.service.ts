@@ -1,17 +1,20 @@
 import axiosClient from './axiosClient';
-import { IPet } from '../types/pet.types';
 
 export const petService = {
-  getMyPets: async () => {
-    return axiosClient.get<IBackendRes<IPet[]>>('/pets/my-pets');
+  getAllPets: async () => {
+    // Note: The backend doesn't have a GetMyPets endpoint, so we fetch all and filter on frontend
+    return axiosClient.get<any, any>('/api/Pets?PageSize=100');
   },
-  createPet: async (data: Omit<IPet, 'id'>) => {
-    return axiosClient.post<IBackendRes<IPet>>('/pets', data);
+  getPetById: async (id: string) => {
+    return axiosClient.get<any, any>(`/api/Pets/${id}`);
   },
-  updatePet: async (id: number, data: Partial<IPet>) => {
-    return axiosClient.put<IBackendRes<IPet>>(/pets/, data);
+  createPet: async (data: any) => {
+    return axiosClient.post<any, any>('/api/Pets', data);
   },
-  deletePet: async (id: number) => {
-    return axiosClient.delete<IBackendRes<boolean>>(/pets/);
+  updatePet: async (id: string, data: any) => {
+    return axiosClient.put<any, any>(`/api/Pets/${id}`, data);
+  },
+  deletePet: async (id: string) => {
+    return axiosClient.delete<any, any>(`/api/Pets/${id}`);
   },
 };
