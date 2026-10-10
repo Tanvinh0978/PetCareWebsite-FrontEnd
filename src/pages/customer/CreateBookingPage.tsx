@@ -43,7 +43,19 @@ const CreateBookingPage: React.FC = () => {
       ]);
       const petsList = (petsRes as any).result || (petsRes as any).data || petsRes;
       setPets(Array.isArray(petsList) ? petsList : (petsList.items || []));
-      setServices(servicesData);
+      
+      // Fetch details (with prices) for all active services
+      const servicesWithDetails = await Promise.all(
+        servicesData.map(async (srv) => {
+          try {
+            const detailRes: any = await serviceService.fetchById(srv.id);
+            return detailRes.result || detailRes.data || detailRes;
+          } catch {
+            return srv;
+          }
+        })
+      );
+      setServices(servicesWithDetails);
     } catch (error) {
       message.error('Failed to load pets or services');
     } finally {
