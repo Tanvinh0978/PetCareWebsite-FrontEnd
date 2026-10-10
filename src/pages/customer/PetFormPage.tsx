@@ -29,6 +29,7 @@ const PetFormPage: React.FC = () => {
     
     setLoading(true);
     petService.fetchById(id)
+<<<<<<< HEAD
       .then((pet) => {
         setName(pet.name);
         setSpecies(pet.species as string);
@@ -38,6 +39,23 @@ const PetFormPage: React.FC = () => {
         setNotes(pet.healthNotes || '');
       })
       .catch((err: unknown) => setError(getApiErrorMessage(err)))
+=======
+      .then((res: any) => {
+        const result = res.result || res.data || res;
+        if (result) {
+          setName(result.name);
+          setSpecies(result.species === 1 ? 'Cat' : 'Dog');
+          setBreed(result.breed || '');
+          // setGender(res.result.gender); // Backend doesn't support gender right now
+          setAge(result.age?.toString() || '');
+          setWeight(result.weight?.toString() || '');
+          setNotes(result.healthNotes || '');
+        } else {
+          setError(res.message || 'Failed to load pet details');
+        }
+      })
+      .catch((err: any) => setError(getApiErrorMessage(err)))
+>>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
       .finally(() => setLoading(false));
   }, [id, editing]);
 
@@ -83,10 +101,17 @@ const PetFormPage: React.FC = () => {
       };
 
       if (editing) {
+<<<<<<< HEAD
         await petService.update(id!, payload);
         message.success('Pet updated successfully!');
       } else {
         await petService.create(payload);
+=======
+        await petService.update(id!, payload as any);
+        message.success('Pet updated successfully!');
+      } else {
+        await petService.create(payload as any);
+>>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
         message.success('Pet added successfully!');
       }
 
