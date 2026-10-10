@@ -28,21 +28,16 @@ const PetFormPage: React.FC = () => {
     if (!id) return;
     
     setLoading(true);
-    petService.getPetById(id)
-      .then((res) => {
-        if (res.isSuccess && res.result) {
-          setName(res.result.name);
-          setSpecies(res.result.species);
-          setBreed(res.result.breed || '');
-          // setGender(res.result.gender); // Backend doesn't support gender right now
-          setAge(res.result.age?.toString() || '');
-          setWeight(res.result.weight?.toString() || '');
-          setNotes(res.result.healthNotes || '');
-        } else {
-          setError(res.message || 'Failed to load pet details');
-        }
+    petService.fetchById(id)
+      .then((pet) => {
+        setName(pet.name);
+        setSpecies(pet.species as string);
+        setBreed(pet.breed || '');
+        setAge(pet.age?.toString() || '');
+        setWeight(pet.weight?.toString() || '');
+        setNotes(pet.healthNotes || '');
       })
-      .catch((err) => setError(getApiErrorMessage(err)))
+      .catch((err: unknown) => setError(getApiErrorMessage(err)))
       .finally(() => setLoading(false));
   }, [id, editing]);
 
@@ -82,17 +77,16 @@ const PetFormPage: React.FC = () => {
         name: name.trim(),
         species: speciesEnum,
         breed: breed.trim(),
-        // gender: gender, // backend doesn't support gender
         age: parsedAge,
         weight: parsedWeight,
         healthNotes: notes.trim()
       };
 
       if (editing) {
-        await petService.updatePet(id!, payload);
+        await petService.update(id!, payload);
         message.success('Pet updated successfully!');
       } else {
-        await petService.createPet(payload);
+        await petService.create(payload);
         message.success('Pet added successfully!');
       }
 

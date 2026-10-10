@@ -24,6 +24,8 @@ import CustomerPetListPage from "@/pages/customer/pet/CustomerPetListPage";
 import CustomerPetFormPage from "@/pages/customer/pet/CustomerPetFormPage";
 import AdminStaffListPage from "@/pages/admin/staff/StaffListPage";
 import AdminStaffFormPage from "@/pages/admin/staff/StaffFormPage";
+import AdminVoucherListPage from "@/pages/admin/voucher/VoucherListPage";
+import AdminVoucherFormPage from "@/pages/admin/voucher/VoucherFormPage";
 // [new-page:imports]
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -63,6 +65,9 @@ export default function AppRoutes() {
         { path: "staff", element: <AdminStaffListPage /> },
         { path: "staff/new", element: <AdminStaffFormPage /> },
         { path: "staff/:id/edit", element: <AdminStaffFormPage /> },
+        { path: "vouchers", element: <AdminVoucherListPage /> },
+        { path: "vouchers/new", element: <AdminVoucherFormPage /> },
+        { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
         // [new-page:admin]
         notFound,
       ],
