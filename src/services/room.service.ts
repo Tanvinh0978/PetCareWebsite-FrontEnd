@@ -44,6 +44,11 @@ export const roomService = {
     return axiosClient.patch<IBackendRes<string>, IBackendRes<string>>(`/api/rooms/${id}/status`, { status })
   },
 
+  // Check availability
+  checkAvailability: (params: { serviceId?: string; month?: number; year?: number }) => {
+    return get<any>('/api/rooms/check-availability', params)
+  },
+
   // Delete room
   delete: (id: string) => {
     return axiosClient.delete<IBackendRes<string>, IBackendRes<string>>(`/api/rooms/${id}`)

@@ -8,6 +8,7 @@ export const NAV: Record<Role, NavItem[]> = {
   customer: [
     { label: "Services", to: "services" },
     { label: "My Pets", to: "pets" },
+    { label: "Book Now", to: "booking" },
     // [new-page:nav-customer]
   ],
   staff: [

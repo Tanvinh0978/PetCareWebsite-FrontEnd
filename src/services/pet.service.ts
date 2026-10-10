@@ -32,6 +32,11 @@ export const petService = {
     }
   },
 
+  getMyPets: async (): Promise<PetDTO[]> => {
+    const res: any = await axiosClient.get('/api/Pets/my-pets')
+    return res?.result ?? res ?? []
+  },
+
   fetchById: async (id: string): Promise<PetDTO> => {
     const res: any = await axiosClient.get(`/api/Pets/${id}`)
     return res?.result ?? res

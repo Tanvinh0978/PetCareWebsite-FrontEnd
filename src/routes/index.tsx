@@ -24,6 +24,9 @@ import CustomerPetListPage from "@/pages/customer/pet/CustomerPetListPage";
 import CustomerPetFormPage from "@/pages/customer/pet/CustomerPetFormPage";
 import AdminStaffListPage from "@/pages/admin/staff/StaffListPage";
 import AdminStaffFormPage from "@/pages/admin/staff/StaffFormPage";
+import CreateBookingPage from "@/pages/customer/CreateBookingPage";
+import MyPetsPage from "@/pages/customer/MyPetsPage";
+import PetFormPage from "@/pages/customer/PetFormPage";
 // [new-page:imports]
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -85,9 +88,10 @@ export default function AppRoutes() {
       children: [
         { index: true, element: <HomePage /> },
         ...publicServiceRoutes("/customer"),
-        { path: "pets", element: <CustomerPetListPage /> },
-        { path: "pets/new", element: <CustomerPetFormPage /> },
-        { path: "pets/:id/edit", element: <CustomerPetFormPage /> },
+        { path: "pets", element: <MyPetsPage /> },
+        { path: "pets/new", element: <PetFormPage /> },
+        { path: "pets/:id/edit", element: <PetFormPage /> },
+        { path: "booking", element: <CreateBookingPage /> },
         // [new-page:customer]
         notFound,
       ],
