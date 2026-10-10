@@ -90,9 +90,10 @@ export default function AppRoutes() {
       children: [
         { index: true, element: <HomePage /> },
         ...publicServiceRoutes("/customer"),
-        { path: "pets", element: <CustomerPetListPage /> },
-        { path: "pets/new", element: <CustomerPetFormPage /> },
-        { path: "pets/:id/edit", element: <CustomerPetFormPage /> },
+        { path: "pets", element: <MyPetsPage /> },
+        { path: "pets/new", element: <PetFormPage /> },
+        { path: "pets/:id/edit", element: <PetFormPage /> },
+        { path: "booking", element: <CreateBookingPage /> },
         // [new-page:customer]
         notFound,
       ],
