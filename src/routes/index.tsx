@@ -16,6 +16,16 @@ import AdminRoomTypeFormPage from "@/pages/admin/roomType/RoomTypeFormPage";
 import AdminRoomListPage from "@/pages/admin/room/RoomListPage";
 import AdminRoomFormPage from "@/pages/admin/room/RoomFormPage";
 import StaffDashboardPage from "@/pages/staff/StaffDashboardPage";
+import AdminPetListPage from "@/pages/admin/pet/PetListPage";
+import AdminPetFormPage from "@/pages/admin/pet/PetFormPage";
+import StaffPetListPage from "@/pages/staff/pet/StaffPetListPage";
+import StaffPetFormPage from "@/pages/staff/pet/StaffPetFormPage";
+import CustomerPetListPage from "@/pages/customer/pet/CustomerPetListPage";
+import CustomerPetFormPage from "@/pages/customer/pet/CustomerPetFormPage";
+import AdminStaffListPage from "@/pages/admin/staff/StaffListPage";
+import AdminStaffFormPage from "@/pages/admin/staff/StaffFormPage";
+import AdminVoucherListPage from "@/pages/admin/voucher/VoucherListPage";
+import AdminVoucherFormPage from "@/pages/admin/voucher/VoucherFormPage";
 // [new-page:imports]
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -49,6 +59,15 @@ export default function AppRoutes() {
         { path: "rooms", element: <AdminRoomListPage /> },
         { path: "rooms/new", element: <AdminRoomFormPage /> },
         { path: "rooms/:id/edit", element: <AdminRoomFormPage /> },
+        { path: "pets", element: <AdminPetListPage /> },
+        { path: "pets/new", element: <AdminPetFormPage /> },
+        { path: "pets/:id/edit", element: <AdminPetFormPage /> },
+        { path: "staff", element: <AdminStaffListPage /> },
+        { path: "staff/new", element: <AdminStaffFormPage /> },
+        { path: "staff/:id/edit", element: <AdminStaffFormPage /> },
+        { path: "vouchers", element: <AdminVoucherListPage /> },
+        { path: "vouchers/new", element: <AdminVoucherFormPage /> },
+        { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
         // [new-page:admin]
         notFound,
       ],
@@ -58,6 +77,9 @@ export default function AppRoutes() {
       element: <RequireRole role="staff"><Layout role="staff" /></RequireRole>,
       children: [
         { index: true, element: <StaffDashboardPage /> },
+        { path: "pets", element: <StaffPetListPage /> },
+        { path: "pets/new", element: <StaffPetFormPage /> },
+        { path: "pets/:id/edit", element: <StaffPetFormPage /> },
         // [new-page:staff]
         notFound,
       ],
@@ -68,6 +90,10 @@ export default function AppRoutes() {
       children: [
         { index: true, element: <HomePage /> },
         ...publicServiceRoutes("/customer"),
+        { path: "pets", element: <MyPetsPage /> },
+        { path: "pets/new", element: <PetFormPage /> },
+        { path: "pets/:id/edit", element: <PetFormPage /> },
+        { path: "booking", element: <CreateBookingPage /> },
         // [new-page:customer]
         notFound,
       ],

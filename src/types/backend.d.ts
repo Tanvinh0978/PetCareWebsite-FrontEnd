@@ -17,7 +17,7 @@ declare global {
     hasNextPage: boolean
   }
   interface IUser {
-    id: number
+    id: string
     login: string
     name?: string
     email?: string

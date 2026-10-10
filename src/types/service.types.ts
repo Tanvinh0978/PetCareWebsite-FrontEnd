@@ -34,6 +34,9 @@ export interface ServiceDTO {
   description?: string
   serviceType: ServiceTypeType | string
   isActive: boolean
+  roomTypeId?: string
+  roomTypeName?: string
+  prices?: ServicePriceDTO[]
 }
 
 export interface ServicePriceDTO {

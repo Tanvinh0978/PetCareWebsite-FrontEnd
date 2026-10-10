@@ -19,6 +19,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await loginCustomer({ email: values.email, password: values.password });
+      if (res.result?.customerId) {
+        localStorage.setItem('petcare.customerId', res.result.customerId);
+      }
       signIn("customer");
       const userName = res.result?.fullName || "there";
       message.success(`Hello, ${userName}! Welcome back.`);
