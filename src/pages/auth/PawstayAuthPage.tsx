@@ -1,8 +1,8 @@
 import React, { useState, useId, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Checkbox, message, Typography } from "antd";
+import { Form, Input, Button, Checkbox, message, Typography, Segmented } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined, EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { loginCustomer, registerCustomer, verifyOtp, resendOtp } from '@/api/authApi';
+import { loginCustomer, loginStaff, registerCustomer, verifyOtp, resendOtp } from '@/api/authApi';
 import { useAuth } from "@/auth/AuthContext";
 import { ROLE_BASE } from "@/auth/roles";
 import { getErrorMessage } from "@/api/client";
@@ -24,6 +24,7 @@ export default function PawstayAuthPage() {
     };
 
     const [view, setView] = useState<AuthState>(getInitialView());
+    const [loginType, setLoginType] = useState<'customer' | 'staff'>('customer');
     const [loading, setLoading] = useState(false);
     
     // OTP states
@@ -55,24 +56,47 @@ export default function PawstayAuthPage() {
     const onLoginFinish = async (values: any) => {
         setLoading(true);
         try {
-            const res = await loginCustomer({ email: values.email, password: values.password });
-            if (res.result?.customerId) {
-                localStorage.setItem('petcare.customerId', res.result.customerId);
+            if (loginType === 'customer') {
+                const res = await loginCustomer({ email: values.email, password: values.password });
+                if (res.result?.customerId) {
+                    localStorage.setItem('petcare.customerId', res.result.customerId);
+                }
+                signIn("customer");
+                
+                // Save to Zustand for API token & customer ID
+                useAuthStore.getState().setAuth(res.result.token, {
+                    id: res.result.customerId,
+                    login: res.result.email,
+                    name: res.result.fullName,
+                    email: res.result.email,
+                    role: "customer"
+                });
+                
+                const userName = res.result?.fullName || "there";
+                message.success(`Hello, ${userName}! Welcome back.`);
+                navigate(ROLE_BASE["customer"] || "/");
+            } else {
+                const res = await loginStaff({ email: values.email, password: values.password });
+                
+                const rolesArray = res.result?.roles || [];
+                const isAdmin = rolesArray.some((r: string) => r.toLowerCase() === 'admin');
+                const role = isAdmin ? 'admin' : 'staff';
+                
+                signIn(role);
+                
+                // Save to Zustand 
+                useAuthStore.getState().setAuth(res.result.token, {
+                    id: res.result.staffId || res.result.id,
+                    login: res.result.email,
+                    name: res.result.fullName,
+                    email: res.result.email,
+                    role: role
+                });
+                
+                const userName = res.result?.fullName || "there";
+                message.success(`Welcome back to the portal, ${userName}!`);
+                navigate(ROLE_BASE[role as 'admin' | 'staff'] || `/${role}`);
             }
-            signIn("customer");
-            
-            // Save to Zustand for API token & customer ID
-            useAuthStore.getState().setAuth(res.result.token, {
-                id: res.result.customerId,
-                login: res.result.email,
-                name: res.result.fullName,
-                email: res.result.email,
-                role: "customer"
-            });
-            
-            const userName = res.result?.fullName || "there";
-            message.success(`Hello, ${userName}! Welcome back.`);
-            navigate(ROLE_BASE["customer"] || "/");
         } catch (error: any) {
             message.error(getErrorMessage(error));
         } finally {
@@ -224,34 +248,88 @@ export default function PawstayAuthPage() {
                         borderRadius: 16, padding: 20, boxSizing: 'border-box'
                     }}>
                         {view === 'login' && (
-                            <Form name="login" onFinish={onLoginFinish} layout="vertical" requiredMark={false}>
-                                <Form.Item name="email" label={<span style={{color: colors.accent, fontWeight: 700}}>Email address</span>}
-                                    rules={[{ required: true, message: 'Email is required' }, { type: 'email', message: 'Invalid email' }]}
-                                >
-                                    <Input className="auth-input" prefix={<MailOutlined className="auth-input-icon" />} placeholder="you@example.com" />
-                                </Form.Item>
-
-                                <Form.Item name="password" label={<span style={{color: colors.accent, fontWeight: 700}}>Password</span>}
-                                    rules={[{ required: true, message: 'Password is required' }]}
-                                >
-                                    <Input.Password className="auth-input" prefix={<LockOutlined className="auth-input-icon" />} placeholder="Enter your password"
-                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
-                                    />
-                                </Form.Item>
-
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                    <Form.Item name="remember" valuePropName="checked" noStyle>
-                                        <Checkbox style={{color: colors.textMuted}}>Remember me</Checkbox>
-                                    </Form.Item>
-                                    <a href="#" style={{ color: colors.accent, fontSize: 13, fontWeight: 700 }}>Forgot password?</a>
+                            <>
+                                <div style={{ 
+                                    display: 'flex', 
+                                    marginBottom: 24, 
+                                    background: 'rgba(36, 76, 60, 0.08)', 
+                                    borderRadius: 100, 
+                                    padding: 4,
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                    border: `1px solid rgba(36, 76, 60, 0.1)`
+                                }}>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setLoginType('customer')}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px 16px',
+                                            border: 'none',
+                                            borderRadius: 100,
+                                            background: loginType === 'customer' ? colors.accent : 'transparent',
+                                            color: loginType === 'customer' ? colors.white : colors.accent,
+                                            fontWeight: 700,
+                                            fontSize: 14,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            boxShadow: loginType === 'customer' ? '0 4px 12px rgba(36, 76, 60, 0.3)' : 'none',
+                                            opacity: loginType === 'customer' ? 1 : 0.7
+                                        }}
+                                    >
+                                        Customer
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setLoginType('staff')}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px 16px',
+                                            border: 'none',
+                                            borderRadius: 100,
+                                            background: loginType === 'staff' ? colors.accent : 'transparent',
+                                            color: loginType === 'staff' ? colors.white : colors.accent,
+                                            fontWeight: 700,
+                                            fontSize: 14,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            boxShadow: loginType === 'staff' ? '0 4px 12px rgba(36, 76, 60, 0.3)' : 'none',
+                                            opacity: loginType === 'staff' ? 1 : 0.7
+                                        }}
+                                    >
+                                        Staff & Admin
+                                    </button>
                                 </div>
+                                <Form name="login" onFinish={onLoginFinish} layout="vertical" requiredMark={false}>
+                                    <Form.Item name="email" label={<span style={{color: colors.accent, fontWeight: 700}}>Email address</span>}
+                                        normalize={(value) => value?.trim()}
+                                        rules={[{ required: true, message: 'Email is required' }, { type: 'email', message: 'Invalid email' }]}
+                                    >
+                                        <Input className="auth-input" prefix={<MailOutlined className="auth-input-icon" />} placeholder="you@example.com" />
+                                    </Form.Item>
 
-                                <Button type="primary" htmlType="submit" loading={loading} block
-                                    style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700 }}
-                                >
-                                    Sign In
-                                </Button>
-                            </Form>
+                                    <Form.Item name="password" label={<span style={{color: colors.accent, fontWeight: 700}}>Password</span>}
+                                        rules={[{ required: true, message: 'Password is required' }]}
+                                    >
+                                        <Input.Password className="auth-input" prefix={<LockOutlined className="auth-input-icon" />} placeholder="Enter your password"
+                                            iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
+                                        />
+                                    </Form.Item>
+
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                                        <Form.Item name="remember" valuePropName="checked" noStyle>
+                                            <Checkbox style={{color: colors.textMuted}}>Remember me</Checkbox>
+                                        </Form.Item>
+                                        <a href="#" style={{ color: colors.accent, fontSize: 13, fontWeight: 700 }}>Forgot password?</a>
+                                    </div>
+
+                                    <Button type="primary" htmlType="submit" loading={loading} block
+                                        style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700, fontSize: 14 }}
+                                    >
+                                        Sign In
+                                    </Button>
+                                </Form>
+                            </>
                         )}
 
                         {view === 'register' && (
@@ -263,6 +341,7 @@ export default function PawstayAuthPage() {
                                 </Form.Item>
 
                                 <Form.Item name="email" label={<span style={{color: colors.accent, fontWeight: 700}}>Email address</span>}
+                                    normalize={(value) => value?.trim()}
                                     rules={[{ required: true, message: 'Email is required' }, { type: 'email', message: 'Invalid email format' }]}
                                 >
                                     <Input className="auth-input" prefix={<MailOutlined className="auth-input-icon" />} placeholder="you@example.com" />
