@@ -494,24 +494,24 @@ const CreateBookingPage: React.FC = () => {
       title: 'Schedule',
       content: (
         <div className="step-container fade-in">
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>Select Schedule</Title>
-            <Text type="secondary" style={{ fontSize: '16px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+            <Title level={3} style={{ color: '#1e293b', margin: '0 0 8px 0' }}>Select Schedule</Title>
+            <Text type="secondary" style={{ fontSize: '15px' }}>
               Please select the date and time for the {bookingType === 'Grooming' ? 'spa visit' : 'hotel stay'}
             </Text>
           </div>
 
-          <div style={{ maxWidth: '600px', margin: '0 auto', background: '#fff', padding: '32px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-            <div style={{ textAlign: 'center', marginBottom: '24px', fontSize: '48px', color: '#10b981' }}>
+          <div style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '12px', fontSize: '36px', color: '#10b981' }}>
               <CalendarOutlined />
             </div>
             
             {bookingType === 'Grooming' && (
-              <div style={{ marginBottom: '24px' }}>
-                <Title level={5}>Grooming Appointment:</Title>
-                <Form.Item name="groomingDate" rules={[{ required: true, message: 'Please select a date and time' }]}>
+              <div style={{ marginBottom: '0' }}>
+                <Title level={5} style={{ margin: '0 0 8px 0' }}>Grooming Appointment:</Title>
+                <Form.Item name="groomingDate" rules={[{ required: true, message: 'Please select a date and time' }]} style={{ marginBottom: '16px' }}>
                   <DatePicker 
-                    style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px' }} 
+                    style={{ width: '100%', padding: '10px', fontSize: '15px', borderRadius: '8px' }} 
                     showTime={{ format: 'HH:mm', minuteStep: 15 }} 
                     format="MMM DD, YYYY - HH:mm" 
                     disabledDate={(current) => current && current < dayjs().startOf('day')}
@@ -523,12 +523,12 @@ const CreateBookingPage: React.FC = () => {
             )}
 
             {bookingType === 'Boarding' && (
-              <div>
-                <Title level={5}>Boarding Appointment:</Title>
-                <Form.Item name="boardingDateRange" rules={[{ required: true, message: 'Please select check-in and check-out dates' }]}>
+              <div style={{ marginBottom: '0' }}>
+                <Title level={5} style={{ margin: '0 0 8px 0' }}>Boarding Appointment:</Title>
+                <Form.Item name="boardingDateRange" rules={[{ required: true, message: 'Please select check-in and check-out dates' }]} style={{ marginBottom: '16px' }}>
                   <RangePicker 
                     disabledDate={disabledDate} 
-                    style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px' }} 
+                    style={{ width: '100%', padding: '10px', fontSize: '15px', borderRadius: '8px' }} 
                     showTime={{ format: 'HH:mm' }} 
                     format="MMM DD, YYYY HH:mm"
                     size="large"
@@ -538,7 +538,7 @@ const CreateBookingPage: React.FC = () => {
               </div>
             )}
 
-            <div style={{ marginTop: '16px', background: '#f8fafc', padding: '12px', borderRadius: '8px', display: 'flex', gap: '8px', color: '#64748b', fontSize: '13px' }}>
+            <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', display: 'flex', gap: '8px', color: '#64748b', fontSize: '13px' }}>
               <InfoCircleOutlined style={{ marginTop: '3px' }} />
               <span>Please arrive 10 minutes before your appointment.</span>
             </div>
