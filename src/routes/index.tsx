@@ -26,6 +26,9 @@ import AdminStaffListPage from "@/pages/admin/staff/StaffListPage";
 import AdminStaffFormPage from "@/pages/admin/staff/StaffFormPage";
 import AdminVoucherListPage from "@/pages/admin/voucher/VoucherListPage";
 import AdminVoucherFormPage from "@/pages/admin/voucher/VoucherFormPage";
+import MyPetsPage from "@/pages/customer/MyPetsPage";
+import PetFormPage from "@/pages/customer/PetFormPage";
+import CreateBookingPage from "@/pages/customer/CreateBookingPage";
 // [new-page:imports]
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };

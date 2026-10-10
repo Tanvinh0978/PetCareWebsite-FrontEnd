@@ -15,8 +15,9 @@ const MyPetsPage: React.FC = () => {
   const fetchPets = async () => {
     try {
       setLoading(true);
-      const items = await petService.fetchWithPagination({ pageSize: 100 });
-      setPets(items.items ?? []);
+      // Chỉ lấy các bé thú cưng đang Active (những bé đã xóa mềm/Inactive sẽ bị ẩn đi)
+      const items = await petService.fetchMyPets(true);
+      setPets(items ?? []);
     } catch (error) {
       message.error('Failed to load pets');
     } finally {

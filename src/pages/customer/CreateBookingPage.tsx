@@ -41,7 +41,7 @@ const CreateBookingPage: React.FC = () => {
     try {
       setLoading(true);
       const [petsRes, servicesData] = await Promise.all([
-        petService.getMyPets(),
+        petService.fetchMyPets(true),
         serviceService.fetchActive()
       ]);
       const petsList = (petsRes as any).result || (petsRes as any).data || petsRes;
@@ -324,14 +324,14 @@ const CreateBookingPage: React.FC = () => {
                   const isSelected = selectedPetIds.includes(pet.id);
                   const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
                   return (
-                    <Col xs={24} sm={12} md={8} key={pet.id}>
+                    <Col xs={12} sm={8} md={6} key={pet.id}>
                       <div 
                         onClick={() => handleTogglePet(pet.id)}
                         style={{
                           background: isSelected ? '#ecfdf5' : '#fff',
                           border: `2px solid ${isSelected ? '#10b981' : '#e2e8f0'}`,
                           borderRadius: '16px',
-                          padding: '20px',
+                          padding: '12px',
                           cursor: 'pointer',
                           transition: 'all 0.3s ease',
                           textAlign: 'center',
@@ -340,8 +340,8 @@ const CreateBookingPage: React.FC = () => {
                         }}
                       >
                         {isSelected && <CheckCircleFilled style={{ position: 'absolute', top: 12, right: 12, fontSize: '20px', color: '#10b981' }} />}
-                        <div style={{ fontSize: '50px', marginBottom: '10px' }}>{isCat ? '🐱' : '🐶'}</div>
-                        <Title level={4} style={{ margin: 0, color: isSelected ? '#065f46' : '#1e293b' }}>{pet.name}</Title>
+                        <div style={{ fontSize: '36px', marginBottom: '10px' }}>{isCat ? '🐱' : '🐶'}</div>
+                        <Title level={5} style={{ margin: 0, color: isSelected ? '#065f46' : '#1e293b' }}>{pet.name}</Title>
                         <Tag color={isCat ? 'purple' : 'blue'} style={{ marginTop: '8px', borderRadius: '12px' }}>
                           {pet.weight} kg
                         </Tag>
@@ -501,7 +501,7 @@ const CreateBookingPage: React.FC = () => {
             </Text>
           </div>
 
-          <div style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+          <div style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
             <div style={{ textAlign: 'center', marginBottom: '12px', fontSize: '36px', color: '#10b981' }}>
               <CalendarOutlined />
             </div>
@@ -551,7 +551,7 @@ const CreateBookingPage: React.FC = () => {
       content: (
         <div className="step-container fade-in">
           <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-            <Title level={4} style={{ color: '#1e293b', margin: 0 }}>Confirm & Summary</Title>
+            <Title level={5} style={{ color: '#1e293b', margin: 0 }}>Confirm & Summary</Title>
             <Text type="secondary" style={{ fontSize: '14px' }}>Double check your booking details</Text>
           </div>
 
