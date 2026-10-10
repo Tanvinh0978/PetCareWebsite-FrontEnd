@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Steps, Form, DatePicker, Input, Button, Card, Typography, Spin, message, Row, Col, Divider, Tag, Empty } from 'antd';
-import { CalendarOutlined, CheckCircleFilled, GiftOutlined, ClockCircleOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined } from '@ant-design/icons';
+import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio } from 'antd';
+import { CalendarOutlined, CheckCircleFilled, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { petService } from '@/services/pet.service';
 import { serviceService } from '@/services/service.service';
-import { bookingService, CreateBookingPayload } from '@/services/booking.service';
+import { bookingService } from '@/services/booking.service';
 import { roomService } from '@/services/room.service';
 import type { ServiceDTO } from '@/types/service.types';
 
@@ -18,17 +18,16 @@ const CreateBookingPage: React.FC = () => {
   
   const [pets, setPets] = useState<any[]>([]);
   const [services, setServices] = useState<ServiceDTO[]>([]);
-  const [serviceDetailsMap, setServiceDetailsMap] = useState<Record<string, any>>({});
   const [roomUnavailableMap, setRoomUnavailableMap] = useState<Record<string, string[]>>({});
   
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
-  const selectedPetId = Form.useWatch('petId', form);
-  const selectedServiceIds = Form.useWatch('serviceIds', form) || [];
-  const selectedDateRange = Form.useWatch('dateRange', form);
-  const selectedDate = Form.useWatch('date', form);
+  const [petServices, setPetServices] = useState<Record<string, { groomingIds?: string[], boardingId?: string, dietId?: string }>>({});
+  const selectedPetIds: string[] = Form.useWatch('petIds', form) || [];
+  const groomingDate = Form.useWatch('groomingDate', form);
+  const boardingDateRange = Form.useWatch('boardingDateRange', form);
   const voucherCode = Form.useWatch('voucherCode', form);
 
   useEffect(() => {
@@ -52,42 +51,48 @@ const CreateBookingPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (selectedServiceIds.length > 0) {
-      selectedServiceIds.forEach((id: string) => {
-        if (!serviceDetailsMap[id]) {
-          fetchServiceDetailAndAvailability(id);
-        }
-      });
-    }
-  }, [selectedServiceIds]);
-
-  const fetchServiceDetailAndAvailability = async (serviceId: string) => {
-    try {
-      const res = await serviceService.fetchById(serviceId);
-      const detail = (res as any).result || (res as any).data || res;
-      setServiceDetailsMap(prev => ({ ...prev, [serviceId]: detail }));
-
-      const isBoarding = detail.serviceType === 'Boarding' || detail.roomTypeId != null;
-      if (isBoarding) {
-        const roomRes = await roomService.checkAvailability({
-          serviceId: serviceId,
-          month: dayjs().month() + 1,
-          year: dayjs().year()
-        });
-        if (roomRes.result?.unavailableDates) {
-          setRoomUnavailableMap(prev => ({ ...prev, [serviceId]: roomRes.result.unavailableDates }));
-        }
-      }
-    } catch (error) {}
+  const getPriceForPet = (service: ServiceDTO, petWeight: number) => {
+    if (!service.prices || service.prices.length === 0) return 0;
+    const priceObj = service.prices.find(p => 
+      (p.minWeight == null || p.minWeight <= petWeight) && 
+      (p.maxWeight == null || p.maxWeight >= petWeight)
+    );
+    return priceObj ? priceObj.price : 0;
   };
 
-  const hasBoardingService = selectedServiceIds.some((id: string) => {
-    const detail = serviceDetailsMap[id];
-    return detail && (detail.serviceType === 'Boarding' || detail.roomTypeId != null);
+  let hasGrooming = false;
+  let hasBoarding = false;
+  const boardingServiceIds = new Set<string>();
+
+  Object.values(petServices).forEach((srv: any) => {
+    if (srv?.groomingIds?.length > 0) hasGrooming = true;
+    if (srv?.boardingId) {
+      hasBoarding = true;
+      boardingServiceIds.add(srv.boardingId);
+    }
   });
 
-  const mergedUnavailableDates = selectedServiceIds.reduce((acc: string[], id: string) => {
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      for (const bId of Array.from(boardingServiceIds)) {
+        if (!roomUnavailableMap[bId]) {
+          try {
+            const roomRes = await roomService.checkAvailability({
+              serviceId: bId,
+              month: dayjs().month() + 1,
+              year: dayjs().year()
+            });
+            if (roomRes.result?.unavailableDates) {
+              setRoomUnavailableMap(prev => ({ ...prev, [bId]: roomRes.result.unavailableDates }));
+            }
+          } catch (e) {}
+        }
+      }
+    };
+    fetchAvailability();
+  }, [boardingServiceIds, roomUnavailableMap]);
+
+  const mergedUnavailableDates = Array.from(boardingServiceIds).reduce((acc: string[], id: string) => {
     const dates = roomUnavailableMap[id] || [];
     return [...acc, ...dates];
   }, []);
@@ -98,11 +103,11 @@ const CreateBookingPage: React.FC = () => {
   };
 
   const next = () => {
-    if (currentStep === 0 && !selectedPetId) return message.warning('Please select a pet to continue.');
-    if (currentStep === 1 && selectedServiceIds.length === 0) return message.warning('Please select at least one service.');
+    if (currentStep === 0 && selectedPetIds.length === 0) return message.warning('Please select at least 1 pet.');
+    if (currentStep === 1 && !hasGrooming && !hasBoarding) return message.warning('Please select at least 1 service.');
     if (currentStep === 2) {
-      if (hasBoardingService && (!selectedDateRange || selectedDateRange.length < 2)) return message.warning('Please select a valid boarding period.');
-      if (!hasBoardingService && !selectedDate) return message.warning('Please select an appointment date and time.');
+      if (hasBoarding && (!boardingDateRange || boardingDateRange.length < 2)) return message.warning('Please select a boarding period (Check-in and Check-out).');
+      if (hasGrooming && !groomingDate) return message.warning('Please select a date and time for Grooming.');
     }
     setCurrentStep(currentStep + 1);
   };
@@ -110,13 +115,37 @@ const CreateBookingPage: React.FC = () => {
 
   const calculateTotal = () => {
     let total = 0;
-    const pet = pets.find(p => p.id === selectedPetId);
-    if (!pet) return 0;
-    selectedServiceIds.forEach((id: string) => {
-      const detail = serviceDetailsMap[id];
-      if (detail && detail.prices) {
-        const priceObj = detail.prices.find((p: any) => (p.minWeight == null || p.minWeight <= pet.weight) && (p.maxWeight == null || p.maxWeight >= pet.weight));
-        if (priceObj) total += priceObj.price;
+    selectedPetIds.forEach(petId => {
+      const pet = pets.find(p => p.id === petId);
+      if (!pet) return;
+      const srvs = petServices[petId];
+      if (!srvs) return;
+      
+      if (srvs.groomingIds) {
+        srvs.groomingIds.forEach((id: string) => {
+          const s = services.find(x => x.id === id);
+          if (s) total += getPriceForPet(s, pet.weight);
+        });
+      }
+      if (srvs.boardingId) {
+        const s = services.find(x => x.id === srvs.boardingId);
+        if (s) {
+          let days = 1;
+          if (boardingDateRange && boardingDateRange.length === 2) {
+             days = Math.max(1, boardingDateRange[1].diff(boardingDateRange[0], 'day'));
+          }
+          total += getPriceForPet(s, pet.weight) * days;
+        }
+      }
+      if (srvs.dietId) {
+         const s = services.find(x => x.id === srvs.dietId);
+         if (s) {
+            let days = 1;
+            if (boardingDateRange && boardingDateRange.length === 2) {
+               days = Math.max(1, boardingDateRange[1].diff(boardingDateRange[0], 'day'));
+            }
+            total += getPriceForPet(s, pet.weight) * days;
+         }
       }
     });
     return total;
@@ -124,16 +153,44 @@ const CreateBookingPage: React.FC = () => {
   const totalAmount = calculateTotal();
 
   const onFinish = async (values: any) => {
-    let startAt = hasBoardingService ? values.dateRange[0].toISOString() : values.date.toISOString();
-    let endAt = hasBoardingService ? values.dateRange[1].toISOString() : null;
+    const bookingItems: any[] = [];
+    
+    selectedPetIds.forEach(petId => {
+      const srvs = petServices[petId];
+      if (!srvs) return;
+      
+      if (srvs.groomingIds && srvs.groomingIds.length > 0) {
+        srvs.groomingIds.forEach((gId: string) => {
+          bookingItems.push({
+            petId,
+            serviceId: gId,
+            scheduledStartAt: values.groomingDate.toISOString(),
+            scheduledEndAt: null,
+            quantity: 1
+          });
+        });
+      }
+      
+      if (srvs.boardingId) {
+        bookingItems.push({
+          petId,
+          serviceId: srvs.boardingId,
+          scheduledStartAt: values.boardingDateRange[0].toISOString(),
+          scheduledEndAt: values.boardingDateRange[1].toISOString(),
+          quantity: 1
+        });
+      }
 
-    const bookingItems = values.serviceIds.map((srvId: string) => ({
-      petId: values.petId,
-      serviceId: srvId,
-      scheduledStartAt: startAt,
-      scheduledEndAt: endAt,
-      quantity: 1
-    }));
+      if (srvs.dietId) {
+        bookingItems.push({
+          petId,
+          serviceId: srvs.dietId,
+          scheduledStartAt: values.boardingDateRange[0].toISOString(),
+          scheduledEndAt: values.boardingDateRange[1].toISOString(),
+          quantity: 1
+        });
+      }
+    });
 
     try {
       setSubmitting(true);
@@ -147,37 +204,41 @@ const CreateBookingPage: React.FC = () => {
     }
   };
 
-  const handleToggleService = (id: string) => {
-    const current = form.getFieldValue('serviceIds') || [];
+  const handleTogglePet = (id: string) => {
+    const current = form.getFieldValue('petIds') || [];
     if (current.includes(id)) {
-      form.setFieldsValue({ serviceIds: current.filter((x: string) => x !== id) });
+      form.setFieldsValue({ petIds: current.filter((x: string) => x !== id) });
     } else {
-      form.setFieldsValue({ serviceIds: [...current, id] });
+      form.setFieldsValue({ petIds: [...current, id] });
     }
   };
 
   if (loading) return <div style={{ textAlign: 'center', padding: '100px' }}><Spin size="large" /></div>;
 
+  const groomingOptions = services.filter(s => s.serviceType === 'Grooming' || s.serviceType === 'Care');
+  const boardingOptions = services.filter(s => s.serviceType === 'Boarding');
+  const dietOptions = services.filter(s => s.serviceType === 'Diet');
+
   const steps = [
     {
-      title: 'Choose Pet',
+      title: 'Choose Pets',
       content: (
         <div className="step-container fade-in">
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>Who is coming today?</Title>
-            <Text type="secondary" style={{ fontSize: '16px' }}>Select the furry friend for this appointment</Text>
+            <Title level={3} style={{ color: '#1e293b' }}>Choose Pets</Title>
+            <Text type="secondary" style={{ fontSize: '16px' }}>You can select one or multiple pets</Text>
           </div>
           
-          <Form.Item name="petId" rules={[{ required: true }]}>
+          <Form.Item name="petIds" rules={[{ required: true, message: 'Please select at least 1 pet' }]}>
              <Row gutter={[20, 20]} justify="center">
                 {pets.length === 0 && <Empty description="No pets found. Please add a pet first." />}
                 {pets.map(pet => {
-                  const isSelected = selectedPetId === pet.id;
+                  const isSelected = selectedPetIds.includes(pet.id);
                   const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
                   return (
                     <Col xs={24} sm={12} md={8} key={pet.id}>
                       <div 
-                        onClick={() => form.setFieldsValue({ petId: pet.id })}
+                        onClick={() => handleTogglePet(pet.id)}
                         style={{
                           background: isSelected ? '#ecfdf5' : '#fff',
                           border: `2px solid ${isSelected ? '#10b981' : '#e2e8f0'}`,
@@ -210,55 +271,130 @@ const CreateBookingPage: React.FC = () => {
       content: (
         <div className="step-container fade-in">
            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>What does {pets.find(p => p.id === selectedPetId)?.name} need?</Title>
-            <Text type="secondary" style={{ fontSize: '16px' }}>You can select multiple services for this visit</Text>
+            <Title level={3} style={{ color: '#1e293b' }}>Select Services</Title>
+            <Text type="secondary" style={{ fontSize: '16px' }}>Select services for each pet, price is automatically calculated based on weight</Text>
           </div>
 
-          <Form.Item name="serviceIds">
-            <Row gutter={[16, 16]}>
-              {services.map(srv => {
-                const isSelected = selectedServiceIds.includes(srv.id);
-                return (
-                  <Col xs={24} sm={12} key={srv.id}>
-                    <div 
-                      onClick={() => handleToggleService(srv.id)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        padding: '16px',
-                        background: isSelected ? '#f0fdf4' : '#fff',
-                        border: `1px solid ${isSelected ? '#34d399' : '#e2e8f0'}`,
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        boxShadow: isSelected ? '0 4px 12px rgba(52, 211, 153, 0.2)' : 'none'
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                          <span style={{ fontSize: '20px' }}>{srv.name.toLowerCase().includes('bath') ? '🛁' : srv.name.toLowerCase().includes('hotel') || srv.name.toLowerCase().includes('board') ? '🏨' : '✂️'}</span>
-                          <Text strong style={{ fontSize: '16px', color: isSelected ? '#065f46' : '#0f172a' }}>{srv.name}</Text>
-                        </div>
-                        <Text type="secondary" style={{ fontSize: '13px', display: 'block', paddingLeft: '28px' }}>
-                          {srv.description || 'Professional pet care service'}
-                        </Text>
-                      </div>
-                      <div style={{ marginLeft: '12px', display: 'flex', alignItems: 'center', height: '100%' }}>
-                        <div style={{ 
-                          width: '24px', height: '24px', borderRadius: '50%', 
-                          border: `2px solid ${isSelected ? '#10b981' : '#cbd5e1'}`,
-                          background: isSelected ? '#10b981' : 'transparent',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
-                        }}>
-                          {isSelected && <CheckCircleFilled />}
-                        </div>
-                      </div>
+          <Tabs 
+            type="card"
+            items={selectedPetIds.map(petId => {
+              const pet = pets.find(p => p.id === petId);
+              if (!pet) return { key: petId, label: 'Unknown' };
+              const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
+              const pServices = petServices[petId] || {};
+
+              return {
+                key: petId,
+                label: `[ ${isCat ? '🐱' : '🐶'} Tab ${pet.name} (${pet.weight}kg) ]`,
+                children: (
+                  <div style={{ padding: '16px', background: '#fff', borderRadius: '0 0 8px 8px', border: '1px solid #f0f0f0', borderTop: 'none' }}>
+                    
+                    <div style={{ marginBottom: '24px' }}>
+                      <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>✂️ Group 1: Grooming & Spa</Title>
+                      <Checkbox.Group 
+                        style={{ width: '100%' }}
+                        value={pServices.groomingIds || []}
+                        onChange={(vals) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], groomingIds: vals as string[] } }))}
+                      >
+                        <Row gutter={[16, 16]}>
+                          {groomingOptions.map(srv => {
+                            const price = getPriceForPet(srv, pet.weight);
+                            return (
+                              <Col span={24} key={srv.id}>
+                                <Checkbox value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.groomingIds?.includes(srv.id) ? '#f0fdf4' : '#fff' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginLeft: '8px' }}>
+                                    <Text strong>{srv.name}</Text>
+                                    <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND</Text>
+                                  </div>
+                                </Checkbox>
+                              </Col>
+                            );
+                          })}
+                        </Row>
+                      </Checkbox.Group>
                     </div>
-                  </Col>
-                );
-              })}
-            </Row>
-          </Form.Item>
+
+                    <Divider />
+
+                    <div>
+                      <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>🏨 Group 2: Pet Hotel (Boarding)</Title>
+                      <Radio.Group 
+                        style={{ width: '100%' }}
+                        value={pServices.boardingId}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPetServices(prev => ({ 
+                            ...prev, 
+                            [petId]: { 
+                              ...prev[petId], 
+                              boardingId: val,
+                              ...(val ? {} : { dietId: undefined })
+                            } 
+                          }));
+                        }}
+                      >
+                        <Row gutter={[16, 16]}>
+                          {boardingOptions.map(srv => {
+                            const price = getPriceForPet(srv, pet.weight);
+                            return (
+                              <Col span={24} key={srv.id}>
+                                <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginLeft: '8px' }}>
+                                    <Text strong>{srv.name}</Text>
+                                    <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
+                                  </div>
+                                </Radio>
+                              </Col>
+                            );
+                          })}
+                        </Row>
+                      </Radio.Group>
+                      
+                      {pServices.boardingId && (
+                        <div style={{ marginTop: '12px' }}>
+                           <Button type="link" danger onClick={() => {
+                              setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
+                           }}>
+                              Clear room selection
+                           </Button>
+                        </div>
+                      )}
+
+                      {pServices.boardingId && dietOptions.length > 0 && (
+                        <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
+                          <Text strong style={{ display: 'block', marginBottom: '12px' }}>Additional diet service (Optional):</Text>
+                          <Radio.Group 
+                            style={{ width: '100%' }}
+                            value={pServices.dietId}
+                            onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
+                          >
+                            <Row gutter={[16, 16]}>
+                              {dietOptions.map(srv => {
+                                const price = getPriceForPet(srv, pet.weight);
+                                return (
+                                  <Col span={24} key={srv.id}>
+                                    <Radio value={srv.id}>
+                                      {srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
+                                    </Radio>
+                                  </Col>
+                                );
+                              })}
+                            </Row>
+                          </Radio.Group>
+                          <div style={{ marginTop: '8px' }}>
+                            <Button type="link" size="small" onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}>
+                               Clear diet selection
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                )
+              };
+            })}
+          />
         </div>
       )
     },
@@ -267,42 +403,52 @@ const CreateBookingPage: React.FC = () => {
       content: (
         <div className="step-container fade-in">
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>When would you like to come?</Title>
+            <Title level={3} style={{ color: '#1e293b' }}>Schedule</Title>
             <Text type="secondary" style={{ fontSize: '16px' }}>
-              {hasBoardingService ? 'Please select a check-in and check-out date.' : 'Please select your preferred appointment time.'}
+              Please select the date and time for the services
             </Text>
           </div>
 
-          <div style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', padding: '32px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto', background: '#fff', padding: '32px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
             <div style={{ textAlign: 'center', marginBottom: '24px', fontSize: '48px', color: '#10b981' }}>
               <CalendarOutlined />
             </div>
             
-            {hasBoardingService ? (
-              <Form.Item name="dateRange" rules={[{ required: true, message: 'Please select dates' }]}>
-                <RangePicker 
-                  disabledDate={disabledDate} 
-                  style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px' }} 
-                  showTime={{ format: 'HH:mm' }} 
-                  format="MMM DD, YYYY HH:mm"
-                  size="large"
-                />
-              </Form.Item>
-            ) : (
-              <Form.Item name="date" rules={[{ required: true, message: 'Please select a date and time' }]}>
-                <DatePicker 
-                  style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px' }} 
-                  showTime={{ format: 'HH:mm', minuteStep: 15 }} 
-                  format="MMM DD, YYYY - hh:mm A" 
-                  disabledDate={(current) => current && current < dayjs().startOf('day')}
-                  size="large"
-                />
-              </Form.Item>
+            {hasGrooming && (
+              <div style={{ marginBottom: '24px' }}>
+                <Title level={5}>Grooming Appointment:</Title>
+                <Form.Item name="groomingDate" rules={[{ required: true, message: 'Please select a date and time' }]}>
+                  <DatePicker 
+                    style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px' }} 
+                    showTime={{ format: 'HH:mm', minuteStep: 15 }} 
+                    format="MMM DD, YYYY - HH:mm" 
+                    disabledDate={(current) => current && current < dayjs().startOf('day')}
+                    size="large"
+                    placeholder="Select a date and time for drop-off"
+                  />
+                </Form.Item>
+              </div>
+            )}
+
+            {hasBoarding && (
+              <div>
+                <Title level={5}>Boarding Appointment:</Title>
+                <Form.Item name="boardingDateRange" rules={[{ required: true, message: 'Please select check-in and check-out dates' }]}>
+                  <RangePicker 
+                    disabledDate={disabledDate} 
+                    style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px' }} 
+                    showTime={{ format: 'HH:mm' }} 
+                    format="MMM DD, YYYY HH:mm"
+                    size="large"
+                    placeholder={['Check-in', 'Check-out']}
+                  />
+                </Form.Item>
+              </div>
             )}
 
             <div style={{ marginTop: '16px', background: '#f8fafc', padding: '12px', borderRadius: '8px', display: 'flex', gap: '8px', color: '#64748b', fontSize: '13px' }}>
               <InfoCircleOutlined style={{ marginTop: '3px' }} />
-              <span>Please arrive 10 minutes before your scheduled time. You can cancel up to 24 hours in advance.</span>
+              <span>Please arrive 10 minutes before your appointment.</span>
             </div>
           </div>
         </div>
@@ -313,7 +459,7 @@ const CreateBookingPage: React.FC = () => {
       content: (
         <div className="step-container fade-in">
           <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-            <Title level={4} style={{ color: '#1e293b', margin: 0 }}>Review & Confirm</Title>
+            <Title level={4} style={{ color: '#1e293b', margin: 0 }}>Confirm & Summary</Title>
             <Text type="secondary" style={{ fontSize: '14px' }}>Double check your booking details</Text>
           </div>
 
@@ -321,44 +467,73 @@ const CreateBookingPage: React.FC = () => {
             <Col xs={24} md={14}>
               <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)', marginBottom: '16px' }}>
                 <Title level={5} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: '#0f172a' }}>
-                  <ShopOutlined /> Booking Summary
+                  <ShopOutlined /> Order Summary
                 </Title>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed #cbd5e1' }}>
-                  <Text type="secondary">Pet Patient</Text>
-                  <Text strong style={{ fontSize: '16px' }}>{pets.find(p => p.id === selectedPetId)?.name}</Text>
-                </div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed #cbd5e1' }}>
-                  <Text type="secondary">Schedule</Text>
-                  <div style={{ textAlign: 'right' }}>
-                    <Text strong style={{ display: 'block' }}>
-                       {hasBoardingService && selectedDateRange 
-                        ? `${selectedDateRange[0]?.format('MMM DD, YYYY')}`
-                        : selectedDate?.format('MMM DD, YYYY')}
-                    </Text>
-                    <Text type="secondary">
-                       {hasBoardingService && selectedDateRange 
-                        ? `${selectedDateRange[0]?.format('HH:mm')} → ${selectedDateRange[1]?.format('MMM DD HH:mm')}`
-                        : selectedDate?.format('hh:mm A')}
-                    </Text>
-                  </div>
-                </div>
+                {selectedPetIds.map(petId => {
+                  const pet = pets.find(p => p.id === petId);
+                  const srvs = petServices[petId];
+                  if (!pet || !srvs) return null;
+                  const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
+                  
+                  let boardingDays = 1;
+                  if (boardingDateRange && boardingDateRange.length === 2) {
+                     boardingDays = Math.max(1, boardingDateRange[1].diff(boardingDateRange[0], 'day'));
+                  }
 
-                <div>
-                  <Text type="secondary" style={{ display: 'block', marginBottom: '12px' }}>Selected Services</Text>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {selectedServiceIds.map((id: string) => {
-                      const srv = services.find(s => s.id === id);
-                      return (
-                        <div key={id} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-                          <CheckCircleFilled style={{ color: '#10b981' }} />
-                          <Text strong>{srv?.name}</Text>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                  return (
+                    <div key={petId} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed #cbd5e1' }}>
+                      <Text strong style={{ fontSize: '16px', color: '#0f172a', display: 'block', marginBottom: '12px' }}>
+                        {isCat ? '🐱' : '🐶'} {pet.name} ({pet.weight}kg):
+                      </Text>
+                      
+                      <div style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {srvs.groomingIds?.map((gId: string) => {
+                          const s = services.find(x => x.id === gId);
+                          if (!s) return null;
+                          const price = getPriceForPet(s, pet.weight);
+                          return (
+                            <div key={gId} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <Text>{s.name} <Text type="secondary">({groomingDate?.format('DD/MM HH:mm')})</Text></Text>
+                              <Text strong>{price.toLocaleString()} VND</Text>
+                            </div>
+                          );
+                        })}
+                        
+                        {srvs.boardingId && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            {(() => {
+                               const s = services.find(x => x.id === srvs.boardingId);
+                               const price = s ? getPriceForPet(s, pet.weight) * boardingDays : 0;
+                               return (
+                                 <>
+                                   <Text>{s?.name} <Text type="secondary">({boardingDateRange?.[0]?.format('DD/MM')} - {boardingDateRange?.[1]?.format('DD/MM')})</Text></Text>
+                                   <Text strong>{price.toLocaleString()} VND</Text>
+                                 </>
+                               )
+                            })()}
+                          </div>
+                        )}
+
+                        {srvs.dietId && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            {(() => {
+                               const s = services.find(x => x.id === srvs.dietId);
+                               const price = s ? getPriceForPet(s, pet.weight) * boardingDays : 0;
+                               return (
+                                 <>
+                                   <Text>{s?.name}</Text>
+                                   <Text strong>{price.toLocaleString()} VND</Text>
+                                 </>
+                               )
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
               </div>
             </Col>
 
@@ -378,24 +553,12 @@ const CreateBookingPage: React.FC = () => {
                 </Form.Item>
 
                 <div style={{ marginTop: '32px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <Text type="secondary">Subtotal</Text>
-                    <Text strong>{totalAmount > 0 ? `${totalAmount.toLocaleString()} đ` : 'Calculating...'}</Text>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                    <Text type="secondary">Tax</Text>
-                    <Text strong>Included</Text>
-                  </div>
-                  <Divider style={{ margin: '16px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text strong style={{ fontSize: '16px' }}>Total to pay</Text>
+                    <Text strong style={{ fontSize: '16px' }}>Total amount</Text>
                     <Title level={3} style={{ margin: 0, color: '#059669' }}>
-                      {totalAmount > 0 ? `${totalAmount.toLocaleString()} đ` : '---'}
+                      {totalAmount > 0 ? `${totalAmount.toLocaleString()} VND` : '0 VND'}
                     </Title>
                   </div>
-                  <Text type="secondary" style={{ display: 'block', textAlign: 'right', fontSize: '12px', marginTop: '4px' }}>
-                    * Voucher applied at checkout
-                  </Text>
                 </div>
               </div>
             </Col>
@@ -435,7 +598,7 @@ const CreateBookingPage: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {currentStep > 0 ? (
               <Button onClick={prev} size="large" style={{ borderRadius: '8px', padding: '0 24px' }}>
-                Go Back
+                Back
               </Button>
             ) : <div />}
             
