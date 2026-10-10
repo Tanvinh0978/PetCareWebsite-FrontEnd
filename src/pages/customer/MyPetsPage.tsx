@@ -15,13 +15,13 @@ const MyPetsPage: React.FC = () => {
   const fetchPets = async () => {
     try {
       setLoading(true);
-      const res = await petService.getAllPets();
-      const items = res.result || res.data || res;
+      const res = await petService.getMyPets();
+      const items = res;
       // It returns the list directly via my-pets endpoint
       if (Array.isArray(items)) {
         setPets(items);
-      } else if (items.items) {
-        setPets(items.items);
+      } else if ((items as any).items) {
+        setPets((items as any).items);
       }
     } catch (error) {
       message.error('Failed to load pets');
@@ -42,7 +42,7 @@ const MyPetsPage: React.FC = () => {
       okType: 'danger',
       onOk: async () => {
         try {
-          await petService.deletePet(id);
+          await petService.delete(id);
           setPets(pets.filter(p => p.id !== id));
           message.success('Pet deleted successfully');
         } catch (error) {
