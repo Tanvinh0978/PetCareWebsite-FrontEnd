@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Select, DatePicker, Input, Button, Card, Typography, Spin, message, Row, Col, Divider, Space } from 'antd';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { Steps, Form, DatePicker, Input, Button, Card, Typography, Spin, message, Row, Col, Divider, Tag, Empty } from 'antd';
+import { CalendarOutlined, CheckCircleFilled, GiftOutlined, ClockCircleOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { petService } from '@/services/pet.service';
@@ -15,15 +15,21 @@ const { RangePicker } = DatePicker;
 const CreateBookingPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  
   const [pets, setPets] = useState<any[]>([]);
   const [services, setServices] = useState<ServiceDTO[]>([]);
   const [serviceDetailsMap, setServiceDetailsMap] = useState<Record<string, any>>({});
   const [roomUnavailableMap, setRoomUnavailableMap] = useState<Record<string, string[]>>({});
+  
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
-  // Watch entire items array to trigger re-calculation
-  const itemsWatch = Form.useWatch('items', form) || [];
+  const selectedPetId = Form.useWatch('petId', form);
+  const selectedServiceIds = Form.useWatch('serviceIds', form) || [];
+  const selectedDateRange = Form.useWatch('dateRange', form);
+  const selectedDate = Form.useWatch('date', form);
+  const voucherCode = Form.useWatch('voucherCode', form);
 
   useEffect(() => {
     fetchInitialData();
@@ -36,7 +42,6 @@ const CreateBookingPage: React.FC = () => {
         petService.getMyPets(),
         serviceService.fetchActive()
       ]);
-      
       const petsList = (petsRes as any).result || (petsRes as any).data || petsRes;
       setPets(Array.isArray(petsList) ? petsList : (petsList.items || []));
       setServices(servicesData);
@@ -47,14 +52,15 @@ const CreateBookingPage: React.FC = () => {
     }
   };
 
-  // Fetch details and availability dynamically when a service is selected
   useEffect(() => {
-    itemsWatch.forEach((item: any) => {
-      if (item?.serviceId && !serviceDetailsMap[item.serviceId]) {
-        fetchServiceDetailAndAvailability(item.serviceId);
-      }
-    });
-  }, [itemsWatch]);
+    if (selectedServiceIds.length > 0) {
+      selectedServiceIds.forEach((id: string) => {
+        if (!serviceDetailsMap[id]) {
+          fetchServiceDetailAndAvailability(id);
+        }
+      });
+    }
+  }, [selectedServiceIds]);
 
   const fetchServiceDetailAndAvailability = async (serviceId: string) => {
     try {
@@ -73,85 +79,66 @@ const CreateBookingPage: React.FC = () => {
           setRoomUnavailableMap(prev => ({ ...prev, [serviceId]: roomRes.result.unavailableDates }));
         }
       }
-    } catch (error) {
-      console.error(`Failed to fetch extra data for service ${serviceId}`);
-    }
+    } catch (error) {}
   };
+
+  const hasBoardingService = selectedServiceIds.some((id: string) => {
+    const detail = serviceDetailsMap[id];
+    return detail && (detail.serviceType === 'Boarding' || detail.roomTypeId != null);
+  });
+
+  const mergedUnavailableDates = selectedServiceIds.reduce((acc: string[], id: string) => {
+    const dates = roomUnavailableMap[id] || [];
+    return [...acc, ...dates];
+  }, []);
+
+  const disabledDate = (current: Dayjs) => {
+    if (current && current < dayjs().startOf('day')) return true;
+    return mergedUnavailableDates.includes(current.format('YYYY-MM-DD'));
+  };
+
+  const next = () => {
+    if (currentStep === 0 && !selectedPetId) return message.warning('Please select a pet to continue.');
+    if (currentStep === 1 && selectedServiceIds.length === 0) return message.warning('Please select at least one service.');
+    if (currentStep === 2) {
+      if (hasBoardingService && (!selectedDateRange || selectedDateRange.length < 2)) return message.warning('Please select a valid boarding period.');
+      if (!hasBoardingService && !selectedDate) return message.warning('Please select an appointment date and time.');
+    }
+    setCurrentStep(currentStep + 1);
+  };
+  const prev = () => setCurrentStep(currentStep - 1);
 
   const calculateTotal = () => {
     let total = 0;
-    for (const item of itemsWatch) {
-      if (!item || !item.petId || !item.serviceId) continue;
-      
-      const pet = pets.find(p => p.id === item.petId);
-      const detail = serviceDetailsMap[item.serviceId];
-      if (!pet || !detail) continue;
-
-      const petWeight = pet.weight || 0;
-      const prices = detail.prices || [];
-      const applicablePrice = prices.find((p: any) => 
-        (p.minWeight == null || p.minWeight <= petWeight) &&
-        (p.maxWeight == null || p.maxWeight >= petWeight)
-      );
-
-      if (applicablePrice) {
-        total += applicablePrice.price;
+    const pet = pets.find(p => p.id === selectedPetId);
+    if (!pet) return 0;
+    selectedServiceIds.forEach((id: string) => {
+      const detail = serviceDetailsMap[id];
+      if (detail && detail.prices) {
+        const priceObj = detail.prices.find((p: any) => (p.minWeight == null || p.minWeight <= pet.weight) && (p.maxWeight == null || p.maxWeight >= pet.weight));
+        if (priceObj) total += priceObj.price;
       }
-    }
+    });
     return total;
   };
-
   const totalAmount = calculateTotal();
 
   const onFinish = async (values: any) => {
-    if (!values.items || values.items.length === 0) {
-      message.error('Please add at least one service.');
-      return;
-    }
+    let startAt = hasBoardingService ? values.dateRange[0].toISOString() : values.date.toISOString();
+    let endAt = hasBoardingService ? values.dateRange[1].toISOString() : null;
 
-    const bookingItems = [];
-
-    for (let i = 0; i < values.items.length; i++) {
-      const item = values.items[i];
-      const service = services.find(s => s.id === item.serviceId);
-      const isBoarding = service?.serviceType === 'Boarding' || service?.roomTypeId != null;
-
-      let startAt, endAt;
-
-      if (isBoarding) {
-        if (!item.dateRange || item.dateRange.length < 2) {
-          message.error(`Row ${i + 1}: Please select start and end dates for boarding.`);
-          return;
-        }
-        startAt = item.dateRange[0].toISOString();
-        endAt = item.dateRange[1].toISOString();
-      } else {
-        if (!item.date) {
-          message.error(`Row ${i + 1}: Please select an appointment date.`);
-          return;
-        }
-        startAt = item.date.toISOString();
-        endAt = null;
-      }
-
-      bookingItems.push({
-        petId: item.petId,
-        serviceId: item.serviceId,
-        scheduledStartAt: startAt,
-        scheduledEndAt: endAt,
-        quantity: 1
-      });
-    }
-
-    const payload: CreateBookingPayload = {
-      voucherCode: values.voucherCode,
-      bookingItems: bookingItems
-    };
+    const bookingItems = values.serviceIds.map((srvId: string) => ({
+      petId: values.petId,
+      serviceId: srvId,
+      scheduledStartAt: startAt,
+      scheduledEndAt: endAt,
+      quantity: 1
+    }));
 
     try {
       setSubmitting(true);
-      await bookingService.create(payload);
-      message.success('Booking created successfully!');
+      await bookingService.create({ voucherCode: values.voucherCode, bookingItems });
+      message.success('Booking created successfully! 🎉');
       navigate('/customer');
     } catch (error: any) {
       message.error(error?.response?.data?.message || 'Failed to create booking');
@@ -160,154 +147,322 @@ const CreateBookingPage: React.FC = () => {
     }
   };
 
-  const petOptions = pets.map(pet => ({
-    label: `${pet.name} (${pet.weight}kg)`,
-    value: pet.id
-  }));
+  const handleToggleService = (id: string) => {
+    const current = form.getFieldValue('serviceIds') || [];
+    if (current.includes(id)) {
+      form.setFieldsValue({ serviceIds: current.filter((x: string) => x !== id) });
+    } else {
+      form.setFieldsValue({ serviceIds: [...current, id] });
+    }
+  };
 
-  const serviceOptions = services.map(srv => ({
-    label: srv.name,
-    value: srv.id
-  }));
+  if (loading) return <div style={{ textAlign: 'center', padding: '100px' }}><Spin size="large" /></div>;
 
-  if (loading) {
-    return <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>;
-  }
-
-  return (
-    <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
-      <Title level={2} style={{ marginBottom: '24px' }}>Book Services</Title>
-      <Card>
-        <Form 
-          form={form} 
-          layout="vertical" 
-          onFinish={onFinish}
-          initialValues={{ items: [{}] }} // Start with one empty row
-        >
-          <Form.List name="items">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }, index) => {
-                  const currentServiceId = itemsWatch[name]?.serviceId;
-                  const currentService = services.find(s => s.id === currentServiceId);
-                  const isBoarding = currentService?.serviceType === 'Boarding' || currentService?.roomTypeId != null;
-                  
-                  const disabledDate = (current: Dayjs) => {
-                    if (current && current < dayjs().startOf('day')) return true;
-                    if (!currentServiceId || !roomUnavailableMap[currentServiceId]) return false;
-                    const dateStr = current.format('YYYY-MM-DD');
-                    return roomUnavailableMap[currentServiceId].includes(dateStr);
-                  };
-
+  const steps = [
+    {
+      title: 'Choose Pet',
+      content: (
+        <div className="step-container fade-in">
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <Title level={3} style={{ color: '#1e293b' }}>Who is coming today?</Title>
+            <Text type="secondary" style={{ fontSize: '16px' }}>Select the furry friend for this appointment</Text>
+          </div>
+          
+          <Form.Item name="petId" rules={[{ required: true }]}>
+             <Row gutter={[20, 20]} justify="center">
+                {pets.length === 0 && <Empty description="No pets found. Please add a pet first." />}
+                {pets.map(pet => {
+                  const isSelected = selectedPetId === pet.id;
+                  const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
                   return (
-                    <div key={key} style={{ padding: '16px', background: '#f8fafc', borderRadius: '8px', marginBottom: '16px', position: 'relative' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <Text strong style={{ fontSize: '16px' }}>Item #{index + 1}</Text>
-                        {fields.length > 1 && (
-                          <Button type="text" danger icon={<MinusCircleOutlined />} onClick={() => remove(name)}>
-                            Remove
-                          </Button>
-                        )}
+                    <Col xs={24} sm={12} md={8} key={pet.id}>
+                      <div 
+                        onClick={() => form.setFieldsValue({ petId: pet.id })}
+                        style={{
+                          background: isSelected ? '#ecfdf5' : '#fff',
+                          border: `2px solid ${isSelected ? '#10b981' : '#e2e8f0'}`,
+                          borderRadius: '16px',
+                          padding: '20px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          textAlign: 'center',
+                          position: 'relative',
+                          boxShadow: isSelected ? '0 10px 15px -3px rgba(16, 185, 129, 0.2)' : '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                        }}
+                      >
+                        {isSelected && <CheckCircleFilled style={{ position: 'absolute', top: 12, right: 12, fontSize: '20px', color: '#10b981' }} />}
+                        <div style={{ fontSize: '50px', marginBottom: '10px' }}>{isCat ? '🐱' : '🐶'}</div>
+                        <Title level={4} style={{ margin: 0, color: isSelected ? '#065f46' : '#1e293b' }}>{pet.name}</Title>
+                        <Tag color={isCat ? 'purple' : 'blue'} style={{ marginTop: '8px', borderRadius: '12px' }}>
+                          {pet.weight} kg
+                        </Tag>
                       </div>
-                      
-                      <Row gutter={16}>
-                        <Col xs={24} md={12}>
-                          <Form.Item 
-                            {...restField} 
-                            name={[name, 'petId']} 
-                            label="Select Pet" 
-                            rules={[{ required: true, message: 'Please select a pet' }]}
-                          >
-                            <Select placeholder="Choose your pet" options={petOptions} />
-                          </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                          <Form.Item 
-                            {...restField} 
-                            name={[name, 'serviceId']} 
-                            label="Select Service" 
-                            rules={[{ required: true, message: 'Please select a service' }]}
-                          >
-                            <Select placeholder="Choose a service" options={serviceOptions} />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-
-                      <Row gutter={16}>
-                        {isBoarding ? (
-                          <Col xs={24}>
-                            <Form.Item 
-                              {...restField} 
-                              name={[name, 'dateRange']} 
-                              label="Boarding Period" 
-                              rules={[{ required: true, message: 'Please select dates' }]}
-                            >
-                              <RangePicker 
-                                disabledDate={disabledDate} 
-                                style={{ width: '100%' }} 
-                                showTime={{ format: 'HH:mm' }} 
-                                format="YYYY-MM-DD HH:mm"
-                              />
-                            </Form.Item>
-                          </Col>
-                        ) : (
-                          <Col xs={24}>
-                            <Form.Item 
-                              {...restField} 
-                              name={[name, 'date']} 
-                              label="Appointment Date & Time" 
-                              rules={[{ required: true, message: 'Please select a date' }]}
-                            >
-                              <DatePicker 
-                                style={{ width: '100%' }} 
-                                showTime={{ format: 'HH:mm' }} 
-                                format="YYYY-MM-DD HH:mm" 
-                                disabledDate={(current) => current && current < dayjs().startOf('day')}
-                              />
-                            </Form.Item>
-                          </Col>
-                        )}
-                      </Row>
-                    </div>
+                    </Col>
                   );
                 })}
-                
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />} style={{ height: '45px' }}>
-                    Add another service
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
+              </Row>
+          </Form.Item>
+        </div>
+      )
+    },
+    {
+      title: 'Select Services',
+      content: (
+        <div className="step-container fade-in">
+           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <Title level={3} style={{ color: '#1e293b' }}>What does {pets.find(p => p.id === selectedPetId)?.name} need?</Title>
+            <Text type="secondary" style={{ fontSize: '16px' }}>You can select multiple services for this visit</Text>
+          </div>
 
-          <Row gutter={16} style={{ marginTop: '24px' }}>
-            <Col xs={24}>
-              <Form.Item name="voucherCode" label="Voucher Code (Optional)">
-                <Input placeholder="Enter voucher code if you have one" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Divider />
-
-          <div style={{ marginBottom: '24px', textAlign: 'right' }}>
-            <Text type="secondary">Estimated Subtotal:</Text>
-            <Title level={3} style={{ margin: 0, color: '#059669' }}>
-              {totalAmount > 0 ? `${totalAmount.toLocaleString()} VND` : '---'}
-            </Title>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              * Voucher discount will be applied after submission (Preview currently unavailable).
+          <Form.Item name="serviceIds">
+            <Row gutter={[16, 16]}>
+              {services.map(srv => {
+                const isSelected = selectedServiceIds.includes(srv.id);
+                return (
+                  <Col xs={24} sm={12} key={srv.id}>
+                    <div 
+                      onClick={() => handleToggleService(srv.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        padding: '16px',
+                        background: isSelected ? '#f0fdf4' : '#fff',
+                        border: `1px solid ${isSelected ? '#34d399' : '#e2e8f0'}`,
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        boxShadow: isSelected ? '0 4px 12px rgba(52, 211, 153, 0.2)' : 'none'
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '20px' }}>{srv.name.toLowerCase().includes('bath') ? '🛁' : srv.name.toLowerCase().includes('hotel') || srv.name.toLowerCase().includes('board') ? '🏨' : '✂️'}</span>
+                          <Text strong style={{ fontSize: '16px', color: isSelected ? '#065f46' : '#0f172a' }}>{srv.name}</Text>
+                        </div>
+                        <Text type="secondary" style={{ fontSize: '13px', display: 'block', paddingLeft: '28px' }}>
+                          {srv.description || 'Professional pet care service'}
+                        </Text>
+                      </div>
+                      <div style={{ marginLeft: '12px', display: 'flex', alignItems: 'center', height: '100%' }}>
+                        <div style={{ 
+                          width: '24px', height: '24px', borderRadius: '50%', 
+                          border: `2px solid ${isSelected ? '#10b981' : '#cbd5e1'}`,
+                          background: isSelected ? '#10b981' : 'transparent',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
+                        }}>
+                          {isSelected && <CheckCircleFilled />}
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                );
+              })}
+            </Row>
+          </Form.Item>
+        </div>
+      )
+    },
+    {
+      title: 'Schedule',
+      content: (
+        <div className="step-container fade-in">
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <Title level={3} style={{ color: '#1e293b' }}>When would you like to come?</Title>
+            <Text type="secondary" style={{ fontSize: '16px' }}>
+              {hasBoardingService ? 'Please select a check-in and check-out date.' : 'Please select your preferred appointment time.'}
             </Text>
           </div>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" size="large" block loading={submitting} style={{ backgroundColor: '#059669' }}>
-              Confirm All Bookings
-            </Button>
-          </Form.Item>
+          <div style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', padding: '32px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px', fontSize: '48px', color: '#10b981' }}>
+              <CalendarOutlined />
+            </div>
+            
+            {hasBoardingService ? (
+              <Form.Item name="dateRange" rules={[{ required: true, message: 'Please select dates' }]}>
+                <RangePicker 
+                  disabledDate={disabledDate} 
+                  style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px' }} 
+                  showTime={{ format: 'HH:mm' }} 
+                  format="MMM DD, YYYY HH:mm"
+                  size="large"
+                />
+              </Form.Item>
+            ) : (
+              <Form.Item name="date" rules={[{ required: true, message: 'Please select a date and time' }]}>
+                <DatePicker 
+                  style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px' }} 
+                  showTime={{ format: 'HH:mm', minuteStep: 15 }} 
+                  format="MMM DD, YYYY - hh:mm A" 
+                  disabledDate={(current) => current && current < dayjs().startOf('day')}
+                  size="large"
+                />
+              </Form.Item>
+            )}
+
+            <div style={{ marginTop: '16px', background: '#f8fafc', padding: '12px', borderRadius: '8px', display: 'flex', gap: '8px', color: '#64748b', fontSize: '13px' }}>
+              <InfoCircleOutlined style={{ marginTop: '3px' }} />
+              <span>Please arrive 10 minutes before your scheduled time. You can cancel up to 24 hours in advance.</span>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: 'Confirm',
+      content: (
+        <div className="step-container fade-in">
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+            <Title level={4} style={{ color: '#1e293b', margin: 0 }}>Review & Confirm</Title>
+            <Text type="secondary" style={{ fontSize: '14px' }}>Double check your booking details</Text>
+          </div>
+
+          <Row gutter={16}>
+            <Col xs={24} md={14}>
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)', marginBottom: '16px' }}>
+                <Title level={5} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: '#0f172a' }}>
+                  <ShopOutlined /> Booking Summary
+                </Title>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed #cbd5e1' }}>
+                  <Text type="secondary">Pet Patient</Text>
+                  <Text strong style={{ fontSize: '16px' }}>{pets.find(p => p.id === selectedPetId)?.name}</Text>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed #cbd5e1' }}>
+                  <Text type="secondary">Schedule</Text>
+                  <div style={{ textAlign: 'right' }}>
+                    <Text strong style={{ display: 'block' }}>
+                       {hasBoardingService && selectedDateRange 
+                        ? `${selectedDateRange[0]?.format('MMM DD, YYYY')}`
+                        : selectedDate?.format('MMM DD, YYYY')}
+                    </Text>
+                    <Text type="secondary">
+                       {hasBoardingService && selectedDateRange 
+                        ? `${selectedDateRange[0]?.format('HH:mm')} → ${selectedDateRange[1]?.format('MMM DD HH:mm')}`
+                        : selectedDate?.format('hh:mm A')}
+                    </Text>
+                  </div>
+                </div>
+
+                <div>
+                  <Text type="secondary" style={{ display: 'block', marginBottom: '12px' }}>Selected Services</Text>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {selectedServiceIds.map((id: string) => {
+                      const srv = services.find(s => s.id === id);
+                      return (
+                        <div key={id} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
+                          <CheckCircleFilled style={{ color: '#10b981' }} />
+                          <Text strong>{srv?.name}</Text>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            <Col xs={24} md={10}>
+              <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '24px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Title level={5} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                  <GiftOutlined /> Voucher & Payment
+                </Title>
+                
+                <Form.Item name="voucherCode" style={{ marginBottom: 'auto' }}>
+                  <Input 
+                    prefix={<GiftOutlined style={{ color: '#94a3b8' }} />} 
+                    placeholder="Enter discount code" 
+                    size="large" 
+                    style={{ borderRadius: '8px' }}
+                  />
+                </Form.Item>
+
+                <div style={{ marginTop: '32px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <Text type="secondary">Subtotal</Text>
+                    <Text strong>{totalAmount > 0 ? `${totalAmount.toLocaleString()} đ` : 'Calculating...'}</Text>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                    <Text type="secondary">Tax</Text>
+                    <Text strong>Included</Text>
+                  </div>
+                  <Divider style={{ margin: '16px 0' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text strong style={{ fontSize: '16px' }}>Total to pay</Text>
+                    <Title level={3} style={{ margin: 0, color: '#059669' }}>
+                      {totalAmount > 0 ? `${totalAmount.toLocaleString()} đ` : '---'}
+                    </Title>
+                  </div>
+                  <Text type="secondary" style={{ display: 'block', textAlign: 'right', fontSize: '12px', marginTop: '4px' }}>
+                    * Voucher applied at checkout
+                  </Text>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div style={{ padding: '16px', maxWidth: '100%', backgroundColor: '#f8fafc', minHeight: 'calc(100vh - 64px)' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <Title level={3} style={{ margin: 0, color: '#0f172a' }}>Book Appointment</Title>
+        </div>
+      
+      <Steps 
+        current={currentStep} 
+        items={steps.map(s => ({ title: s.title }))} 
+        style={{ marginBottom: '24px' }} 
+        size="small"
+      />
+
+      <div className="paw-bg-card" style={{ borderRadius: '16px', padding: '24px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          
+          <div style={{ minHeight: 'auto', marginBottom: '16px' }}>
+            {steps.map((step, index) => (
+              <div key={index} style={{ display: currentStep === index ? 'block' : 'none' }}>
+                {step.content}
+              </div>
+            ))}
+          </div>
+
+          <Divider style={{ margin: '32px 0 24px' }} />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {currentStep > 0 ? (
+              <Button onClick={prev} size="large" style={{ borderRadius: '8px', padding: '0 24px' }}>
+                Go Back
+              </Button>
+            ) : <div />}
+            
+            {currentStep < steps.length - 1 && (
+              <Button type="primary" onClick={next} size="large" style={{ backgroundColor: '#059669', borderRadius: '8px', padding: '0 32px' }}>
+                Continue <RightOutlined style={{ fontSize: '12px' }}/>
+              </Button>
+            )}
+            
+            {currentStep === steps.length - 1 && (
+              <Button type="primary" htmlType="submit" size="large" loading={submitting} style={{ backgroundColor: '#059669', borderRadius: '8px', padding: '0 40px', height: '48px', fontSize: '16px' }}>
+                Confirm Booking
+              </Button>
+            )}
+          </div>
         </Form>
-      </Card>
+      </div>
+
+      </div>
+      <style>{`
+        .paw-bg-card {
+          background-color: #ffffff;
+          background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23f1f5f9' fill-opacity='0.6' d='M25 45c-8 0-15-10-10-20 4-8 17-9 22 0 4 9-4 20-12 20zm25-15c-9 0-14-14-6-20 8-7 19 0 14 11-4 6-4 9-8 9zm25 15c-8 0-16-11-12-20 5-9 18-8 22 0 5 10-2 20-10 20zM50 85c-27 0-30-28-12-35 9-4 15-4 24 0 18 7 15 35-12 35z'/%3E%3C/svg%3E");
+        }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   );
 };
