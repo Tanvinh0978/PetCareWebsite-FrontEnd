@@ -406,8 +406,8 @@ const CreateBookingPage: React.FC = () => {
   ];
 
   return (
-    <div className="paw-bg-container" style={{ padding: '32px', maxWidth: '100%', minHeight: '80vh' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ padding: '32px', maxWidth: '100%', minHeight: '80vh', backgroundColor: '#f8fafc' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <Title level={2} style={{ margin: 0, color: '#0f172a' }}>Book Appointment</Title>
           <Text type="secondary" style={{ fontSize: '16px' }}>Follow simple steps to get your pet the best care</Text>
@@ -420,7 +420,7 @@ const CreateBookingPage: React.FC = () => {
         size="small"
       />
 
-      <div style={{ background: '#fff', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)' }}>
+      <div className="paw-bg-card" style={{ borderRadius: '24px', padding: '32px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)' }}>
         <Form form={form} layout="vertical" onFinish={onFinish}>
           
           <div style={{ minHeight: '350px' }}>
@@ -457,10 +457,9 @@ const CreateBookingPage: React.FC = () => {
 
       </div>
       <style>{`
-        .paw-bg-container {
-          background-color: #fafafa;
-          background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23e2e8f0' fill-opacity='0.4' d='M25 45c-8 0-15-10-10-20 4-8 17-9 22 0 4 9-4 20-12 20zm25-15c-9 0-14-14-6-20 8-7 19 0 14 11-4 6-4 9-8 9zm25 15c-8 0-16-11-12-20 5-9 18-8 22 0 5 10-2 20-10 20zM50 85c-27 0-30-28-12-35 9-4 15-4 24 0 18 7 15 35-12 35z'/%3E%3C/svg%3E");
-          background-attachment: fixed;
+        .paw-bg-card {
+          background-color: #ffffff;
+          background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23f1f5f9' fill-opacity='0.6' d='M25 45c-8 0-15-10-10-20 4-8 17-9 22 0 4 9-4 20-12 20zm25-15c-9 0-14-14-6-20 8-7 19 0 14 11-4 6-4 9-8 9zm25 15c-8 0-16-11-12-20 5-9 18-8 22 0 5 10-2 20-10 20zM50 85c-27 0-30-28-12-35 9-4 15-4 24 0 18 7 15 35-12 35z'/%3E%3C/svg%3E");
         }
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
