@@ -312,15 +312,15 @@ const CreateBookingPage: React.FC = () => {
       title: 'Confirm',
       content: (
         <div className="step-container fade-in">
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>Review & Confirm</Title>
-            <Text type="secondary" style={{ fontSize: '16px' }}>Double check your booking details</Text>
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+            <Title level={4} style={{ color: '#1e293b', margin: 0 }}>Review & Confirm</Title>
+            <Text type="secondary" style={{ fontSize: '14px' }}>Double check your booking details</Text>
           </div>
 
-          <Row gutter={24}>
+          <Row gutter={16}>
             <Col xs={24} md={14}>
-              <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', marginBottom: '24px' }}>
-                <Title level={5} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', color: '#0f172a' }}>
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)', marginBottom: '16px' }}>
+                <Title level={5} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: '#0f172a' }}>
                   <ShopOutlined /> Booking Summary
                 </Title>
                 
@@ -406,24 +406,23 @@ const CreateBookingPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: '32px', maxWidth: '100%', minHeight: '80vh', backgroundColor: '#f8fafc' }}>
+    <div style={{ padding: '16px', maxWidth: '100%', backgroundColor: '#f8fafc', minHeight: 'calc(100vh - 64px)' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <Title level={2} style={{ margin: 0, color: '#0f172a' }}>Book Appointment</Title>
-          <Text type="secondary" style={{ fontSize: '16px' }}>Follow simple steps to get your pet the best care</Text>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <Title level={3} style={{ margin: 0, color: '#0f172a' }}>Book Appointment</Title>
         </div>
       
       <Steps 
         current={currentStep} 
         items={steps.map(s => ({ title: s.title }))} 
-        style={{ marginBottom: '40px' }} 
+        style={{ marginBottom: '24px' }} 
         size="small"
       />
 
-      <div className="paw-bg-card" style={{ borderRadius: '24px', padding: '32px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)' }}>
+      <div className="paw-bg-card" style={{ borderRadius: '16px', padding: '24px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
         <Form form={form} layout="vertical" onFinish={onFinish}>
           
-          <div style={{ minHeight: '350px' }}>
+          <div style={{ minHeight: 'auto', marginBottom: '16px' }}>
             {steps.map((step, index) => (
               <div key={index} style={{ display: currentStep === index ? 'block' : 'none' }}>
                 {step.content}
