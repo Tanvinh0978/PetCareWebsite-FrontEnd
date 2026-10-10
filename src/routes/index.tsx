@@ -18,6 +18,7 @@ import AdminRoomFormPage from "@/pages/admin/room/RoomFormPage";
 import StaffDashboardPage from "@/pages/staff/StaffDashboardPage";
 import MyPetsPage from "@/pages/customer/MyPetsPage";
 import PetFormPage from "@/pages/customer/PetFormPage";
+import CreateBookingPage from "@/pages/customer/CreateBookingPage";
 // [new-page:imports]
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -73,6 +74,7 @@ export default function AppRoutes() {
         { path: "pets", element: <MyPetsPage /> },
         { path: "pets/new", element: <PetFormPage /> },
         { path: "pets/:id/edit", element: <PetFormPage /> },
+        { path: "booking", element: <CreateBookingPage /> },
         // [new-page:customer]
         notFound,
       ],
