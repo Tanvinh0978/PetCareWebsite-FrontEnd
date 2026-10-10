@@ -2,7 +2,6 @@ import React, { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { App } from 'antd'
 import { petService } from '@/services/pet.service'
-import { customerService } from '@/services/customer.service'
 import { useAuthStore } from '@/store/useAuthStore'
 import { PetSpecies, isCat } from '@/types/pet.types'
 import { getApiErrorMessage } from '@/utils/apiError'
@@ -25,31 +24,12 @@ const CustomerPetFormPage: React.FC = () => {
   const [age, setAge] = useState<number | string>('')
   const [healthNotes, setHealthNotes] = useState('')
 
-  // Resolve customer ID
+  // Resolve customer ID from JWT user (stored in authStore)
   useEffect(() => {
-    const resolveCustId = async () => {
-      const stored = localStorage.getItem('petcare.customerId')
-      if (stored) {
-        setCustomerId(stored)
-        return
-      }
-      const user = useAuthStore.getState().user
-      if (user?.id) {
-        setCustomerId(String(user.id))
-        return
-      }
-      try {
-        const custRes = await customerService.fetchWithPagination({ pageSize: 1, isActive: true })
-        if (custRes?.result?.items?.length) {
-          const firstId = custRes.result.items[0].id
-          setCustomerId(firstId)
-          localStorage.setItem('petcare.customerId', firstId)
-        }
-      } catch {}
-    }
-
-    if (!editing) {
-      resolveCustId()
+    if (editing) return
+    const user = useAuthStore.getState().user
+    if (user?.id) {
+      setCustomerId(String(user.id))
     }
   }, [editing])
 

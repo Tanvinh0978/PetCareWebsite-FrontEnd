@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { App, Modal } from 'antd'
 import { petService } from '@/services/pet.service'
-import { customerService } from '@/services/customer.service'
-import { useAuthStore } from '@/store/useAuthStore'
 import type { PetDTO } from '@/types/pet.types'
-import { PetSpecies, PetSpeciesText, PetSpeciesIcon, isCat } from '@/types/pet.types'
+import { isCat } from '@/types/pet.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 import PetDetailModal from '@/components/pet/PetDetailModal'
 
@@ -20,39 +18,13 @@ const CustomerPetListPage: React.FC = () => {
   const [petToDelete, setPetToDelete] = useState<PetDTO | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  // Resolve customer ID from localStorage or authStore
-  const getCustomerId = (): string | null => {
-    const fromStorage = localStorage.getItem('petcare.customerId')
-    if (fromStorage) return fromStorage
-    const user = useAuthStore.getState().user
-    if (user?.id) return String(user.id)
-    return null
-  }
-
   const loadCustomerPets = async () => {
     setLoading(true)
     setError('')
     try {
-      let custId = getCustomerId()
-
-      // If no customerId in local state, fetch the first active customer to ensure demo works
-      if (!custId) {
-        const custRes = await customerService.fetchWithPagination({ pageSize: 1, isActive: true })
-        if (custRes?.result?.items?.length) {
-          custId = custRes.result.items[0].id
-          localStorage.setItem('petcare.customerId', custId)
-        }
-      }
-
-      if (custId) {
-        // Fetch pets belonging to this customer
-        const customerPets = await petService.fetchByCustomerId(custId)
-        setPets(customerPets.filter((p) => p.isActive))
-      } else {
-        // Fallback: fetch from general pet list
-        const res = await petService.fetchWithPagination({ pageSize: 50, isActive: true })
-        setPets(res.items)
-      }
+      // Sử dụng endpoint /api/Pets/my-pets — backend đọc customerId từ JWT token
+      const myPets = await petService.fetchMyPets(true)
+      setPets(myPets)
     } catch (err) {
       setError(getApiErrorMessage(err))
     } finally {
