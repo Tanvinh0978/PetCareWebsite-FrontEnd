@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio } from 'antd';
-import { CalendarOutlined, CheckCircleFilled, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined } from '@ant-design/icons';
+import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card } from 'antd';
+import { CalendarOutlined, CheckCircleFilled, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { petService } from '@/services/pet.service';
@@ -22,6 +22,9 @@ const CreateBookingPage: React.FC = () => {
   
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  
+  // New state to separate flows
+  const [bookingType, setBookingType] = useState<'Grooming' | 'Boarding' | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
 
   const [petServices, setPetServices] = useState<Record<string, { groomingIds?: string[], boardingId?: string, dietId?: string }>>({});
@@ -44,7 +47,6 @@ const CreateBookingPage: React.FC = () => {
       const petsList = (petsRes as any).result || (petsRes as any).data || petsRes;
       setPets(Array.isArray(petsList) ? petsList : (petsList.items || []));
       
-      // Fetch details (with prices) for all active services
       const servicesWithDetails = await Promise.all(
         servicesData.map(async (srv) => {
           try {
@@ -85,24 +87,26 @@ const CreateBookingPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchAvailability = async () => {
-      for (const bId of Array.from(boardingServiceIds)) {
-        if (!roomUnavailableMap[bId]) {
-          try {
-            const roomRes = await roomService.checkAvailability({
-              serviceId: bId,
-              month: dayjs().month() + 1,
-              year: dayjs().year()
-            });
-            if (roomRes.result?.unavailableDates) {
-              setRoomUnavailableMap(prev => ({ ...prev, [bId]: roomRes.result.unavailableDates }));
-            }
-          } catch (e) {}
+    if (bookingType === 'Boarding') {
+      const fetchAvailability = async () => {
+        for (const bId of Array.from(boardingServiceIds)) {
+          if (!roomUnavailableMap[bId]) {
+            try {
+              const roomRes = await roomService.checkAvailability({
+                serviceId: bId,
+                month: dayjs().month() + 1,
+                year: dayjs().year()
+              });
+              if (roomRes.result?.unavailableDates) {
+                setRoomUnavailableMap(prev => ({ ...prev, [bId]: roomRes.result.unavailableDates }));
+              }
+            } catch (e) {}
+          }
         }
-      }
-    };
-    fetchAvailability();
-  }, [boardingServiceIds, roomUnavailableMap]);
+      };
+      fetchAvailability();
+    }
+  }, [boardingServiceIds, roomUnavailableMap, bookingType]);
 
   const mergedUnavailableDates = Array.from(boardingServiceIds).reduce((acc: string[], id: string) => {
     const dates = roomUnavailableMap[id] || [];
@@ -116,14 +120,26 @@ const CreateBookingPage: React.FC = () => {
 
   const next = () => {
     if (currentStep === 0 && selectedPetIds.length === 0) return message.warning('Please select at least 1 pet.');
-    if (currentStep === 1 && !hasGrooming && !hasBoarding) return message.warning('Please select at least 1 service.');
+    if (currentStep === 1) {
+      if (bookingType === 'Grooming' && !hasGrooming) return message.warning('Please select at least 1 grooming service.');
+      if (bookingType === 'Boarding' && !hasBoarding) return message.warning('Please select a room for the hotel.');
+    }
     if (currentStep === 2) {
-      if (hasBoarding && (!boardingDateRange || boardingDateRange.length < 2)) return message.warning('Please select a boarding period (Check-in and Check-out).');
-      if (hasGrooming && !groomingDate) return message.warning('Please select a date and time for Grooming.');
+      if (bookingType === 'Boarding' && (!boardingDateRange || boardingDateRange.length < 2)) return message.warning('Please select a boarding period (Check-in and Check-out).');
+      if (bookingType === 'Grooming' && !groomingDate) return message.warning('Please select a date and time for Grooming.');
     }
     setCurrentStep(currentStep + 1);
   };
-  const prev = () => setCurrentStep(currentStep - 1);
+  
+  const prev = () => {
+    if (currentStep === 0) {
+      setBookingType(null); // Go back to flow selection
+      setPetServices({}); // Reset services
+      form.resetFields();
+    } else {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   const calculateTotal = () => {
     let total = 0;
@@ -133,31 +149,34 @@ const CreateBookingPage: React.FC = () => {
       const srvs = petServices[petId];
       if (!srvs) return;
       
-      if (srvs.groomingIds) {
+      if (bookingType === 'Grooming' && srvs.groomingIds) {
         srvs.groomingIds.forEach((id: string) => {
           const s = services.find(x => x.id === id);
           if (s) total += getPriceForPet(s, pet.weight);
         });
       }
-      if (srvs.boardingId) {
-        const s = services.find(x => x.id === srvs.boardingId);
-        if (s) {
-          let days = 1;
-          if (boardingDateRange && boardingDateRange.length === 2) {
-             days = Math.max(1, boardingDateRange[1].diff(boardingDateRange[0], 'day'));
-          }
-          total += getPriceForPet(s, pet.weight) * days;
-        }
-      }
-      if (srvs.dietId) {
-         const s = services.find(x => x.id === srvs.dietId);
-         if (s) {
+      
+      if (bookingType === 'Boarding') {
+        if (srvs.boardingId) {
+          const s = services.find(x => x.id === srvs.boardingId);
+          if (s) {
             let days = 1;
             if (boardingDateRange && boardingDateRange.length === 2) {
                days = Math.max(1, boardingDateRange[1].diff(boardingDateRange[0], 'day'));
             }
             total += getPriceForPet(s, pet.weight) * days;
-         }
+          }
+        }
+        if (srvs.dietId) {
+           const s = services.find(x => x.id === srvs.dietId);
+           if (s) {
+              let days = 1;
+              if (boardingDateRange && boardingDateRange.length === 2) {
+                 days = Math.max(1, boardingDateRange[1].diff(boardingDateRange[0], 'day'));
+              }
+              total += getPriceForPet(s, pet.weight) * days;
+           }
+        }
       }
     });
     return total;
@@ -171,7 +190,7 @@ const CreateBookingPage: React.FC = () => {
       const srvs = petServices[petId];
       if (!srvs) return;
       
-      if (srvs.groomingIds && srvs.groomingIds.length > 0) {
+      if (bookingType === 'Grooming' && srvs.groomingIds && srvs.groomingIds.length > 0) {
         srvs.groomingIds.forEach((gId: string) => {
           bookingItems.push({
             petId,
@@ -183,24 +202,26 @@ const CreateBookingPage: React.FC = () => {
         });
       }
       
-      if (srvs.boardingId) {
-        bookingItems.push({
-          petId,
-          serviceId: srvs.boardingId,
-          scheduledStartAt: values.boardingDateRange[0].toISOString(),
-          scheduledEndAt: values.boardingDateRange[1].toISOString(),
-          quantity: 1
-        });
-      }
-
-      if (srvs.dietId) {
-        bookingItems.push({
-          petId,
-          serviceId: srvs.dietId,
-          scheduledStartAt: values.boardingDateRange[0].toISOString(),
-          scheduledEndAt: values.boardingDateRange[1].toISOString(),
-          quantity: 1
-        });
+      if (bookingType === 'Boarding') {
+        if (srvs.boardingId) {
+          bookingItems.push({
+            petId,
+            serviceId: srvs.boardingId,
+            scheduledStartAt: values.boardingDateRange[0].toISOString(),
+            scheduledEndAt: values.boardingDateRange[1].toISOString(),
+            quantity: 1
+          });
+        }
+  
+        if (srvs.dietId) {
+          bookingItems.push({
+            petId,
+            serviceId: srvs.dietId,
+            scheduledStartAt: values.boardingDateRange[0].toISOString(),
+            scheduledEndAt: values.boardingDateRange[1].toISOString(),
+            quantity: 1
+          });
+        }
       }
     });
 
@@ -227,6 +248,59 @@ const CreateBookingPage: React.FC = () => {
 
   if (loading) return <div style={{ textAlign: 'center', padding: '100px' }}><Spin size="large" /></div>;
 
+  // Flow Selection Screen
+  if (bookingType === null) {
+    return (
+      <div style={{ padding: '40px 16px', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+        <Title level={2} style={{ marginBottom: '40px', color: '#1e293b' }}>What would you like to book today?</Title>
+        <Row gutter={[24, 24]} justify="center">
+          <Col xs={24} md={11}>
+            <Card 
+              hoverable 
+              onClick={() => {
+                setBookingType('Grooming');
+                setCurrentStep(0);
+              }}
+              style={{ borderRadius: '16px', border: '2px solid #e2e8f0', height: '100%', transition: 'all 0.3s' }}
+              bodyStyle={{ padding: '32px', display: 'flex', flexDirection: 'column', height: '100%' }}
+            >
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>✂️</div>
+              <Title level={3} style={{ color: '#059669' }}>Grooming & Spa</Title>
+              <Text type="secondary" style={{ fontSize: '16px', display: 'block', marginBottom: '24px' }}>Pet beauty care</Text>
+              <ul style={{ textAlign: 'left', color: '#475569', marginBottom: '32px', listStyleType: 'none', padding: 0, flex: 1 }}>
+                <li style={{ marginBottom: '12px' }}>✓ Haircut & styling</li>
+                <li style={{ marginBottom: '12px' }}>✓ Bath & dry</li>
+                <li style={{ marginBottom: '12px' }}>✓ Ear & nail cleaning</li>
+              </ul>
+              <Button type="primary" size="large" block style={{ backgroundColor: '#059669', borderRadius: '8px' }}>Book Now</Button>
+            </Card>
+          </Col>
+          <Col xs={24} md={11}>
+            <Card 
+              hoverable 
+              onClick={() => {
+                setBookingType('Boarding');
+                setCurrentStep(0);
+              }}
+              style={{ borderRadius: '16px', border: '2px solid #e2e8f0', height: '100%', transition: 'all 0.3s' }}
+              bodyStyle={{ padding: '32px', display: 'flex', flexDirection: 'column', height: '100%' }}
+            >
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏨</div>
+              <Title level={3} style={{ color: '#059669' }}>Pet Hotel</Title>
+              <Text type="secondary" style={{ fontSize: '16px', display: 'block', marginBottom: '24px' }}>Pet boarding & care</Text>
+              <ul style={{ textAlign: 'left', color: '#475569', marginBottom: '32px', listStyleType: 'none', padding: 0, flex: 1 }}>
+                <li style={{ marginBottom: '12px' }}>✓ Day/night boarding</li>
+                <li style={{ marginBottom: '12px' }}>✓ Air-conditioned rooms</li>
+                <li style={{ marginBottom: '12px' }}>✓ 24/7 care & nutrition</li>
+              </ul>
+              <Button type="primary" size="large" block style={{ backgroundColor: '#059669', borderRadius: '8px' }}>Book Now</Button>
+            </Card>
+          </Col>
+        </Row>
+      </div>
+    );
+  }
+
   const groomingOptions = services.filter(s => s.serviceType === 'Grooming' || s.serviceType === 'Care');
   const boardingOptions = services.filter(s => s.serviceType === 'Boarding');
   const dietOptions = services.filter(s => s.serviceType === 'Diet');
@@ -237,7 +311,9 @@ const CreateBookingPage: React.FC = () => {
       content: (
         <div className="step-container fade-in">
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>Choose Pets</Title>
+            <Title level={3} style={{ color: '#1e293b' }}>
+              Choose Pets for {bookingType === 'Grooming' ? 'Spa' : 'Hotel'}
+            </Title>
             <Text type="secondary" style={{ fontSize: '16px' }}>You can select one or multiple pets</Text>
           </div>
           
@@ -279,12 +355,14 @@ const CreateBookingPage: React.FC = () => {
       )
     },
     {
-      title: 'Select Services',
+      title: bookingType === 'Grooming' ? 'Select Services' : 'Select Room & Diet',
       content: (
         <div className="step-container fade-in">
            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>Select Services</Title>
-            <Text type="secondary" style={{ fontSize: '16px' }}>Select services for each pet, price is automatically calculated based on weight</Text>
+            <Title level={3} style={{ color: '#1e293b' }}>
+              {bookingType === 'Grooming' ? 'Select Spa Services' : 'Select Room & Diet'}
+            </Title>
+            <Text type="secondary" style={{ fontSize: '16px' }}>Select for each pet, price is automatically calculated based on weight</Text>
           </div>
 
           <Tabs 
@@ -301,106 +379,108 @@ const CreateBookingPage: React.FC = () => {
                 children: (
                   <div style={{ padding: '16px', background: '#fff', borderRadius: '0 0 8px 8px', border: '1px solid #f0f0f0', borderTop: 'none' }}>
                     
-                    <div style={{ marginBottom: '24px' }}>
-                      <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>✂️ Group 1: Grooming & Spa</Title>
-                      <Checkbox.Group 
-                        style={{ width: '100%' }}
-                        value={pServices.groomingIds || []}
-                        onChange={(vals) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], groomingIds: vals as string[] } }))}
-                      >
-                        <Row gutter={[16, 16]}>
-                          {groomingOptions.map(srv => {
-                            const price = getPriceForPet(srv, pet.weight);
-                            return (
-                              <Col span={24} key={srv.id}>
-                                <Checkbox value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.groomingIds?.includes(srv.id) ? '#f0fdf4' : '#fff' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginLeft: '8px' }}>
-                                    <Text strong>{srv.name}</Text>
-                                    <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND</Text>
-                                  </div>
-                                </Checkbox>
-                              </Col>
-                            );
-                          })}
-                        </Row>
-                      </Checkbox.Group>
-                    </div>
+                    {bookingType === 'Grooming' && (
+                      <div style={{ marginBottom: '24px' }}>
+                        <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>✂️ Grooming & Spa Services</Title>
+                        <Checkbox.Group 
+                          style={{ width: '100%' }}
+                          value={pServices.groomingIds || []}
+                          onChange={(vals) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], groomingIds: vals as string[] } }))}
+                        >
+                          <Row gutter={[16, 16]}>
+                            {groomingOptions.map(srv => {
+                              const price = getPriceForPet(srv, pet.weight);
+                              return (
+                                <Col span={24} key={srv.id}>
+                                  <Checkbox value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.groomingIds?.includes(srv.id) ? '#f0fdf4' : '#fff' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginLeft: '8px' }}>
+                                      <Text strong>{srv.name}</Text>
+                                      <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND</Text>
+                                    </div>
+                                  </Checkbox>
+                                </Col>
+                              );
+                            })}
+                          </Row>
+                        </Checkbox.Group>
+                      </div>
+                    )}
 
-                    <Divider />
-
-                    <div>
-                      <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>🏨 Group 2: Pet Hotel (Boarding)</Title>
-                      <Radio.Group 
-                        style={{ width: '100%' }}
-                        value={pServices.boardingId}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setPetServices(prev => ({ 
-                            ...prev, 
-                            [petId]: { 
-                              ...prev[petId], 
-                              boardingId: val,
-                              ...(val ? {} : { dietId: undefined })
-                            } 
-                          }));
-                        }}
-                      >
-                        <Row gutter={[16, 16]}>
-                          {boardingOptions.map(srv => {
-                            const price = getPriceForPet(srv, pet.weight);
-                            return (
-                              <Col span={24} key={srv.id}>
-                                <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginLeft: '8px' }}>
-                                    <Text strong>{srv.name}</Text>
-                                    <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
-                                  </div>
-                                </Radio>
-                              </Col>
-                            );
-                          })}
-                        </Row>
-                      </Radio.Group>
-                      
-                      {pServices.boardingId && (
-                        <div style={{ marginTop: '12px' }}>
-                           <Button type="link" danger onClick={() => {
-                              setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
-                           }}>
-                              Clear room selection
-                           </Button>
-                        </div>
-                      )}
-
-                      {pServices.boardingId && dietOptions.length > 0 && (
-                        <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
-                          <Text strong style={{ display: 'block', marginBottom: '12px' }}>Additional diet service (Optional):</Text>
-                          <Radio.Group 
-                            style={{ width: '100%' }}
-                            value={pServices.dietId}
-                            onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
-                          >
-                            <Row gutter={[16, 16]}>
-                              {dietOptions.map(srv => {
-                                const price = getPriceForPet(srv, pet.weight);
-                                return (
-                                  <Col span={24} key={srv.id}>
-                                    <Radio value={srv.id}>
-                                      {srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
-                                    </Radio>
-                                  </Col>
-                                );
-                              })}
-                            </Row>
-                          </Radio.Group>
-                          <div style={{ marginTop: '8px' }}>
-                            <Button type="link" size="small" onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}>
-                               Clear diet selection
-                            </Button>
+                    {bookingType === 'Boarding' && (
+                      <div>
+                        <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>🏨 Pet Hotel (Boarding Room)</Title>
+                        <Radio.Group 
+                          style={{ width: '100%' }}
+                          value={pServices.boardingId}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPetServices(prev => ({ 
+                              ...prev, 
+                              [petId]: { 
+                                ...prev[petId], 
+                                boardingId: val,
+                                ...(val ? {} : { dietId: undefined })
+                              } 
+                            }));
+                          }}
+                        >
+                          <Row gutter={[16, 16]}>
+                            {boardingOptions.map(srv => {
+                              const price = getPriceForPet(srv, pet.weight);
+                              return (
+                                <Col span={24} key={srv.id}>
+                                  <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginLeft: '8px' }}>
+                                      <Text strong>{srv.name}</Text>
+                                      <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
+                                    </div>
+                                  </Radio>
+                                </Col>
+                              );
+                            })}
+                          </Row>
+                        </Radio.Group>
+                        
+                        {pServices.boardingId && (
+                          <div style={{ marginTop: '12px' }}>
+                             <Button type="link" danger onClick={() => {
+                                setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
+                             }}>
+                                Clear room selection
+                             </Button>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+
+                        {pServices.boardingId && dietOptions.length > 0 && (
+                          <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
+                            <Text strong style={{ display: 'block', marginBottom: '12px' }}>Additional diet service (Optional):</Text>
+                            <Radio.Group 
+                              style={{ width: '100%' }}
+                              value={pServices.dietId}
+                              onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
+                            >
+                              <Row gutter={[16, 16]}>
+                                {dietOptions.map(srv => {
+                                  const price = getPriceForPet(srv, pet.weight);
+                                  return (
+                                    <Col span={24} key={srv.id}>
+                                      <Radio value={srv.id}>
+                                        {srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
+                                      </Radio>
+                                    </Col>
+                                  );
+                                })}
+                              </Row>
+                            </Radio.Group>
+                            <div style={{ marginTop: '8px' }}>
+                              <Button type="link" size="small" onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}>
+                                 Clear diet selection
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                   </div>
                 )
@@ -415,9 +495,9 @@ const CreateBookingPage: React.FC = () => {
       content: (
         <div className="step-container fade-in">
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>Schedule</Title>
+            <Title level={3} style={{ color: '#1e293b' }}>Select Schedule</Title>
             <Text type="secondary" style={{ fontSize: '16px' }}>
-              Please select the date and time for the services
+              Please select the date and time for the {bookingType === 'Grooming' ? 'spa visit' : 'hotel stay'}
             </Text>
           </div>
 
@@ -426,7 +506,7 @@ const CreateBookingPage: React.FC = () => {
               <CalendarOutlined />
             </div>
             
-            {hasGrooming && (
+            {bookingType === 'Grooming' && (
               <div style={{ marginBottom: '24px' }}>
                 <Title level={5}>Grooming Appointment:</Title>
                 <Form.Item name="groomingDate" rules={[{ required: true, message: 'Please select a date and time' }]}>
@@ -442,7 +522,7 @@ const CreateBookingPage: React.FC = () => {
               </div>
             )}
 
-            {hasBoarding && (
+            {bookingType === 'Boarding' && (
               <div>
                 <Title level={5}>Boarding Appointment:</Title>
                 <Form.Item name="boardingDateRange" rules={[{ required: true, message: 'Please select check-in and check-out dates' }]}>
@@ -500,7 +580,7 @@ const CreateBookingPage: React.FC = () => {
                       </Text>
                       
                       <div style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {srvs.groomingIds?.map((gId: string) => {
+                        {bookingType === 'Grooming' && srvs.groomingIds?.map((gId: string) => {
                           const s = services.find(x => x.id === gId);
                           if (!s) return null;
                           const price = getPriceForPet(s, pet.weight);
@@ -512,7 +592,7 @@ const CreateBookingPage: React.FC = () => {
                           );
                         })}
                         
-                        {srvs.boardingId && (
+                        {bookingType === 'Boarding' && srvs.boardingId && (
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             {(() => {
                                const s = services.find(x => x.id === srvs.boardingId);
@@ -527,7 +607,7 @@ const CreateBookingPage: React.FC = () => {
                           </div>
                         )}
 
-                        {srvs.dietId && (
+                        {bookingType === 'Boarding' && srvs.dietId && (
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             {(() => {
                                const s = services.find(x => x.id === srvs.dietId);
@@ -585,6 +665,9 @@ const CreateBookingPage: React.FC = () => {
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <Title level={3} style={{ margin: 0, color: '#0f172a' }}>Book Appointment</Title>
+          <Tag color="cyan" style={{ fontSize: '14px', padding: '4px 12px', marginTop: '8px', borderRadius: '12px' }}>
+             {bookingType === 'Grooming' ? '✂️ Grooming & Spa' : '🏨 Pet Hotel'}
+          </Tag>
         </div>
       
       <Steps 
@@ -608,11 +691,9 @@ const CreateBookingPage: React.FC = () => {
           <Divider style={{ margin: '32px 0 24px' }} />
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {currentStep > 0 ? (
-              <Button onClick={prev} size="large" style={{ borderRadius: '8px', padding: '0 24px' }}>
-                Back
-              </Button>
-            ) : <div />}
+            <Button onClick={prev} size="large" style={{ borderRadius: '8px', padding: '0 24px' }}>
+              <LeftOutlined style={{ fontSize: '12px' }}/> Back
+            </Button>
             
             {currentStep < steps.length - 1 && (
               <Button type="primary" onClick={next} size="large" style={{ backgroundColor: '#059669', borderRadius: '8px', padding: '0 32px' }}>
