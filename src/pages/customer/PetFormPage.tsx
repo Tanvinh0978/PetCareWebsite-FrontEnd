@@ -30,6 +30,9 @@ const PetFormPage: React.FC = () => {
     setLoading(true);
     petService.fetchById(id)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
       .then((pet) => {
         setName(pet.name);
         setSpecies(pet.species as string);
@@ -39,6 +42,7 @@ const PetFormPage: React.FC = () => {
         setNotes(pet.healthNotes || '');
       })
       .catch((err: unknown) => setError(getApiErrorMessage(err)))
+<<<<<<< HEAD
 =======
       .then((res: any) => {
         const result = res.result || res.data || res;
@@ -56,6 +60,8 @@ const PetFormPage: React.FC = () => {
       })
       .catch((err: any) => setError(getApiErrorMessage(err)))
 >>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
+=======
+>>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
       .finally(() => setLoading(false));
   }, [id, editing]);
 
@@ -102,16 +108,22 @@ const PetFormPage: React.FC = () => {
 
       if (editing) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
         await petService.update(id!, payload);
         message.success('Pet updated successfully!');
       } else {
         await petService.create(payload);
+<<<<<<< HEAD
 =======
         await petService.update(id!, payload as any);
         message.success('Pet updated successfully!');
       } else {
         await petService.create(payload as any);
 >>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
+=======
+>>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
         message.success('Pet added successfully!');
       }
 

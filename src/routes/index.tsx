@@ -25,6 +25,7 @@ import CustomerPetFormPage from "@/pages/customer/pet/CustomerPetFormPage";
 import AdminStaffListPage from "@/pages/admin/staff/StaffListPage";
 import AdminStaffFormPage from "@/pages/admin/staff/StaffFormPage";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import AdminVoucherListPage from "@/pages/admin/voucher/VoucherListPage";
 import AdminVoucherFormPage from "@/pages/admin/voucher/VoucherFormPage";
 =======
@@ -32,6 +33,10 @@ import CreateBookingPage from "@/pages/customer/CreateBookingPage";
 import MyPetsPage from "@/pages/customer/MyPetsPage";
 import PetFormPage from "@/pages/customer/PetFormPage";
 >>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
+=======
+import AdminVoucherListPage from "@/pages/admin/voucher/VoucherListPage";
+import AdminVoucherFormPage from "@/pages/admin/voucher/VoucherFormPage";
+>>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
 // [new-page:imports]
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };

@@ -15,10 +15,7 @@ const MyPetsPage: React.FC = () => {
   const fetchPets = async () => {
     try {
       setLoading(true);
-<<<<<<< HEAD
-      const items = await petService.fetchWithPagination({ pageSize: 100 });
-      setPets(items.items ?? []);
-=======
+<<<<<<<<< Temporary merge branch 1
       const res = await petService.getMyPets();
       const items = res;
       // It returns the list directly via my-pets endpoint
@@ -27,7 +24,10 @@ const MyPetsPage: React.FC = () => {
       } else if ((items as any).items) {
         setPets((items as any).items);
       }
->>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
+=========
+      const items = await petService.fetchWithPagination({ pageSize: 100 });
+      setPets(items.items ?? []);
+>>>>>>>>> Temporary merge branch 2
     } catch (error) {
       message.error('Failed to load pets');
     } finally {
