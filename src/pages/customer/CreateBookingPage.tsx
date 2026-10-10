@@ -327,7 +327,11 @@ const CreateBookingPage: React.FC = () => {
         <Form form={form} layout="vertical" onFinish={onFinish}>
           
           <div style={{ minHeight: '300px' }}>
-            {steps[currentStep].content}
+            {steps.map((step, index) => (
+              <div key={index} style={{ display: currentStep === index ? 'block' : 'none' }}>
+                {step.content}
+              </div>
+            ))}
           </div>
 
           <Divider />
