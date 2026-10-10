@@ -60,24 +60,7 @@ export const petService = {
     }
   },
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
-  /**
-   * GET /api/Pets/{id} — [Authorize]
-   * Backend: ApiResponse<PetResponseDTO>
-   */
-<<<<<<< HEAD
-=======
-  getMyPets: async (): Promise<PetDTO[]> => {
-    const res: any = await axiosClient.get('/api/Pets/my-pets')
-    return res?.result ?? res ?? []
-  },
 
->>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
-=======
->>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
   fetchById: async (id: string): Promise<PetDTO> => {
     const res: any = await axiosClient.get(`/api/Pets/${id}`)
     return res?.result ?? res
@@ -116,6 +99,10 @@ export const petService = {
     const pets = res?.result ?? res
     if (Array.isArray(pets)) return pets as PetDTO[]
     return []
+  },
+
+  getMyPets: async (): Promise<PetDTO[]> => {
+    return petService.fetchMyPets()
   },
 
   /**

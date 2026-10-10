@@ -29,39 +29,20 @@ const PetFormPage: React.FC = () => {
     
     setLoading(true);
     petService.fetchById(id)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
-      .then((pet) => {
-        setName(pet.name);
-        setSpecies(pet.species as string);
-        setBreed(pet.breed || '');
-        setAge(pet.age?.toString() || '');
-        setWeight(pet.weight?.toString() || '');
-        setNotes(pet.healthNotes || '');
-      })
-      .catch((err: unknown) => setError(getApiErrorMessage(err)))
-<<<<<<< HEAD
-=======
-      .then((res: any) => {
-        const result = res.result || res.data || res;
+      .then((pet: any) => {
+        const result = pet?.result || pet?.data || pet;
         if (result) {
-          setName(result.name);
-          setSpecies(result.species === 1 ? 'Cat' : 'Dog');
+          setName(result.name || '');
+          setSpecies(result.species === 1 || result.species === 'Cat' ? 'Cat' : 'Dog');
           setBreed(result.breed || '');
-          // setGender(res.result.gender); // Backend doesn't support gender right now
           setAge(result.age?.toString() || '');
           setWeight(result.weight?.toString() || '');
           setNotes(result.healthNotes || '');
         } else {
-          setError(res.message || 'Failed to load pet details');
+          setError('Failed to load pet details');
         }
       })
-      .catch((err: any) => setError(getApiErrorMessage(err)))
->>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
-=======
->>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
+      .catch((err: unknown) => setError(getApiErrorMessage(err)))
       .finally(() => setLoading(false));
   }, [id, editing]);
 
@@ -107,23 +88,10 @@ const PetFormPage: React.FC = () => {
       };
 
       if (editing) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
-        await petService.update(id!, payload);
-        message.success('Pet updated successfully!');
-      } else {
-        await petService.create(payload);
-<<<<<<< HEAD
-=======
         await petService.update(id!, payload as any);
         message.success('Pet updated successfully!');
       } else {
         await petService.create(payload as any);
->>>>>>> 7a051f070450d5b66165a573dc72d5ec2c731c02
-=======
->>>>>>> 28caa64e0a92b3f60e40fec10aa35cba8ab56673
         message.success('Pet added successfully!');
       }
 
