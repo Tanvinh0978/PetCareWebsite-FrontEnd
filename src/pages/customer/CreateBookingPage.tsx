@@ -33,7 +33,7 @@ const CreateBookingPage: React.FC = () => {
     try {
       setLoading(true);
       const [petsRes, servicesData] = await Promise.all([
-        petService.getAllPets(),
+        petService.fetchWithPagination({ pageSize: 100 }), // Replaced removed getAllPets()
         serviceService.fetchActive()
       ]);
       
