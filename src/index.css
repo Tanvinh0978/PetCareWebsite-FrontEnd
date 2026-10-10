@@ -1234,4 +1234,35 @@ legend {
   font-size: 0.82rem;
   font-weight: 700;
 }
+/* Pet search bar */
+.filter-search-form {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 50px;
+  margin: 0;
+}
+
+.filter-search-form input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  height: 100%;
+  border-radius: 10px 0 0 10px;
+  border-right: none;
+}
+
+.filter-search-form input:focus {
+  border-right: none;
+}
+
+.filter-search-form .btn-search,
+.filter-search-form .btn-secondary {
+  flex: 0 0 auto;
+  width: auto;
+  height: 100%;
+  margin: 0;
+  border-radius: 0 10px 10px 0;
+  white-space: nowrap;
+}
 @media (max-width: 768px) { .login-banner, .register-banner { display: none !important; } }

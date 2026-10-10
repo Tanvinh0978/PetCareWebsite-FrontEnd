@@ -12,11 +12,14 @@ export const NAV: Record<Role, NavItem[]> = {
     // [new-page:nav-customer]
   ],
   staff: [
+    { label: "Pets", to: "pets" },
     // [new-page:nav-staff]
   ],
   admin: [
     { label: "Services", to: "services" },
     { label: "Customers", to: "customers" },
+    { label: "Pets", to: "pets" },
+    { label: "Staff", to: "staff" },
     { label: "Room Types", to: "room-types" },
     { label: "Rooms", to: "rooms" },
     // [new-page:nav-admin]
