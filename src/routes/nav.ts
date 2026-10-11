@@ -20,6 +20,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { label: "Customers", to: "customers" },
     { label: "Pets", to: "pets" },
     { label: "Staff", to: "staff" },
+    { label: "Roles & Permissions", to: "roles" },
     { label: "Room Types", to: "room-types" },
     { label: "Rooms", to: "rooms" },
     { label: "Vouchers", to: "vouchers" },

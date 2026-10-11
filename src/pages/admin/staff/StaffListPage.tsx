@@ -3,25 +3,24 @@ import { App } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { staffService } from '@/services/staff.service'
 import type { StaffDTO } from '@/types/staff.types'
-import { STAFF_ROLES } from '@/types/staff.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 import StaffDetailModal from './components/StaffDetailModal'
 
-const getRoleBadgeStyle = (role: string) => {
-  switch (role) {
-    case 'Veterinarian':
-      return { bg: '#e0f2fe', text: '#0369a1' }
-    case 'Pet Groomer':
-      return { bg: '#f3e8ff', text: '#7e22ce' }
-    case 'Care Specialist':
-      return { bg: '#ecfdf5', text: '#047857' }
-    case 'Facility Manager':
-      return { bg: '#fef3c7', text: '#b45309' }
-    case 'Receptionist':
-      return { bg: '#f1f5f9', text: '#334155' }
-    default:
-      return { bg: '#f1f5f9', text: '#475569' }
+const getRoleBadgeStyle = (roleName: string) => {
+  const lower = roleName.toLowerCase()
+  if (lower.includes('admin')) {
+    return { bg: '#fef2f2', text: '#b91c1c', border: '#fecaca' }
   }
+  if (lower.includes('receptionist')) {
+    return { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' }
+  }
+  if (lower.includes('boarding')) {
+    return { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0' }
+  }
+  if (lower.includes('grooming')) {
+    return { bg: '#f3e8ff', text: '#7e22ce', border: '#e9d5ff' }
+  }
+  return { bg: '#f1f5f9', text: '#475569', border: '#e2e8f0' }
 }
 
 const AdminStaffListPage: React.FC = () => {
@@ -30,7 +29,6 @@ const AdminStaffListPage: React.FC = () => {
 
   const [keywordInput, setKeywordInput] = useState('')
   const [keyword, setKeyword] = useState('')
-  const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -41,10 +39,8 @@ const AdminStaffListPage: React.FC = () => {
   const [error, setError] = useState('')
 
   const [selectedStaff, setSelectedStaff] = useState<StaffDTO | null>(null)
-  const [staffToToggle, setStaffToToggle] = useState<StaffDTO | null>(null)
-  const [toggling, setToggling] = useState(false)
-  const [staffToDelete, setStaffToDelete] = useState<StaffDTO | null>(null)
-  const [deleting, setDeleting] = useState(false)
+  const [staffToDeactivate, setStaffToDeactivate] = useState<StaffDTO | null>(null)
+  const [deactivating, setDeactivating] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -53,7 +49,6 @@ const AdminStaffListPage: React.FC = () => {
     staffService
       .fetchWithPagination({
         searchTerm: keyword || undefined,
-        role: roleFilter === 'all' ? undefined : roleFilter,
         status: statusFilter,
         pageNumber: page,
         pageSize,
@@ -74,7 +69,7 @@ const AdminStaffListPage: React.FC = () => {
     return () => {
       cancelled = true
     }
-  }, [page, pageSize, keyword, roleFilter, statusFilter, reload])
+  }, [page, pageSize, keyword, statusFilter, reload])
 
   const onSearch = (e: FormEvent) => {
     e.preventDefault()
@@ -91,44 +86,24 @@ const AdminStaffListPage: React.FC = () => {
   const resetAllFilters = () => {
     setKeywordInput('')
     setKeyword('')
-    setRoleFilter('all')
     setStatusFilter('all')
     setPage(1)
   }
 
-  const hasActiveFilters = Boolean(keyword || roleFilter !== 'all' || statusFilter !== 'all')
+  const hasActiveFilters = Boolean(keyword || statusFilter !== 'all')
 
-  const handleConfirmToggle = async () => {
-    if (!staffToToggle) return
-    setToggling(true)
+  const handleConfirmDeactivate = async () => {
+    if (!staffToDeactivate) return
+    setDeactivating(true)
     try {
-      await staffService.toggleStatus(staffToToggle.id)
-      message.success(
-        staffToToggle.status === 'Active'
-          ? `Deactivated staff "${staffToToggle.fullName}".`
-          : `Activated staff "${staffToToggle.fullName}".`,
-      )
-      setStaffToToggle(null)
+      await staffService.delete(staffToDeactivate.id)
+      message.success(`Deactivated staff account "${staffToDeactivate.fullName}".`)
+      setStaffToDeactivate(null)
       setReload((n) => n + 1)
     } catch (e) {
       setError(getApiErrorMessage(e))
     } finally {
-      setToggling(false)
-    }
-  }
-
-  const handleConfirmDelete = async () => {
-    if (!staffToDelete) return
-    setDeleting(true)
-    try {
-      await staffService.delete(staffToDelete.id)
-      message.success(`Removed staff "${staffToDelete.fullName}".`)
-      setStaffToDelete(null)
-      setReload((n) => n + 1)
-    } catch (e) {
-      setError(getApiErrorMessage(e))
-    } finally {
-      setDeleting(false)
+      setDeactivating(false)
     }
   }
 
@@ -159,20 +134,29 @@ const AdminStaffListPage: React.FC = () => {
         <div>
           <h1>Staff Management</h1>
           <p className="page-subtitle">
-            Manage veterinarian staff, groomers, care specialists, and facility operations.
+            Manage system administrators, receptionists, boarding caregivers, and grooming specialists.
           </p>
         </div>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => navigate('/admin/staff/new')}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add staff
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate('/admin/roles')}
+          >
+            🛡️ Manage Roles & Permissions
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => navigate('/admin/staff/new')}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add staff
+          </button>
+        </div>
       </div>
 
       {/* Filter and Search Panel */}
@@ -187,7 +171,7 @@ const AdminStaffListPage: React.FC = () => {
             </span>
             <input
               type="text"
-              placeholder="Search staff by name, email, or phone..."
+              placeholder="Search staff by name, email, phone, or role..."
               value={keywordInput}
               onChange={(e) => setKeywordInput(e.target.value)}
               aria-label="Search staff"
@@ -243,34 +227,6 @@ const AdminStaffListPage: React.FC = () => {
             )}
           </div>
         </div>
-
-        {/* Roles Category Chips like Service category chips */}
-        <div className="type-chips-row">
-          <span className="type-chips-label">Role:</span>
-          <button
-            type="button"
-            className={roleFilter === 'all' ? 'chip on' : 'chip'}
-            onClick={() => {
-              setPage(1)
-              setRoleFilter('all')
-            }}
-          >
-            All
-          </button>
-          {STAFF_ROLES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={roleFilter === r ? 'chip on' : 'chip'}
-              onClick={() => {
-                setPage(1)
-                setRoleFilter(r)
-              }}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
       </div>
 
       {error && (
@@ -288,7 +244,7 @@ const AdminStaffListPage: React.FC = () => {
                 <th className="col-idx">#</th>
                 <th>STAFF MEMBER</th>
                 <th>CONTACT INFO</th>
-                <th>ROLE / POSITION</th>
+                <th>ASSIGNED ROLES</th>
                 <th style={{ textAlign: 'center' }}>EXPERIENCE</th>
                 <th className="col-status">STATUS</th>
                 <th className="col-actions">ACTIONS</th>
@@ -298,7 +254,7 @@ const AdminStaffListPage: React.FC = () => {
               {loading ? (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                    <p style={{ margin: 0, color: '#557268' }}>Loading staff members...</p>
+                    <p style={{ margin: 0, color: '#557268' }}>Loading staff members from server...</p>
                   </td>
                 </tr>
               ) : !data || data.items.length === 0 ? (
@@ -309,7 +265,7 @@ const AdminStaffListPage: React.FC = () => {
                       <p>
                         {hasActiveFilters
                           ? 'Try adjusting your search query or filters.'
-                          : 'No staff profiles recorded in the system yet.'}
+                          : 'No staff profiles recorded in the database yet.'}
                       </p>
                       {hasActiveFilters ? (
                         <button type="button" className="btn" onClick={resetAllFilters}>
@@ -330,7 +286,6 @@ const AdminStaffListPage: React.FC = () => {
               ) : (
                 data.items.map((st, idx) => {
                   const rowNumber = (page - 1) * pageSize + idx + 1
-                  const badge = getRoleBadgeStyle(st.role)
 
                   return (
                     <tr
@@ -342,8 +297,8 @@ const AdminStaffListPage: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div
                             style={{
-                              width: '34px',
-                              height: '34px',
+                              width: '36px',
+                              height: '36px',
                               borderRadius: '50%',
                               backgroundColor: '#ecfdf5',
                               color: '#059669',
@@ -351,7 +306,8 @@ const AdminStaffListPage: React.FC = () => {
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '0.9rem',
+                              fontSize: '0.95rem',
+                              border: '1px solid #a7f3d0'
                             }}
                           >
                             {st.fullName.charAt(0).toUpperCase()}
@@ -361,35 +317,48 @@ const AdminStaffListPage: React.FC = () => {
                               {st.fullName}
                             </strong>
                             <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                              ID: {st.id.slice(0, 10)}
+                              ID: {st.id.slice(0, 8)}...
                             </span>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div>
-                          <div style={{ fontSize: '0.88rem' }}>{st.email}</div>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 500 }}>{st.email}</div>
                           <div style={{ fontSize: '0.82rem', color: '#64748b' }}>
                             {st.phoneNumber}
                           </div>
                         </div>
                       </td>
                       <td>
-                        <span
-                          style={{
-                            padding: '3px 10px',
-                            borderRadius: '12px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            background: badge.bg,
-                            color: badge.text,
-                          }}
-                        >
-                          {st.role}
-                        </span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {st.roles && st.roles.length > 0 ? (
+                            st.roles.map((r) => {
+                              const badge = getRoleBadgeStyle(r)
+                              return (
+                                <span
+                                  key={r}
+                                  style={{
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 600,
+                                    background: badge.bg,
+                                    color: badge.text,
+                                    border: `1px solid ${badge.border}`,
+                                  }}
+                                >
+                                  {r}
+                                </span>
+                              )
+                            })
+                          ) : (
+                            <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>No roles</span>
+                          )}
+                        </div>
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        {st.yearsOfExperience} yr{st.yearsOfExperience > 1 ? 's' : ''}
+                        {st.yearsOfExperience} yr{st.yearsOfExperience !== 1 ? 's' : ''}
                       </td>
                       <td className="col-status">
                         <span
@@ -419,20 +388,16 @@ const AdminStaffListPage: React.FC = () => {
                           >
                             Edit
                           </button>
-                          <button
-                            type="button"
-                            className={`btn-action ${
-                              st.status === 'Active' ? 'danger' : 'view'
-                            }`}
-                            onClick={() => setStaffToToggle(st)}
-                            title={
-                              st.status === 'Active'
-                                ? 'Deactivate staff'
-                                : 'Activate staff'
-                            }
-                          >
-                            {st.status === 'Active' ? 'Deactivate' : 'Activate'}
-                          </button>
+                          {st.status === 'Active' && (
+                            <button
+                              type="button"
+                              className="btn-action danger"
+                              onClick={() => setStaffToDeactivate(st)}
+                              title="Deactivate staff"
+                            >
+                              Deactivate
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -489,54 +454,37 @@ const AdminStaffListPage: React.FC = () => {
         onClose={() => setSelectedStaff(null)}
       />
 
-      {/* Toggle Status Confirmation Dialog */}
-      {staffToToggle && (
+      {/* Deactivate Staff Confirmation Dialog */}
+      {staffToDeactivate && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">
-            <div
-              className={`confirm-icon ${
-                staffToToggle.status === 'Active' ? 'danger' : 'primary'
-              }`}
-            >
+            <div className="confirm-icon danger">
               ⚠️
             </div>
-            <h3>
-              {staffToToggle.status === 'Active'
-                ? 'Deactivate Staff Member?'
-                : 'Activate Staff Member?'}
-            </h3>
+            <h3>Deactivate Staff Account?</h3>
             <p>
-              Are you sure you want to{' '}
-              {staffToToggle.status === 'Active' ? 'deactivate' : 'activate'}{' '}
-              <strong>"{staffToToggle.fullName}"</strong>?
+              Are you sure you want to deactivate{' '}
+              <strong>"{staffToDeactivate.fullName}"</strong>?
               <br />
-              {staffToToggle.status === 'Active'
-                ? 'They will no longer be assigned to new pet care bookings.'
-                : 'They will be available to take care of bookings and grooming tasks.'}
+              Their login access will be suspended and they will not be assigned to upcoming booking shifts.
             </p>
             <div className="confirm-actions">
               <button
                 type="button"
                 className="btn btn-secondary"
-                disabled={toggling}
-                onClick={() => setStaffToToggle(null)}
+                disabled={deactivating}
+                onClick={() => setStaffToDeactivate(null)}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className={`btn btn-action ${
-                  staffToToggle.status === 'Active' ? 'danger' : 'view'
-                }`}
-                disabled={toggling}
-                onClick={handleConfirmToggle}
+                className="btn btn-action danger"
+                disabled={deactivating}
+                onClick={handleConfirmDeactivate}
                 style={{ padding: '0.65rem 1.4rem', color: '#fff' }}
               >
-                {toggling
-                  ? 'Processing...'
-                  : staffToToggle.status === 'Active'
-                  ? 'Confirm Deactivate'
-                  : 'Confirm Activate'}
+                {deactivating ? 'Processing...' : 'Confirm Deactivate'}
               </button>
             </div>
           </div>

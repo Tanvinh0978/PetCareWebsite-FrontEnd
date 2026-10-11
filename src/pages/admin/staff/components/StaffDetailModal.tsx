@@ -11,20 +11,12 @@ interface StaffDetailModalProps {
 }
 
 const getRoleColor = (role: string) => {
-  switch (role) {
-    case 'Veterinarian':
-      return 'cyan'
-    case 'Pet Groomer':
-      return 'purple'
-    case 'Care Specialist':
-      return 'green'
-    case 'Facility Manager':
-      return 'gold'
-    case 'Receptionist':
-      return 'blue'
-    default:
-      return 'default'
-  }
+  const lower = role.toLowerCase()
+  if (lower.includes('admin')) return 'red'
+  if (lower.includes('receptionist')) return 'blue'
+  if (lower.includes('boarding')) return 'green'
+  if (lower.includes('grooming')) return 'purple'
+  return 'default'
 }
 
 export const StaffDetailModal: React.FC<StaffDetailModalProps> = ({
@@ -76,10 +68,18 @@ export const StaffDetailModal: React.FC<StaffDetailModalProps> = ({
         <Descriptions.Item label="Staff ID">
           <Text copyable style={{ fontSize: '0.85rem' }}>{staff.id}</Text>
         </Descriptions.Item>
-        <Descriptions.Item label="Role / Position">
-          <Tag color={getRoleColor(staff.role)} style={{ fontSize: '0.85rem', padding: '2px 8px' }}>
-            {staff.role}
-          </Tag>
+        <Descriptions.Item label="Assigned Roles">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            {staff.roles && staff.roles.length > 0 ? (
+              staff.roles.map((r) => (
+                <Tag key={r} color={getRoleColor(r)} style={{ fontSize: '0.85rem', padding: '2px 8px' }}>
+                  {r}
+                </Tag>
+              ))
+            ) : (
+              <Text type="secondary">No roles assigned</Text>
+            )}
+          </div>
         </Descriptions.Item>
         <Descriptions.Item label="Email">
           <a href={`mailto:${staff.email}`} style={{ color: 'var(--primary)' }}>
@@ -91,6 +91,11 @@ export const StaffDetailModal: React.FC<StaffDetailModalProps> = ({
             {staff.phoneNumber}
           </a>
         </Descriptions.Item>
+        {staff.address && (
+          <Descriptions.Item label="Address">
+            <Text>{staff.address}</Text>
+          </Descriptions.Item>
+        )}
         <Descriptions.Item label="Experience">
           <Text strong>{staff.yearsOfExperience} year(s)</Text>
         </Descriptions.Item>
@@ -100,8 +105,8 @@ export const StaffDetailModal: React.FC<StaffDetailModalProps> = ({
           </Tag>
         </Descriptions.Item>
         {staff.createdAt && (
-          <Descriptions.Item label="Joined Date">
-            {new Date(staff.createdAt).toLocaleDateString()}
+          <Descriptions.Item label="Created At">
+            <Text>{new Date(staff.createdAt).toLocaleDateString()}</Text>
           </Descriptions.Item>
         )}
       </Descriptions>

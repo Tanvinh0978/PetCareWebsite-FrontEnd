@@ -60,10 +60,7 @@ export const petService = {
     }
   },
 
-  /**
-   * GET /api/Pets/{id} — [Authorize]
-   * Backend: ApiResponse<PetResponseDTO>
-   */
+
   fetchById: async (id: string): Promise<PetDTO> => {
     const res: any = await axiosClient.get(`/api/Pets/${id}`)
     return res?.result ?? res
@@ -102,6 +99,10 @@ export const petService = {
     const pets = res?.result ?? res
     if (Array.isArray(pets)) return pets as PetDTO[]
     return []
+  },
+
+  getMyPets: async (): Promise<PetDTO[]> => {
+    return petService.fetchMyPets()
   },
 
   /**
