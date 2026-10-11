@@ -3,10 +3,13 @@ export interface StaffDTO {
   fullName: string
   email: string
   phoneNumber: string
+  address?: string
+  avatarUrl?: string
   yearsOfExperience: number
-  role: string
   status: 'Active' | 'Inactive'
-  createdAt: string
+  roles: string[]
+  roleIds?: string[]
+  createdAt?: string
   updatedAt?: string
 }
 
@@ -14,32 +17,26 @@ export interface CreateStaffDTO {
   fullName: string
   email: string
   phoneNumber: string
-  password?: string
+  password: string
+  address?: string
+  avatarUrl?: string
   yearsOfExperience: number
-  role: string
-  status?: 'Active' | 'Inactive'
+  roleIds: string[]
 }
 
 export interface UpdateStaffDTO {
-  fullName?: string
-  phoneNumber?: string
-  yearsOfExperience?: number
-  role?: string
-  status?: 'Active' | 'Inactive'
+  fullName: string
+  phoneNumber: string
+  address?: string
+  avatarUrl?: string
+  yearsOfExperience: number
+  status: number // 0: Active, 1: Inactive
+  roleIds: string[]
 }
 
 export interface StaffQueryParams {
   searchTerm?: string
-  role?: string
-  status?: 'all' | 'active' | 'inactive'
+  status?: 'all' | 'active' | 'inactive' | number
   pageNumber?: number
   pageSize?: number
 }
-
-export const STAFF_ROLES = [
-  'Veterinarian',
-  'Pet Groomer',
-  'Care Specialist',
-  'Receptionist',
-  'Facility Manager',
-] as const

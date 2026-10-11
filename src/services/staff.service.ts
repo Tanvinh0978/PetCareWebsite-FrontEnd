@@ -10,64 +10,40 @@ const LOCAL_STORAGE_KEY = 'petcare.staff.mock'
 
 const INITIAL_STAFF: StaffDTO[] = [
   {
-    id: 's101-vet-thao',
-    fullName: 'Dr. Nguyen Thu Thao',
-    email: 'thao.nguyen@petcare.com',
-    phoneNumber: '0903 112 334',
-    yearsOfExperience: 6,
-    role: 'Veterinarian',
+    id: 'B0000000-0000-0000-0000-000000000001',
+    fullName: 'Quản Trị Viên',
+    email: 'admin@petcare.com',
+    phoneNumber: '0901000001',
+    yearsOfExperience: 5,
     status: 'Active',
-    createdAt: '2024-01-15T08:00:00Z',
+    roles: ['Admin'],
   },
   {
-    id: 's102-groom-quang',
-    fullName: 'Le Minh Quang',
-    email: 'quang.le@petcare.com',
-    phoneNumber: '0918 223 445',
-    yearsOfExperience: 4,
-    role: 'Pet Groomer',
-    status: 'Active',
-    createdAt: '2024-02-10T09:30:00Z',
-  },
-  {
-    id: 's103-care-anh',
-    fullName: 'Tran Mai Anh',
-    email: 'anh.tran@petcare.com',
-    phoneNumber: '0937 445 667',
-    yearsOfExperience: 3,
-    role: 'Care Specialist',
-    status: 'Active',
-    createdAt: '2024-03-01T10:00:00Z',
-  },
-  {
-    id: 's104-rec-hoang',
-    fullName: 'Pham Huy Hoang',
-    email: 'hoang.pham@petcare.com',
-    phoneNumber: '0982 778 899',
+    id: 'B0000000-0000-0000-0000-000000000002',
+    fullName: 'Lễ Tân Hương Mai',
+    email: 'receptionist@petcare.com',
+    phoneNumber: '0901000002',
     yearsOfExperience: 2,
-    role: 'Receptionist',
     status: 'Active',
-    createdAt: '2024-04-12T11:15:00Z',
+    roles: ['Receptionist'],
   },
   {
-    id: 's105-mgr-dung',
-    fullName: 'Do Tuan Dung',
-    email: 'dung.do@petcare.com',
-    phoneNumber: '0908 990 011',
-    yearsOfExperience: 8,
-    role: 'Facility Manager',
+    id: 'B0000000-0000-0000-0000-000000000003',
+    fullName: 'Nhân Viên Trực Phòng Tuấn',
+    email: 'boarding@petcare.com',
+    phoneNumber: '0901000003',
+    yearsOfExperience: 3,
     status: 'Active',
-    createdAt: '2023-11-20T07:45:00Z',
+    roles: ['Boarding Staff'],
   },
   {
-    id: 's106-care-lan',
-    fullName: 'Vu Thi Ngoc Lan',
-    email: 'lan.vu@petcare.com',
-    phoneNumber: '0945 334 556',
-    yearsOfExperience: 1,
-    role: 'Care Specialist',
-    status: 'Inactive',
-    createdAt: '2024-05-18T14:20:00Z',
+    id: 'B0000000-0000-0000-0000-000000000004',
+    fullName: 'Thợ Cắt Tỉa Hoàng Anh',
+    email: 'grooming@petcare.com',
+    phoneNumber: '0901000004',
+    yearsOfExperience: 4,
+    status: 'Active',
+    roles: ['Grooming Staff'],
   },
 ]
 
@@ -86,35 +62,88 @@ function saveLocalStaff(items: StaffDTO[]): void {
   } catch {}
 }
 
+const mapApiStaff = (s: any): StaffDTO => {
+  let statusText: 'Active' | 'Inactive' = 'Active'
+  if (s.status === 1 || s.status === 'Inactive') {
+    statusText = 'Inactive'
+  } else if (s.status === 0 || s.status === 'Active') {
+    statusText = 'Active'
+  }
+
+  const roles = Array.isArray(s.roles)
+    ? s.roles
+    : Array.isArray(s.roleNames)
+    ? s.roleNames
+    : s.role
+    ? [s.role]
+    : []
+
+  return {
+    id: s.id,
+    fullName: s.fullName,
+    email: s.email,
+    phoneNumber: s.phoneNumber,
+    address: s.address,
+    avatarUrl: s.avatarUrl,
+    yearsOfExperience: s.yearsOfExperience ?? 0,
+    status: statusText,
+    roles,
+    roleIds: s.roleIds || [],
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
+  }
+}
+
 export const staffService = {
   fetchWithPagination: async (
     params?: StaffQueryParams,
   ): Promise<IPagedResult<StaffDTO>> => {
     try {
-      const res: any = await axiosClient.get('/api/staff', { params })
-      if (res?.result?.items) return res.result
-      if (res?.items) return res
-    } catch {
-      // Graceful fallback to mock data when /api/staff is not available
+      const queryParams: Record<string, any> = {}
+      if (params?.searchTerm) queryParams.searchTerm = params.searchTerm
+      if (params?.pageNumber) queryParams.pageNumber = params.pageNumber
+      if (params?.pageSize) queryParams.pageSize = params.pageSize
+
+      if (params?.status !== undefined && params?.status !== 'all') {
+        if (params.status === 'active' || params.status === 0) {
+          queryParams.status = 0
+        } else if (params.status === 'inactive' || params.status === 1) {
+          queryParams.status = 1
+        }
+      }
+
+      const res: any = await axiosClient.get('/api/Staffs', { params: queryParams })
+      const container = res?.result || res
+      if (container?.items) {
+        return {
+          items: container.items.map(mapApiStaff),
+          totalCount: container.totalCount,
+          pageNumber: container.pageNumber || params?.pageNumber || 1,
+          pageSize: container.pageSize || params?.pageSize || 10,
+          totalPages: container.totalPages || Math.ceil((container.totalCount || 0) / (container.pageSize || 10)) || 1,
+          hasPreviousPage: container.hasPreviousPage ?? (params?.pageNumber ? params.pageNumber > 1 : false),
+          hasNextPage: container.hasNextPage ?? false,
+        }
+      }
+    } catch (err) {
+      console.warn('Backend /api/Staffs error, falling back to local storage:', err)
     }
 
+    // Local fallback
     const all = getLocalStaff()
     const term = params?.searchTerm?.trim().toLowerCase()
-    const role = params?.role
     const status = params?.status
 
-    let filtered = all.filter((s) => {
+    const filtered = all.filter((s) => {
       if (term) {
         const matchName = s.fullName.toLowerCase().includes(term)
         const matchEmail = s.email.toLowerCase().includes(term)
         const matchPhone = s.phoneNumber.includes(term)
-        if (!matchName && !matchEmail && !matchPhone) return false
+        const matchRole = s.roles.some((r) => r.toLowerCase().includes(term))
+        if (!matchName && !matchEmail && !matchPhone && !matchRole) return false
       }
-      if (role && role !== 'all' && s.role !== role) {
-        return false
-      }
-      if (status && status !== 'all') {
-        const isActive = status === 'active'
+      if (status !== undefined && status !== 'all') {
+        const isActive = status === 'active' || status === 0
         if ((s.status === 'Active') !== isActive) return false
       }
       return true
@@ -140,11 +169,13 @@ export const staffService = {
 
   fetchById: async (id: string): Promise<StaffDTO> => {
     try {
-      const res: any = await axiosClient.get(`/api/staff/${id}`)
-      if (res?.result) return res.result
-      if (res?.id) return res
-    } catch {
-      // Fallback
+      const res: any = await axiosClient.get(`/api/Staffs/${id}`)
+      const raw = res?.result || res
+      if (raw && (raw.id || raw.fullName)) {
+        return mapApiStaff(raw)
+      }
+    } catch (err) {
+      console.warn(`Backend /api/Staffs/${id} failed, checking local storage:`, err)
     }
 
     const all = getLocalStaff()
@@ -155,10 +186,12 @@ export const staffService = {
 
   create: async (data: CreateStaffDTO): Promise<string> => {
     try {
-      const res: any = await axiosClient.post('/api/staff', data)
-      if (res?.result) return res.result
-    } catch {
-      // Fallback
+      const res: any = await axiosClient.post('/api/Staffs', data)
+      const newId = res?.result || res?.id
+      if (newId) return String(newId)
+    } catch (err) {
+      console.warn('Backend /api/Staffs create failed, using local storage:', err)
+      // Throw if not falling back or let local succeed
     }
 
     const all = getLocalStaff()
@@ -168,9 +201,12 @@ export const staffService = {
       fullName: data.fullName,
       email: data.email,
       phoneNumber: data.phoneNumber,
+      address: data.address,
+      avatarUrl: data.avatarUrl,
       yearsOfExperience: Number(data.yearsOfExperience) || 0,
-      role: data.role,
-      status: data.status || 'Active',
+      roles: ['Staff'],
+      roleIds: data.roleIds,
+      status: 'Active',
       createdAt: new Date().toISOString(),
     }
     saveLocalStaff([newStaff, ...all])
@@ -179,10 +215,10 @@ export const staffService = {
 
   update: async (id: string, data: UpdateStaffDTO): Promise<string> => {
     try {
-      const res: any = await axiosClient.put(`/api/staff/${id}`, data)
-      if (res?.result) return res.result
-    } catch {
-      // Fallback
+      const res: any = await axiosClient.put(`/api/Staffs/${id}`, data)
+      if (res?.result !== undefined) return id
+    } catch (err) {
+      console.warn(`Backend /api/Staffs/${id} update failed:`, err)
     }
 
     const all = getLocalStaff()
@@ -190,7 +226,13 @@ export const staffService = {
     if (idx !== -1) {
       all[idx] = {
         ...all[idx],
-        ...data,
+        fullName: data.fullName,
+        phoneNumber: data.phoneNumber,
+        address: data.address,
+        avatarUrl: data.avatarUrl,
+        yearsOfExperience: data.yearsOfExperience,
+        status: data.status === 0 ? 'Active' : 'Inactive',
+        roleIds: data.roleIds,
         updatedAt: new Date().toISOString(),
       }
       saveLocalStaff(all)
@@ -198,36 +240,23 @@ export const staffService = {
     return id
   },
 
-  toggleStatus: async (id: string): Promise<boolean> => {
+  delete: async (id: string): Promise<boolean> => {
     try {
-      const res: any = await axiosClient.patch(`/api/staff/${id}/toggle-status`)
-      if (res?.result !== undefined) return res.result
-    } catch {
-      // Fallback
+      const res: any = await axiosClient.delete(`/api/Staffs/${id}`)
+      if (res?.result !== undefined) return Boolean(res.result)
+      return true
+    } catch (err) {
+      console.warn(`Backend /api/Staffs/${id} delete failed:`, err)
     }
 
     const all = getLocalStaff()
     const idx = all.findIndex((s) => s.id === id)
     if (idx !== -1) {
-      all[idx].status = all[idx].status === 'Active' ? 'Inactive' : 'Active'
+      all[idx].status = 'Inactive'
       all[idx].updatedAt = new Date().toISOString()
       saveLocalStaff(all)
       return true
     }
     return false
-  },
-
-  delete: async (id: string): Promise<boolean> => {
-    try {
-      const res: any = await axiosClient.delete(`/api/staff/${id}`)
-      if (res?.result !== undefined) return res.result
-    } catch {
-      // Fallback
-    }
-
-    const all = getLocalStaff()
-    const updated = all.filter((s) => s.id !== id)
-    saveLocalStaff(updated)
-    return true
   },
 }

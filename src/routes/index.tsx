@@ -24,6 +24,7 @@ import CustomerPetListPage from "@/pages/customer/pet/CustomerPetListPage";
 import CustomerPetFormPage from "@/pages/customer/pet/CustomerPetFormPage";
 import AdminStaffListPage from "@/pages/admin/staff/StaffListPage";
 import AdminStaffFormPage from "@/pages/admin/staff/StaffFormPage";
+import RolePermissionPage from "@/pages/admin/role/RolePermissionPage";
 import AdminVoucherListPage from "@/pages/admin/voucher/VoucherListPage";
 import AdminVoucherFormPage from "@/pages/admin/voucher/VoucherFormPage";
 import CreateBookingPage from "@/pages/customer/CreateBookingPage";
@@ -46,7 +47,7 @@ export default function AppRoutes() {
     { path: "/verify-otp", element: <PawstayAuthPage /> },
     {
       path: "/admin",
-      element: <Layout role="admin" />,
+      element: <RequireRole role="admin"><Layout role="admin" /></RequireRole>,
       children: [
         { index: true, element: <AdminDashboardPage /> },
         { path: "services", element: <AdminServiceListPage /> },
@@ -68,6 +69,7 @@ export default function AppRoutes() {
         { path: "staff", element: <AdminStaffListPage /> },
         { path: "staff/new", element: <AdminStaffFormPage /> },
         { path: "staff/:id/edit", element: <AdminStaffFormPage /> },
+        { path: "roles", element: <RolePermissionPage /> },
         { path: "vouchers", element: <AdminVoucherListPage /> },
         { path: "vouchers/new", element: <AdminVoucherFormPage /> },
         { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
