@@ -302,9 +302,12 @@ const CreateBookingPage: React.FC = () => {
     );
   }
 
-  const groomingOptions = services.filter(s => s.serviceType === 'Grooming' || s.serviceType === 'Care');
-  const boardingOptions = services.filter(s => s.serviceType === 'Boarding');
-  const dietOptions = services.filter(s => s.serviceType === 'Diet');
+  const groomingOptions = services.filter(s => {
+    const t = String(s.serviceType || '').toLowerCase();
+    return t === 'grooming' || t === 'care';
+  });
+  const boardingOptions = services.filter(s => String(s.serviceType || '').toLowerCase() === 'boarding');
+  const dietOptions = services.filter(s => String(s.serviceType || '').toLowerCase() === 'diet');
 
   const steps = [
     {
@@ -402,62 +405,77 @@ const CreateBookingPage: React.FC = () => {
                     {bookingType === 'Grooming' && (
                       <div style={{ marginBottom: '24px' }}>
                         <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>✂️ Grooming & Spa Services</Title>
-                        <Checkbox.Group 
-                          style={{ width: '100%' }}
-                          value={pServices.groomingIds || []}
-                          onChange={(vals) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], groomingIds: vals as string[] } }))}
-                        >
-                          <Row gutter={[16, 16]}>
-                            {groomingOptions.map(srv => {
-                              const price = getPriceForPet(srv, pet.weight);
-                              return (
-                                <Col span={24} key={srv.id}>
-                                  <Checkbox value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.groomingIds?.includes(srv.id) ? '#f0fdf4' : '#fff' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        {srv.imageUrl ? (
-                                          <img
-                                            src={srv.imageUrl}
-                                            alt={srv.name}
-                                            style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
-                                          />
-                                        ) : (
-                                          <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
-                                            ✂️
-                                          </div>
-                                        )}
-                                        <Text strong>{srv.name}</Text>
+                        {groomingOptions.length === 0 ? (
+                          <div style={{ padding: '24px', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+                            <p style={{ margin: 0, color: '#64748b' }}>No grooming services are currently available.</p>
+                          </div>
+                        ) : (
+                          <Checkbox.Group 
+                            style={{ width: '100%' }}
+                            value={pServices.groomingIds || []}
+                            onChange={(vals) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], groomingIds: vals as string[] } }))}
+                          >
+                            <Row gutter={[16, 16]}>
+                              {groomingOptions.map(srv => {
+                                const price = getPriceForPet(srv, pet.weight);
+                                return (
+                                  <Col span={24} key={srv.id}>
+                                    <Checkbox value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.groomingIds?.includes(srv.id) ? '#f0fdf4' : '#fff' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                          {srv.imageUrl ? (
+                                            <img
+                                              src={srv.imageUrl}
+                                              alt={srv.name}
+                                              style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                                            />
+                                          ) : (
+                                            <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                                              ✂️
+                                            </div>
+                                          )}
+                                          <Text strong>{srv.name}</Text>
+                                        </div>
+                                        <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND</Text>
                                       </div>
-                                      <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND</Text>
-                                    </div>
-                                  </Checkbox>
-                                </Col>
-                              );
-                            })}
-                          </Row>
-                        </Checkbox.Group>
+                                    </Checkbox>
+                                  </Col>
+                                );
+                              })}
+                            </Row>
+                          </Checkbox.Group>
+                        )}
                       </div>
                     )}
 
                     {bookingType === 'Boarding' && (
                       <div>
                         <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>🏨 Pet Hotel (Boarding Room)</Title>
-                        <Radio.Group 
-                          style={{ width: '100%' }}
-                          value={pServices.boardingId}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setPetServices(prev => ({ 
-                              ...prev, 
-                              [petId]: { 
-                                ...prev[petId], 
-                                boardingId: val,
-                                ...(val ? {} : { dietId: undefined })
-                              } 
-                            }));
-                          }}
-                        >
-                          <Row gutter={[16, 16]}>
+                        {boardingOptions.length === 0 ? (
+                          <div style={{ padding: '24px', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+                            <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '8px' }}>🏨</span>
+                            <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
+                              Chưa có gói dịch vụ phòng lưu trú (Boarding) nào trong hệ thống.<br />
+                              Vui lòng thêm dịch vụ danh mục <strong>Boarding</strong> kèm bảng giá tại trang Admin để hiển thị tại đây.
+                            </p>
+                          </div>
+                        ) : (
+                          <Radio.Group 
+                            style={{ width: '100%' }}
+                            value={pServices.boardingId}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPetServices(prev => ({ 
+                                ...prev, 
+                                [petId]: { 
+                                  ...prev[petId], 
+                                  boardingId: val,
+                                  ...(val ? {} : { dietId: undefined })
+                                } 
+                              }));
+                            }}
+                          >
+                            <Row gutter={[16, 16]}>
                             {boardingOptions.map(srv => {
                               const price = getPriceForPet(srv, pet.weight);
                               return (
