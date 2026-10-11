@@ -41,6 +41,7 @@ export default function HomePage() {
   const { role } = useAuth();
   const base = ROLE_BASE[role];
   const servicesUrl = (base ? base : '') + '/services';
+  const roomTypesUrl = (base ? base : '') + '/room-types';
 
   return (
     <div>
@@ -58,9 +59,9 @@ export default function HomePage() {
             <Link to={servicesUrl} className="btn">
               Browse Services
             </Link>
-            <a href="#how-it-works" className="btn btn-secondary">
-              How It Works ↓
-            </a>
+            <Link to={roomTypesUrl} className="btn btn-secondary">
+              🏨 Explore Hotel Suites
+            </Link>
           </div>
 
           <div className="hero-trust-row">
@@ -82,10 +83,11 @@ export default function HomePage() {
         <div className="services-cat-grid">
           {(Object.keys(SERVICE_META) as ServiceType[]).map((type) => {
             const meta = SERVICE_META[type];
+            const targetUrl = type === 'Boarding' ? roomTypesUrl : `${servicesUrl}?type=${type}`;
             return (
               <Link
                 key={type}
-                to={`${servicesUrl}?type=${type}`}
+                to={targetUrl}
                 className="service-cat-card"
               >
                 <span className="cat-card-icon">{meta.icon}</span>
@@ -95,7 +97,7 @@ export default function HomePage() {
                 </p>
                 <p>{meta.description}</p>
                 <span className="cat-card-link">
-                  View {SERVICE_TYPE_LABEL[type]} services →
+                  {type === 'Boarding' ? 'View Pet Hotel Suites →' : `View ${SERVICE_TYPE_LABEL[type]} services →`}
                 </span>
               </Link>
             );

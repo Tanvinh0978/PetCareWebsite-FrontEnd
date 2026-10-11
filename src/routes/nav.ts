@@ -4,9 +4,13 @@ export interface NavItem { label: string; to: string } // "to" tính từ gốc 
 
 // Mục menu bên trái cho từng vai trò.
 export const NAV: Record<Role, NavItem[]> = {
-  guest: [{ label: "Services", to: "services" }],
+  guest: [
+    { label: "Services", to: "services" },
+    { label: "Room Types", to: "room-types" },
+  ],
   customer: [
     { label: "Services", to: "services" },
+    { label: "Room Types", to: "room-types" },
     { label: "My Pets", to: "pets" },
     { label: "Book Now", to: "booking" },
     // [new-page:nav-customer]
