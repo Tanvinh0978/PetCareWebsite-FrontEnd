@@ -24,8 +24,22 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
       onCancel={onClose}
       footer={null}
       title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '1.5rem' }}>{speciesIcon}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {pet.imageUrl ? (
+            <img
+              src={pet.imageUrl}
+              alt={pet.name}
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '2px solid #e2e8f0',
+              }}
+            />
+          ) : (
+            <span style={{ fontSize: '1.8rem' }}>{speciesIcon}</span>
+          )}
           <div>
             <Title level={4} style={{ margin: 0 }}>
               {pet.name}

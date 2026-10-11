@@ -1,6 +1,7 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { App } from 'antd'
+import ImageUpload from '@/components/common/ImageUpload'
 import { petService } from '@/services/pet.service'
 import { useAuthStore } from '@/store/useAuthStore'
 import { PetSpecies, isCat } from '@/types/pet.types'
@@ -18,6 +19,7 @@ const CustomerPetFormPage: React.FC = () => {
 
   const [customerId, setCustomerId] = useState<string>('')
   const [name, setName] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   const [species, setSpecies] = useState<number>(PetSpecies.Dog)
   const [breed, setBreed] = useState('')
   const [weight, setWeight] = useState<number | string>('')
@@ -41,6 +43,7 @@ const CustomerPetFormPage: React.FC = () => {
       .fetchById(id)
       .then((pet) => {
         setName(pet.name)
+        setImageUrl(pet.imageUrl || '')
         setSpecies(isCat(pet.species) ? PetSpecies.Cat : PetSpecies.Dog)
         setBreed(pet.breed || '')
         setWeight(pet.weight || '')
@@ -91,6 +94,7 @@ const CustomerPetFormPage: React.FC = () => {
           weight: numWeight,
           age: numAge,
           healthNotes: healthNotes.trim() || undefined,
+          imageUrl: imageUrl.trim() || undefined,
         })
         message.success('Pet information updated successfully!')
       } else {
@@ -102,6 +106,7 @@ const CustomerPetFormPage: React.FC = () => {
           weight: numWeight,
           age: numAge,
           healthNotes: healthNotes.trim() || undefined,
+          imageUrl: imageUrl.trim() || undefined,
         })
         message.success('New pet registered successfully!')
       }
@@ -143,12 +148,14 @@ const CustomerPetFormPage: React.FC = () => {
       {loading && <p>Loading pet details...</p>}
 
       <div
+        className="paw-bg-card"
         style={{
-          background: '#ffffff',
+          backgroundColor: '#ffffff',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23f1f5f9' fill-opacity='0.6' d='M25 45c-8 0-15-10-10-20 4-8 17-9 22 0 4 9-4 20-12 20zm25-15c-9 0-14-14-6-20 8-7 19 0 14 11-4 6-4 9-8 9zm25 15c-8 0-16-11-12-20 5-9 18-8 22 0 5 10-2 20-10 20zM50 85c-27 0-30-28-12-35 9-4 15-4 24 0 18 7 15 35-12 35z'/%3E%3C/svg%3E")`,
           borderRadius: '16px',
           border: '1px solid #e2e8f0',
-          padding: '2rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+          padding: '24px 28px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
         }}
         hidden={loading}
       >
@@ -158,6 +165,24 @@ const CustomerPetFormPage: React.FC = () => {
               {error}
             </p>
           )}
+
+          {/* Pet Photo / Avatar */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: '#0f172a' }}>
+              Pet Photo
+            </label>
+            <ImageUpload
+              value={imageUrl}
+              onChange={(url) => setImageUrl(url)}
+              folder="pets"
+              shape="circle"
+              width={120}
+              height={120}
+              title="Upload Photo"
+              helperText="Upload your pet's avatar (PNG, JPG, WEBP up to 5MB)"
+              disabled={saving}
+            />
+          </div>
 
           {/* Pet Name */}
           <label>

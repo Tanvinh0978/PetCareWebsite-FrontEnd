@@ -73,6 +73,17 @@ const MyPetsPage: React.FC = () => {
             <Col xs={24} sm={12} md={8} lg={6} key={pet.id}>
               <Card
                 hoverable
+                cover={
+                  pet.imageUrl ? (
+                    <div style={{ height: 160, overflow: 'hidden', backgroundColor: '#f1f5f9' }}>
+                      <img
+                        alt={pet.name}
+                        src={pet.imageUrl}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  ) : undefined
+                }
                 actions={[
                   <EditOutlined key="edit" onClick={() => navigate(`/customer/pets/${pet.id}/edit`)} />,
                   <DeleteOutlined key="delete" onClick={() => handleDelete(pet.id)} style={{ color: 'red' }} />

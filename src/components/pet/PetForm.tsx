@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Select, Spin } from 'antd'
+import ImageUpload from '@/components/common/ImageUpload'
 import { petService } from '@/services/pet.service'
 import { customerService } from '@/services/customer.service'
 import type { CustomerDTO } from '@/types/customer.types'
@@ -24,6 +25,7 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
   // Form states
   const [customerId, setCustomerId] = useState(fixedCustomerId || '')
   const [name, setName] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   const [species, setSpecies] = useState<number>(PetSpecies.Dog)
   const [breed, setBreed] = useState('')
   const [weight, setWeight] = useState<number | string>('')
@@ -81,6 +83,7 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
       .fetchById(id)
       .then((pet) => {
         setName(pet.name)
+        setImageUrl(pet.imageUrl || '')
         setSpecies(isCat(pet.species) ? PetSpecies.Cat : PetSpecies.Dog)
         setBreed(pet.breed || '')
         setWeight(pet.weight || '')
@@ -132,6 +135,7 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
           weight: numWeight,
           age: numAge,
           healthNotes: healthNotes.trim() || undefined,
+          imageUrl: imageUrl.trim() || undefined,
         })
       } else {
         await petService.create({
@@ -142,6 +146,7 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
           weight: numWeight,
           age: numAge,
           healthNotes: healthNotes.trim() || undefined,
+          imageUrl: imageUrl.trim() || undefined,
         })
       }
       navigate(backPath)
@@ -256,70 +261,66 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
           </div>
         )}
 
-        {/* Pet Name */}
-        <label>
-          Pet Name <span style={{ color: 'var(--danger)' }}>*</span>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Bella, Max, Luna"
-            required
+        {/* Compact row: Avatar + Name + Species */}
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+          <ImageUpload
+            value={imageUrl}
+            onChange={(url) => setImageUrl(url)}
+            folder="pets"
+            shape="circle"
+            width={72}
+            height={72}
+            title="Photo"
+            helperText="Max 5MB"
+            disabled={saving}
           />
-        </label>
-
-        {/* Species */}
-        <label>
-          Species <span style={{ color: 'var(--danger)' }}>*</span>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.25rem' }}>
-            <label
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
-            >
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: 'var(--slate-800)' }}>
+              Pet Name <span style={{ color: 'var(--danger)' }}>*</span>
               <input
-                type="radio"
-                name="species"
-                value={PetSpecies.Dog}
-                checked={!isCat(species)}
-                onChange={() => setSpecies(PetSpecies.Dog)}
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Bella, Max, Luna"
+                required
+                style={{ marginTop: '2px', padding: '0.4rem', borderRadius: '4px' }}
               />
-              🐶 Dog
             </label>
-            <label
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
-            >
-              <input
-                type="radio"
-                name="species"
-                value={PetSpecies.Cat}
-                checked={isCat(species)}
-                onChange={() => setSpecies(PetSpecies.Cat)}
-              />
-              🐱 Cat
-            </label>
+            <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600, fontSize: '0.85rem', color: '#475569' }}>Species:</span>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem' }}>
+                <input
+                  type="radio"
+                  name="species"
+                  value={PetSpecies.Dog}
+                  checked={!isCat(species)}
+                  onChange={() => setSpecies(PetSpecies.Dog)}
+                />
+                🐶 Dog
+              </label>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem' }}>
+                <input
+                  type="radio"
+                  name="species"
+                  value={PetSpecies.Cat}
+                  checked={isCat(species)}
+                  onChange={() => setSpecies(PetSpecies.Cat)}
+                />
+                🐱 Cat
+              </label>
+            </div>
           </div>
-        </label>
+        </div>
 
-        {/* Breed & Age */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        {/* Breed, Age, Weight in 1 Row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', gap: '0.75rem' }}>
           <label>
             Breed
             <input
               type="text"
               value={breed}
               onChange={(e) => setBreed(e.target.value)}
-              placeholder="e.g. Golden Retriever, British Shorthair"
+              placeholder="e.g. Golden Retriever"
             />
           </label>
 
@@ -335,28 +336,27 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
               placeholder="e.g. 2"
             />
           </label>
-        </div>
 
-        {/* Weight */}
-        <label>
-          Weight (kg) <span style={{ color: 'var(--danger)' }}>*</span>
-          <input
-            type="number"
-            min="0.1"
-            max="150"
-            step="0.1"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            placeholder="e.g. 8.5"
-            required
-          />
-        </label>
+          <label>
+            Weight (kg) <span style={{ color: 'var(--danger)' }}>*</span>
+            <input
+              type="number"
+              min="0.1"
+              max="150"
+              step="0.1"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              placeholder="e.g. 8.5"
+              required
+            />
+          </label>
+        </div>
 
         {/* Health Notes */}
         <label>
           Health & Special Care Notes
           <textarea
-            rows={4}
+            rows={2}
             value={healthNotes}
             onChange={(e) => setHealthNotes(e.target.value)}
             placeholder="Allergies, vaccination status, dietary preferences, or behavioral notes..."
