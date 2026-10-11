@@ -340,7 +340,26 @@ const CreateBookingPage: React.FC = () => {
                         }}
                       >
                         {isSelected && <CheckCircleFilled style={{ position: 'absolute', top: 12, right: 12, fontSize: '20px', color: '#10b981' }} />}
-                        <div style={{ fontSize: '36px', marginBottom: '10px' }}>{isCat ? '🐱' : '🐶'}</div>
+                        <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                          {pet.imageUrl ? (
+                            <img
+                              src={pet.imageUrl}
+                              alt={pet.name}
+                              style={{
+                                width: 64,
+                                height: 64,
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                                border: `2px solid ${isSelected ? '#10b981' : '#e2e8f0'}`,
+                                display: 'block',
+                              }}
+                            />
+                          ) : (
+                            <div style={{ fontSize: '36px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              {isCat ? '🐱' : '🐶'}
+                            </div>
+                          )}
+                        </div>
                         <Title level={5} style={{ margin: 0, color: isSelected ? '#065f46' : '#1e293b' }}>{pet.name}</Title>
                         <Tag color={isCat ? 'purple' : 'blue'} style={{ marginTop: '8px', borderRadius: '12px' }}>
                           {pet.weight} kg
@@ -575,8 +594,17 @@ const CreateBookingPage: React.FC = () => {
 
                   return (
                     <div key={petId} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed #cbd5e1' }}>
-                      <Text strong style={{ fontSize: '16px', color: '#0f172a', display: 'block', marginBottom: '12px' }}>
-                        {isCat ? '🐱' : '🐶'} {pet.name} ({pet.weight}kg):
+                      <Text strong style={{ fontSize: '16px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        {pet.imageUrl ? (
+                          <img
+                            src={pet.imageUrl}
+                            alt={pet.name}
+                            style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <span>{isCat ? '🐱' : '🐶'}</span>
+                        )}
+                        <span>{pet.name} ({pet.weight}kg):</span>
                       </Text>
                       
                       <div style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>

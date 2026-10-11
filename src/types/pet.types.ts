@@ -45,6 +45,7 @@ export interface PetDTO {
   weight: number
   age?: number
   healthNotes?: string
+  imageUrl?: string
   isActive: boolean
   createdAt?: string
   updatedAt?: string
@@ -58,6 +59,7 @@ export interface CreatePetDTO {
   weight: number
   age?: number
   healthNotes?: string
+  imageUrl?: string
 }
 
 export interface UpdatePetDTO {
@@ -67,6 +69,7 @@ export interface UpdatePetDTO {
   weight: number
   age?: number
   healthNotes?: string
+  imageUrl?: string
 }
 
 export interface PetQueryParams {

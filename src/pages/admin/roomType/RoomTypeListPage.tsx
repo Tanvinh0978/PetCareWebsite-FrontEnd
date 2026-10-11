@@ -122,6 +122,7 @@ const AdminRoomTypeListPage: React.FC = () => {
             <thead>
               <tr>
                 <th className="col-idx">#</th>
+                <th style={{ width: 60 }}>PHOTO</th>
                 <th className="col-name">ROOM TYPE NAME</th>
                 <th>DESCRIPTION</th>
                 <th style={{ textAlign: 'center' }}>TOTAL ROOMS</th>
@@ -131,13 +132,13 @@ const AdminRoomTypeListPage: React.FC = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
                     <p style={{ margin: 0, color: '#557268' }}>Loading room types...</p>
                   </td>
                 </tr>
               ) : !data || data.length === 0 ? (
                 <tr>
-                  <td colSpan={5}>
+                  <td colSpan={6}>
                     <div className="table-empty-box">
                       <h3>No matching room types found</h3>
                       <p>
@@ -161,6 +162,38 @@ const AdminRoomTypeListPage: React.FC = () => {
                 data.map((c, idx) => (
                     <tr key={c.id}>
                       <td className="col-idx">{idx + 1}</td>
+                      <td>
+                        {c.imageUrl ? (
+                          <img
+                            src={c.imageUrl}
+                            alt={c.name}
+                            style={{
+                              width: 44,
+                              height: 36,
+                              borderRadius: '6px',
+                              objectFit: 'cover',
+                              border: '1px solid #e2e8f0',
+                              display: 'block',
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: 44,
+                              height: 36,
+                              borderRadius: '6px',
+                              backgroundColor: '#f1f5f9',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#94a3b8',
+                              fontSize: '0.75rem',
+                            }}
+                          >
+                            🏨
+                          </div>
+                        )}
+                      </td>
                       <td className="col-name">{c.name}</td>
                       <td>{c.description || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>No description</span>}</td>
                       <td style={{ textAlign: 'center' }}>

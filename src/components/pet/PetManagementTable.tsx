@@ -338,8 +338,23 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
                     >
                       <td className="col-idx">{rowNumber}</td>
                       <td>
-                        <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span>{speciesIcon}</span> {pet.name}
+                        <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                          {pet.imageUrl ? (
+                            <img
+                              src={pet.imageUrl}
+                              alt={pet.name}
+                              style={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                                border: '1px solid #cbd5e1',
+                              }}
+                            />
+                          ) : (
+                            <span>{speciesIcon}</span>
+                          )}
+                          <span>{pet.name}</span>
                         </strong>
                       </td>
                       <td>

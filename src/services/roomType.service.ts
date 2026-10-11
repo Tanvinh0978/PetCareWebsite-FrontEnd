@@ -7,6 +7,7 @@ export interface RoomTypeDTO {
   id: string
   name: string
   description?: string
+  imageUrl?: string
   totalRooms: number
 }
 
@@ -32,12 +33,12 @@ export const roomTypeService = {
   },
 
   // Create new room type
-  create: (data: { name: string; description?: string }) => {
+  create: (data: { name: string; description?: string; imageUrl?: string }) => {
     return axiosClient.post<IBackendRes<string>, IBackendRes<string>>('/api/roomtypes', data)
   },
 
   // Update existing room type
-  update: (id: string, data: { name: string; description?: string }) => {
+  update: (id: string, data: { name: string; description?: string; imageUrl?: string }) => {
     return axiosClient.put<IBackendRes<string>, IBackendRes<string>>(`/api/roomtypes/${id}`, data)
   },
 
