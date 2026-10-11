@@ -3,6 +3,8 @@ import Layout from "@/components/Layout";
 import RequireRole, { GuestOnly } from "@/auth/RequireRole";
 import ServiceCatalog from "@/components/service/ServiceCatalog";
 import ServiceDetail from "@/components/service/ServiceDetail";
+import RoomTypeCatalog from "@/components/roomType/RoomTypeCatalog";
+import RoomTypeDetail from "@/components/roomType/RoomTypeDetail";
 import PawstayAuthPage from "@/pages/auth/PawstayAuthPage";
 import NotFoundPage from "@/pages/errors/NotFoundPage";
 import HomePage from "@/pages/customer/HomePage";
@@ -40,6 +42,11 @@ const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
 const publicServiceRoutes = (base: string, guest = false): RouteObject[] => [
   { path: "services", element: <ServiceCatalog detailBase={base + "/services"} showSignInHint={guest} /> },
   { path: "services/:id", element: <ServiceDetail backTo={base + "/services"} /> },
+];
+
+const publicRoomTypeRoutes = (base: string, guest = false): RouteObject[] => [
+  { path: "room-types", element: <RoomTypeCatalog detailBase={base + "/room-types"} showSignInHint={guest} /> },
+  { path: "room-types/:id", element: <RoomTypeDetail backTo={base + "/room-types"} guest={guest} /> },
 ];
 
 export default function AppRoutes() {
@@ -98,6 +105,7 @@ export default function AppRoutes() {
       children: [
         { index: true, element: <HomePage /> },
         ...publicServiceRoutes("/customer"),
+        ...publicRoomTypeRoutes("/customer"),
         { path: "pets", element: <MyPetsPage /> },
         { path: "pets/new", element: <PetFormPage /> },
         { path: "pets/:id/edit", element: <PetFormPage /> },
@@ -115,6 +123,7 @@ export default function AppRoutes() {
       children: [
         { index: true, element: <HomePage /> },
         ...publicServiceRoutes("", true),
+        ...publicRoomTypeRoutes("", true),
         notFound,
       ],
     },
