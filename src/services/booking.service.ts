@@ -20,7 +20,7 @@ export interface BookingListItem {
   customerName: string;
   itemsCount: number;
   totalPrice: number;
-  status: number; // 0: Pending, 1: Partially_Completed, 2: Completed, 3: Cancelled
+  status: number | string; // 0: Pending, 1: Partially_Completed, 2: Completed, 3: Cancelled
   createdAt: string;
 }
 
@@ -38,7 +38,7 @@ export interface BookingDetailItem {
   quantity: number;
   unitPrice: number;
   assignedPrice: number;
-  status: number;
+  status: number | string;
   roomId?: string;
   roomName?: string;
   staffId?: string;
@@ -56,7 +56,7 @@ export interface BookingDetail {
   voucherCode?: string;
   discountAmount: number;
   totalPrice: number;
-  status: number;
+  status: number | string;
   cancellationReason?: string;
   createdAt: string;
   bookingItems: BookingDetailItem[];
@@ -73,7 +73,7 @@ export const bookingService = {
   create: (payload: CreateBookingPayload) =>
     axiosClient.post<any, any>('/api/bookings', payload),
 
-  fetchMyBookings: async (params?: { pageNumber?: number; pageSize?: number; status?: number }): Promise<PagedBookings> => {
+  fetchMyBookings: async (params?: { pageNumber?: number; pageSize?: number; status?: number | string }): Promise<PagedBookings> => {
     const res: any = await axiosClient.get('/api/bookings/my-bookings', { params });
     const paged = res?.result ?? res?.data ?? res;
     return {
