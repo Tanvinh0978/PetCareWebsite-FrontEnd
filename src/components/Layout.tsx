@@ -119,6 +119,11 @@ export default function Layout({ role }: { role: Role }) {
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="9" y1="3" x2="9" y2="21"></line>
                   </svg>
+                ) : n.to === 'profile' ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
                 ) : (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -133,10 +138,30 @@ export default function Layout({ role }: { role: Role }) {
             ))}
           </nav>
           <div className="sidebar-foot">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
-              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#334155', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                {role[0].toUpperCase()}
-              </div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.65rem',
+                marginBottom: '0.75rem',
+                cursor: role === 'staff' ? 'pointer' : 'default',
+              }}
+              onClick={() => {
+                if (role === 'staff') navigate('/staff/profile');
+              }}
+              title={role === 'staff' ? 'View My Profile' : undefined}
+            >
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt="Avatar"
+                  style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #38bdf8', flexShrink: 0 }}
+                />
+              ) : (
+                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#334155', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
+                  {(user?.name || role)[0].toUpperCase()}
+                </div>
+              )}
               <div style={{ overflow: 'hidden' }}>
                 <p style={{ margin: 0, fontWeight: 600, color: '#f8fafc', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {user?.name || user?.email || 'Logged User'}
@@ -216,7 +241,15 @@ export default function Layout({ role }: { role: Role }) {
                     }}
                     title="Account options"
                   >
-                    <UserOutlined style={{ color: '#059669' }} />
+                    {user?.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt="Avatar"
+                        style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <UserOutlined style={{ color: '#059669' }} />
+                    )}
                     <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {displayName}
                     </span>

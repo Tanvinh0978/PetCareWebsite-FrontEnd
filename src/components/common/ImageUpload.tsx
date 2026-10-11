@@ -13,7 +13,7 @@ const { Text } = Typography
 
 interface ImageUploadProps {
   value?: string
-  onChange: (url: string) => void
+  onChange?: (url: string) => void
   folder?: string
   shape?: 'square' | 'circle'
   width?: number | string
@@ -60,7 +60,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       setUploading(true)
       const url = await mediaService.upload(file, folder)
       if (url) {
-        onChange(url)
+        onChange?.(url)
         message.success('Image uploaded successfully!')
       } else {
         message.error('Failed to get uploaded image URL.')
@@ -79,7 +79,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   }
 
   const handleRemove = () => {
-    onChange('')
+    onChange?.('')
   }
 
   const isCircle = shape === 'circle'

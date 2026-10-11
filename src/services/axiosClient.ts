@@ -16,16 +16,11 @@ axiosClient.interceptors.request.use((config) => {
 })
 
 // Trả thẳng body (IBackendRes<T>) thay vì AxiosResponse.
-// Xử lý 401 (hết hạn token): tự động dọn sạch token cũ và điều hướng về trang đăng nhập
 axiosClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error?.response?.status === 401) {
-      const isLoginPage = window.location.pathname.includes('/login');
-      if (!isLoginPage) {
-        useAuthStore.getState().logout();
-        window.location.href = '/login?expired=1';
-      }
+      console.warn('[axiosClient] 401 Unauthorized for URL:', error?.config?.url);
     }
     return Promise.reject(error);
   },
