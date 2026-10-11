@@ -45,7 +45,8 @@ const CreateBookingPage: React.FC = () => {
         serviceService.fetchActive()
       ]);
       const petsList = (petsRes as any).result || (petsRes as any).data || petsRes;
-      setPets(Array.isArray(petsList) ? petsList : (petsList.items || []));
+      const rawPets = Array.isArray(petsList) ? petsList : (petsList.items || []);
+      setPets(rawPets.filter((p: any) => p.isActive !== false && !p.isDeleted));
       
       const servicesWithDetails = await Promise.all(
         servicesData.map(async (srv) => {
