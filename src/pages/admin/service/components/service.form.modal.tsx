@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   ModalForm, ProFormDigit, ProFormGroup, ProFormList, ProFormSelect, ProFormSwitch, ProFormText, ProFormTextArea,
 } from '@ant-design/pro-components'
 import { App } from 'antd'
+import ImageUpload from '@/components/common/ImageUpload'
 import { serviceService } from '@/services/service.service'
 import {
   PRICING_UNIT_LABELS, SERVICE_TYPE_LABELS, type ServiceDetailDTO, type ServicePriceDTO,
@@ -30,6 +31,11 @@ const toOptions = (labels: Record<string, string>) => Object.entries(labels).map
 const ServiceFormModal: React.FC<Props> = ({ open, service, onClose, onSuccess }) => {
   const { message } = App.useApp()
   const editing = Boolean(service)
+  const [imageUrl, setImageUrl] = useState('')
+
+  useEffect(() => {
+    setImageUrl(service?.imageUrl || '')
+  }, [service, open])
 
   const initialValues: FormValues = service
     ? { name: service.name, description: service.description, serviceType: service.serviceType, isActive: service.isActive, prices: service.prices }
@@ -52,7 +58,13 @@ const ServiceFormModal: React.FC<Props> = ({ open, service, onClose, onSuccess }
           message.error(`Price ${bad + 1}: maximum weight must be greater than minimum.`)
           return false
         }
-        const payload = { name: values.name.trim(), description: values.description ?? '', serviceType: values.serviceType, prices }
+        const payload = {
+          name: values.name.trim(),
+          description: values.description ?? '',
+          serviceType: values.serviceType,
+          imageUrl: imageUrl.trim() || undefined,
+          prices,
+        }
         try {
           if (service) await serviceService.update(service.id, { ...payload, isActive: values.isActive ?? true })
           else await serviceService.create(payload)
@@ -65,6 +77,19 @@ const ServiceFormModal: React.FC<Props> = ({ open, service, onClose, onSuccess }
         }
       }}
     >
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Service Photo</label>
+        <ImageUpload
+          value={imageUrl}
+          onChange={(url) => setImageUrl(url)}
+          folder="services"
+          shape="square"
+          width={160}
+          height={120}
+          title="Upload Photo"
+          helperText="Upload service photo (PNG, JPG, WEBP up to 5MB)"
+        />
+      </div>
       <ProFormText name="name" label="Service name" rules={[{ required: true, max: 150 }]} />
       <ProFormSelect name="serviceType" label="Service type" options={toOptions(SERVICE_TYPE_LABELS)} rules={[{ required: true }]} allowClear={false} />
       <ProFormTextArea name="description" label="Description" />

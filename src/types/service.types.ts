@@ -33,6 +33,7 @@ export interface ServiceDTO {
   name: string
   description?: string
   serviceType: ServiceTypeType | string
+  imageUrl?: string
   isActive: boolean
   roomTypeId?: string
   roomTypeName?: string
@@ -55,6 +56,7 @@ export interface CreateServicePayload {
   name: string
   description: string
   serviceType: ServiceTypeType | string
+  imageUrl?: string
   prices: ServicePriceDTO[]
 }
 

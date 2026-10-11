@@ -36,6 +36,7 @@ export interface Service {
   name: string;
   description?: string;
   serviceType: ServiceType;
+  imageUrl?: string;
   isActive: boolean;
   prices: ServicePrice[];
 }
@@ -44,5 +45,6 @@ export interface CreateServicePayload {
   name: string;
   description: string;
   serviceType: ServiceType;
+  imageUrl?: string;
   prices: ServicePrice[];
 }

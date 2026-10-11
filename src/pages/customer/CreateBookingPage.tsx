@@ -413,8 +413,21 @@ const CreateBookingPage: React.FC = () => {
                               return (
                                 <Col span={24} key={srv.id}>
                                   <Checkbox value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.groomingIds?.includes(srv.id) ? '#f0fdf4' : '#fff' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginLeft: '8px' }}>
-                                      <Text strong>{srv.name}</Text>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        {srv.imageUrl ? (
+                                          <img
+                                            src={srv.imageUrl}
+                                            alt={srv.name}
+                                            style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                                          />
+                                        ) : (
+                                          <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                                            ✂️
+                                          </div>
+                                        )}
+                                        <Text strong>{srv.name}</Text>
+                                      </div>
                                       <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND</Text>
                                     </div>
                                   </Checkbox>
@@ -450,8 +463,21 @@ const CreateBookingPage: React.FC = () => {
                               return (
                                 <Col span={24} key={srv.id}>
                                   <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginLeft: '8px' }}>
-                                      <Text strong>{srv.name}</Text>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        {srv.imageUrl ? (
+                                          <img
+                                            src={srv.imageUrl}
+                                            alt={srv.name}
+                                            style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                                          />
+                                        ) : (
+                                          <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                                            🏨
+                                          </div>
+                                        )}
+                                        <Text strong>{srv.name}</Text>
+                                      </div>
                                       <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
                                     </div>
                                   </Radio>
@@ -484,8 +510,17 @@ const CreateBookingPage: React.FC = () => {
                                   const price = getPriceForPet(srv, pet.weight);
                                   return (
                                     <Col span={24} key={srv.id}>
-                                      <Radio value={srv.id}>
-                                        {srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
+                                      <Radio value={srv.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                          {srv.imageUrl && (
+                                            <img
+                                              src={srv.imageUrl}
+                                              alt={srv.name}
+                                              style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                            />
+                                          )}
+                                          <span>{srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text></span>
+                                        </span>
                                       </Radio>
                                     </Col>
                                   );
@@ -614,21 +649,39 @@ const CreateBookingPage: React.FC = () => {
                           if (!s) return null;
                           const price = getPriceForPet(s, pet.weight);
                           return (
-                            <div key={gId} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <Text>{s.name} <Text type="secondary">({groomingDate?.format('DD/MM HH:mm')})</Text></Text>
+                            <div key={gId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {s.imageUrl && (
+                                  <img
+                                    src={s.imageUrl}
+                                    alt={s.name}
+                                    style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                  />
+                                )}
+                                <Text>{s.name} <Text type="secondary">({groomingDate?.format('DD/MM HH:mm')})</Text></Text>
+                              </div>
                               <Text strong>{price.toLocaleString()} VND</Text>
                             </div>
                           );
                         })}
                         
                         {bookingType === 'Boarding' && srvs.boardingId && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             {(() => {
                                const s = services.find(x => x.id === srvs.boardingId);
                                const price = s ? getPriceForPet(s, pet.weight) * boardingDays : 0;
                                return (
                                  <>
-                                   <Text>{s?.name} <Text type="secondary">({boardingDateRange?.[0]?.format('DD/MM')} - {boardingDateRange?.[1]?.format('DD/MM')})</Text></Text>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                     {s?.imageUrl && (
+                                       <img
+                                         src={s.imageUrl}
+                                         alt={s.name}
+                                         style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                       />
+                                     )}
+                                     <Text>{s?.name} <Text type="secondary">({boardingDateRange?.[0]?.format('DD/MM')} - {boardingDateRange?.[1]?.format('DD/MM')})</Text></Text>
+                                   </div>
                                    <Text strong>{price.toLocaleString()} VND</Text>
                                  </>
                                )
@@ -637,13 +690,22 @@ const CreateBookingPage: React.FC = () => {
                         )}
 
                         {bookingType === 'Boarding' && srvs.dietId && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             {(() => {
                                const s = services.find(x => x.id === srvs.dietId);
                                const price = s ? getPriceForPet(s, pet.weight) * boardingDays : 0;
                                return (
                                  <>
-                                   <Text>{s?.name}</Text>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                     {s?.imageUrl && (
+                                       <img
+                                         src={s.imageUrl}
+                                         alt={s.name}
+                                         style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                       />
+                                     )}
+                                     <Text>{s?.name}</Text>
+                                   </div>
                                    <Text strong>{price.toLocaleString()} VND</Text>
                                  </>
                                )

@@ -218,6 +218,7 @@ export default function ServiceListPage() {
             <thead>
               <tr>
                 <th className="col-idx">#</th>
+                <th style={{ width: 60 }}>Photo</th>
                 <th className="col-name">Service Name</th>
                 <th className="col-type">Category</th>
                 <th className="col-desc">Description</th>
@@ -228,13 +229,13 @@ export default function ServiceListPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
                     <p style={{ margin: 0, color: '#557268' }}>Loading services...</p>
                   </td>
                 </tr>
               ) : !data || data.items.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <div className="table-empty-box">
                       <h3>No matching services found</h3>
                       <p>
@@ -260,6 +261,38 @@ export default function ServiceListPage() {
                   return (
                     <tr key={s.id} className={s.isActive ? '' : 'row-inactive'}>
                       <td className="col-idx">{rowNumber}</td>
+                      <td>
+                        {s.imageUrl ? (
+                          <img
+                            src={s.imageUrl}
+                            alt={s.name}
+                            style={{
+                              width: 44,
+                              height: 36,
+                              borderRadius: '6px',
+                              objectFit: 'cover',
+                              border: '1px solid #e2e8f0',
+                              display: 'block',
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: 44,
+                              height: 36,
+                              borderRadius: '6px',
+                              backgroundColor: '#f1f5f9',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#94a3b8',
+                              fontSize: '0.85rem',
+                            }}
+                          >
+                            🐾
+                          </div>
+                        )}
+                      </td>
                       <td className="col-name">
                         <Link to={`/admin/services/${s.id}`} title="View details">
                           {s.name}

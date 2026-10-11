@@ -31,6 +31,7 @@ export interface ServiceListItem {
   name: string;
   description?: string;
   serviceType: ServiceType;
+  imageUrl?: string;
   isActive: boolean;
 }
 
@@ -49,6 +50,7 @@ export interface CreateServicePayload {
   name: string;
   description: string;
   serviceType: ServiceType;
+  imageUrl?: string;
   prices: ServicePrice[];
 }
 
