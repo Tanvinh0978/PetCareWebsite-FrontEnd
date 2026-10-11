@@ -1,19 +1,65 @@
-
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Dropdown, type MenuProps } from "antd";
+import {
+  UserOutlined,
+  CalendarOutlined,
+  LockOutlined,
+  LogoutOutlined,
+  DownOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/auth/AuthContext";
+import { useAuthStore } from "@/store/useAuthStore";
 import { ROLE_BASE, ROLE_LABEL, type Role } from "@/auth/roles";
 import { NAV } from "@/routes/nav";
 
 export default function Layout({ role }: { role: Role }) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const base = ROLE_BASE[role];
   const isAdminOrStaff = role === "admin" || role === "staff";
 
+  const displayName = user?.name || user?.login || "Customer";
+
   const handleSignOut = () => {
     signOut();
+    useAuthStore.getState().logout();
     navigate("/login");
   };
+
+  const userMenuItems: MenuProps["items"] = [
+    {
+      key: "user-info",
+      disabled: true,
+      label: (
+        <div style={{ padding: "4px 0" }}>
+          <div style={{ fontWeight: 600, color: "#0f172a" }}>{displayName}</div>
+          {user?.email && <div style={{ fontSize: "12px", color: "#64748b" }}>{user.email}</div>}
+        </div>
+      ),
+    },
+    { type: "divider" },
+    {
+      key: "my-bookings",
+      icon: <CalendarOutlined style={{ color: "#059669" }} />,
+      label: "My Bookings",
+      onClick: () => navigate("/customer/bookings"),
+    },
+    {
+      key: "profile",
+      icon: <UserOutlined style={{ color: "#059669" }} />,
+      label: "My Profile",
+      onClick: () => navigate("/customer/profile"),
+    },
+    { type: "divider" },
+    {
+      key: "sign-out",
+      icon: <LogoutOutlined />,
+      danger: true,
+      label: "Sign out",
+      onClick: handleSignOut,
+    },
+  ];
 
   // Admin & Staff: Left Sidebar navigation layout
   if (isAdminOrStaff) {
@@ -148,7 +194,27 @@ export default function Layout({ role }: { role: Role }) {
               </div>
             ) : (
               <div className="customer-auth-status">
-                <span className="customer-role-badge">👤 Customer</span>
+                <Dropdown menu={{ items: userMenuItems }} trigger={['hover', 'click']} placement="bottomRight">
+                  <div
+                    className="customer-role-badge"
+                    style={{
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      userSelect: 'none',
+                      transition: 'all 0.2s',
+                    }}
+                    title="Account options"
+                  >
+                    <UserOutlined style={{ color: '#059669' }} />
+                    <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {displayName}
+                    </span>
+                    <DownOutlined style={{ fontSize: '10px', color: '#059669' }} />
+                  </div>
+                </Dropdown>
+
                 <button
                   type="button"
                   className="btn-action danger"

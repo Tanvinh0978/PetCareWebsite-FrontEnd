@@ -18,8 +18,10 @@ const MyPetsPage: React.FC = () => {
       // Chỉ lấy các bé thú cưng đang Active (những bé đã xóa mềm/Inactive sẽ bị ẩn đi)
       const items = await petService.fetchMyPets(true);
       setPets(items ?? []);
-    } catch (error) {
-      message.error('Failed to load pets');
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        message.error(error?.response?.data?.message || 'Failed to load pets');
+      }
     } finally {
       setLoading(false);
     }

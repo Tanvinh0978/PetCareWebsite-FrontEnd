@@ -20,5 +20,20 @@ export const customerService = {
     axiosClient.delete<IBackendRes<string>, IBackendRes<string>>(`/api/customers/${id}`),
 
   toggleStatus: (id: string) =>
-    axiosClient.patch<IBackendRes<string>, IBackendRes<string>>(`/api/customers/${id}/toggle-status`)
+    axiosClient.patch<IBackendRes<string>, IBackendRes<string>>(`/api/customers/${id}/toggle-status`),
+
+  getProfile: async () => {
+    const res: any = await axiosClient.get('/api/customers/profile');
+    return res?.result ?? res?.data ?? res;
+  },
+
+  updateProfile: async (payload: { fullName: string; phoneNumber: string; address?: string; avatarUrl?: string }) => {
+    const res: any = await axiosClient.put('/api/customers/profile', payload);
+    return res?.result ?? res?.data ?? res;
+  },
+
+  changePassword: async (payload: { currentPassword: string; newPassword: string; confirmNewPassword: string }) => {
+    const res: any = await axiosClient.put('/api/customers/change-password', payload);
+    return res?.result ?? res?.data ?? res;
+  },
 }

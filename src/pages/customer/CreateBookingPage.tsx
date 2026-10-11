@@ -229,7 +229,7 @@ const CreateBookingPage: React.FC = () => {
       setSubmitting(true);
       await bookingService.create({ voucherCode: values.voucherCode, bookingItems });
       message.success('Booking created successfully! 🎉');
-      navigate('/customer');
+      navigate('/customer/bookings');
     } catch (error: any) {
       message.error(error?.response?.data?.message || 'Failed to create booking');
     } finally {
