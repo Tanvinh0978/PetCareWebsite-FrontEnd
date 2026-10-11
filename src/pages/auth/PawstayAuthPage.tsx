@@ -34,6 +34,7 @@ export default function PawstayAuthPage() {
     const [resending, setResending] = useState(false);
     const [countdown, setCountdown] = useState(0);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const hasShownExpiredNotice = useRef(false);
 
     useEffect(() => {
         setView(getInitialView());
@@ -48,10 +49,15 @@ export default function PawstayAuthPage() {
 
     useEffect(() => {
         const isExpired = new URLSearchParams(location.search).get("expired");
-        if (isExpired) {
-            message.warning("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        if (isExpired && !hasShownExpiredNotice.current) {
+            hasShownExpiredNotice.current = true;
+            message.warning({
+                content: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+                key: "session-expired",
+            });
+            navigate(location.pathname, { replace: true });
         }
-    }, [location.search]);
+    }, [location.search, location.pathname, navigate]);
 
     const handleSwitchView = (newView: AuthState) => {
         if (newView === 'login') navigate('/login');
@@ -64,43 +70,53 @@ export default function PawstayAuthPage() {
         setLoading(true);
         try {
             if (loginType === 'customer') {
-                const res = await loginCustomer({ email: values.email, password: values.password });
-                if (res.result?.customerId) {
-                    localStorage.setItem('petcare.customerId', res.result.customerId);
+                const res: any = await loginCustomer({ email: values.email, password: values.password });
+                const result = res?.result || res?.data || res;
+                const token = result?.token || result?.Token || res?.token || res?.Token;
+                const customerId = result?.customerId || result?.CustomerId || result?.id || result?.Id;
+                const fullName = result?.fullName || result?.FullName || result?.name || values.email;
+                const email = result?.email || result?.Email || values.email;
+
+                if (customerId) {
+                    localStorage.setItem('petcare.customerId', String(customerId));
                 }
                 signIn("customer");
                 
                 // Save to Zustand for API token & customer ID
-                useAuthStore.getState().setAuth(res.result.token, {
-                    id: res.result.customerId,
-                    login: res.result.email,
-                    name: res.result.fullName,
-                    email: res.result.email,
+                useAuthStore.getState().setAuth(token, {
+                    id: String(customerId || ''),
+                    login: email,
+                    name: fullName,
+                    email: email,
                     role: "customer"
                 });
                 
-                const userName = res.result?.fullName || "there";
+                const userName = fullName || "there";
                 message.success(`Hello, ${userName}! Welcome back.`);
                 navigate(ROLE_BASE["customer"] || "/");
             } else {
-                const res = await loginStaff({ email: values.email, password: values.password });
-                
-                const rolesArray = res.result?.roles || [];
-                const isAdmin = rolesArray.some((r: string) => r.toLowerCase() === 'admin');
+                const res: any = await loginStaff({ email: values.email, password: values.password });
+                const result = res?.result || res?.data || res;
+                const token = result?.token || result?.Token || res?.token || res?.Token;
+                const staffId = result?.staffId || result?.StaffId || result?.id || result?.Id;
+                const fullName = result?.fullName || result?.FullName || result?.name || values.email;
+                const email = result?.email || result?.Email || values.email;
+                const rolesArray = result?.roles || result?.Roles || [];
+                const isAdmin = rolesArray.some((r: string) => String(r).toLowerCase() === 'admin');
                 const role = isAdmin ? 'admin' : 'staff';
                 
                 signIn(role);
                 
                 // Save to Zustand 
-                useAuthStore.getState().setAuth(res.result.token, {
-                    id: res.result.staffId || res.result.id,
-                    login: res.result.email,
-                    name: res.result.fullName,
-                    email: res.result.email,
+                useAuthStore.getState().setAuth(token, {
+                    id: String(staffId || ''),
+                    login: email,
+                    name: fullName,
+                    email: email,
                     role: role
                 });
                 
-                const userName = res.result?.fullName || "there";
+                const userName = fullName || "there";
                 message.success(`Welcome back to the portal, ${userName}!`);
                 navigate(ROLE_BASE[role as 'admin' | 'staff'] || `/${role}`);
             }

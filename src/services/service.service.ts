@@ -9,11 +9,14 @@ const get = <T>(url: string, params?: object) =>
 // Lấy mọi trang của một endpoint danh sách (backend giới hạn 100 mục mỗi trang).
 const fetchAllPages = async (url: string): Promise<ServiceDTO[]> => {
   const all: ServiceDTO[] = []
-  for (let page = 1; ; page++) {
-    const res = await get<IPagedResult<ServiceDTO>>(url, { pageNumber: page, pageSize: 100 })
-    all.push(...res.result.items)
-    if (!res.result.hasNextPage) return all
+  for (let page = 1; page <= 50; page++) {
+    const res: any = await get<any>(url, { pageNumber: page, pageSize: 100 })
+    const paged = res?.result ?? res?.data ?? res
+    const items = paged?.items ?? (Array.isArray(paged) ? paged : [])
+    all.push(...items)
+    if (!paged?.hasNextPage || items.length === 0) return all
   }
+  return all
 }
 
 export const serviceService = {

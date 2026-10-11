@@ -228,11 +228,27 @@ const CreateBookingPage: React.FC = () => {
 
     try {
       setSubmitting(true);
-      await bookingService.create({ voucherCode: values.voucherCode, bookingItems });
+      const customerId = localStorage.getItem('petcare.customerId');
+      const payload: any = {
+        voucherCode: values.voucherCode?.trim() || undefined,
+        paymentChoice: 'PAY_AT_COUNTER',
+        bookingItems,
+      };
+      if (customerId && customerId.trim()) {
+        payload.customerId = customerId.trim();
+      }
+      const res: any = await bookingService.create(payload);
       message.success('Booking created successfully! 🎉');
-      navigate('/customer/bookings');
+      
+      const paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl;
+      if (paymentUrl) {
+        window.location.href = paymentUrl;
+      } else {
+        navigate('/customer/bookings');
+      }
     } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Failed to create booking');
+      const msg = error?.response?.data?.message || error?.message || 'Failed to create booking';
+      message.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -460,100 +476,103 @@ const CreateBookingPage: React.FC = () => {
                             </p>
                           </div>
                         ) : (
-                          <Radio.Group 
-                            style={{ width: '100%' }}
-                            value={pServices.boardingId}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setPetServices(prev => ({ 
-                                ...prev, 
-                                [petId]: { 
-                                  ...prev[petId], 
-                                  boardingId: val,
-                                  ...(val ? {} : { dietId: undefined })
-                                } 
-                              }));
-                            }}
-                          >
-                            <Row gutter={[16, 16]}>
-                            {boardingOptions.map(srv => {
-                              const price = getPriceForPet(srv, pet.weight);
-                              return (
-                                <Col span={24} key={srv.id}>
-                                  <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        {srv.imageUrl ? (
-                                          <img
-                                            src={srv.imageUrl}
-                                            alt={srv.name}
-                                            style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
-                                          />
-                                        ) : (
-                                          <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
-                                            🏨
-                                          </div>
-                                        )}
-                                        <Text strong>{srv.name}</Text>
-                                      </div>
-                                      <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
-                                    </div>
-                                  </Radio>
-                                </Col>
-                              );
-                            })}
-                          </Row>
-                        </Radio.Group>
-                        
-                        {pServices.boardingId && (
-                          <div style={{ marginTop: '12px' }}>
-                             <Button type="link" danger onClick={() => {
-                                setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
-                             }}>
-                                Clear room selection
-                             </Button>
-                          </div>
-                        )}
-
-                        {pServices.boardingId && dietOptions.length > 0 && (
-                          <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
-                            <Text strong style={{ display: 'block', marginBottom: '12px' }}>Additional diet service (Optional):</Text>
+                          <>
                             <Radio.Group 
                               style={{ width: '100%' }}
-                              value={pServices.dietId}
-                              onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
+                              value={pServices.boardingId}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setPetServices(prev => ({ 
+                                  ...prev, 
+                                  [petId]: { 
+                                    ...prev[petId], 
+                                    boardingId: val,
+                                    ...(val ? {} : { dietId: undefined })
+                                  } 
+                                }));
+                              }}
                             >
                               <Row gutter={[16, 16]}>
-                                {dietOptions.map(srv => {
-                                  const price = getPriceForPet(srv, pet.weight);
-                                  return (
-                                    <Col span={24} key={srv.id}>
-                                      <Radio value={srv.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                                          {srv.imageUrl && (
+                              {boardingOptions.map(srv => {
+                                const price = getPriceForPet(srv, pet.weight);
+                                return (
+                                  <Col span={24} key={srv.id}>
+                                    <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                          {srv.imageUrl ? (
                                             <img
                                               src={srv.imageUrl}
                                               alt={srv.name}
-                                              style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                              style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
                                             />
+                                          ) : (
+                                            <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                                              🏨
+                                            </div>
                                           )}
-                                          <span>{srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text></span>
-                                        </span>
-                                      </Radio>
-                                    </Col>
-                                  );
-                                })}
-                              </Row>
-                            </Radio.Group>
-                            <div style={{ marginTop: '8px' }}>
-                              <Button type="link" size="small" onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}>
-                                 Clear diet selection
-                              </Button>
+                                          <Text strong>{srv.name}</Text>
+                                        </div>
+                                        <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
+                                      </div>
+                                    </Radio>
+                                  </Col>
+                                );
+                              })}
+                            </Row>
+                          </Radio.Group>
+                          
+                          {pServices.boardingId && (
+                            <div style={{ marginTop: '12px' }}>
+                               <Button type="link" danger onClick={() => {
+                                  setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
+                               }}>
+                                  Clear room selection
+                               </Button>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          )}
+
+                          {pServices.boardingId && dietOptions.length > 0 && (
+                            <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
+                              <Text strong style={{ display: 'block', marginBottom: '12px' }}>Additional diet service (Optional):</Text>
+                              <Radio.Group 
+                                style={{ width: '100%' }}
+                                value={pServices.dietId}
+                                onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
+                              >
+                                <Row gutter={[16, 16]}>
+                                  {dietOptions.map(srv => {
+                                    const price = getPriceForPet(srv, pet.weight);
+                                    return (
+                                      <Col span={24} key={srv.id}>
+                                        <Radio value={srv.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                            {srv.imageUrl && (
+                                              <img
+                                                src={srv.imageUrl}
+                                                alt={srv.name}
+                                                style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                              />
+                                            )}
+                                            <span>{srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text></span>
+                                          </span>
+                                        </Radio>
+                                      </Col>
+                                    );
+                                  })}
+                                </Row>
+                              </Radio.Group>
+                              <div style={{ marginTop: '8px' }}>
+                                <Button type="link" size="small" onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}>
+                                   Clear diet selection
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
 
                   </div>
                 )

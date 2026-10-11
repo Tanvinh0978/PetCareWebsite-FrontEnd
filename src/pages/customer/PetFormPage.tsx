@@ -80,8 +80,7 @@ const PetFormPage: React.FC = () => {
       let speciesEnum = 0;
       if (species === 'Cat') speciesEnum = 1;
 
-      const payload = {
-        customerId: customerId,
+      const payload: any = {
         name: name.trim(),
         species: speciesEnum,
         breed: breed.trim(),
@@ -90,6 +89,10 @@ const PetFormPage: React.FC = () => {
         healthNotes: notes.trim(),
         imageUrl: imageUrl.trim() || undefined,
       };
+
+      if (customerId && customerId.trim()) {
+        payload.customerId = customerId.trim();
+      }
 
       if (editing) {
         await petService.update(id!, payload as any);

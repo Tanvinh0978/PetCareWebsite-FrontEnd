@@ -11,6 +11,7 @@ export interface BookingItemPayload {
 export interface CreateBookingPayload {
   customerId?: string;
   voucherCode?: string;
+  paymentChoice?: string;
   bookingItems: BookingItemPayload[];
 }
 
