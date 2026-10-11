@@ -46,6 +46,13 @@ export default function PawstayAuthPage() {
         }
     }, [countdown]);
 
+    useEffect(() => {
+        const isExpired = new URLSearchParams(location.search).get("expired");
+        if (isExpired) {
+            message.warning("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        }
+    }, [location.search]);
+
     const handleSwitchView = (newView: AuthState) => {
         if (newView === 'login') navigate('/login');
         if (newView === 'register') navigate('/register');
