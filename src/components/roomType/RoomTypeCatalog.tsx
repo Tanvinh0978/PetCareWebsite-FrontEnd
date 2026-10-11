@@ -116,9 +116,11 @@ export default function RoomTypeCatalog({ detailBase, showSignInHint }: RoomType
                 <span className="tag" style={{ background: '#fef3c7', color: '#b45309', borderColor: '#fde68a' }}>
                   Pet Hotel Suite
                 </span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#059669', background: '#ecfdf5', padding: '0.2rem 0.65rem', borderRadius: '999px', border: '1px solid #a7f3d0' }}>
-                  {r.totalRooms} {r.totalRooms === 1 ? 'room' : 'rooms'} total
-                </span>
+                {r.totalRooms > 0 && (
+                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#059669', background: '#ecfdf5', padding: '0.2rem 0.65rem', borderRadius: '999px', border: '1px solid #a7f3d0' }}>
+                    {r.totalRooms} {r.totalRooms === 1 ? 'room' : 'rooms'}
+                  </span>
+                )}
               </div>
 
               <h2 style={{ fontSize: '1.3rem', margin: '0.25rem 0 0' }}>{r.name}</h2>

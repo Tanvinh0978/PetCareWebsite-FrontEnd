@@ -116,43 +116,6 @@ export default function RoomTypeDetail({ backTo, guest }: RoomTypeDetailProps) {
         </div>
       </div>
 
-      <h2>Available Rooms ({roomType.totalRooms})</h2>
-      {(!roomType.rooms || roomType.rooms.length === 0) ? (
-        <p style={{ color: '#64748b' }}>No individual rooms listed under this type currently.</p>
-      ) : (
-        <div className="table-card" style={{ marginBottom: '2rem' }}>
-          <div className="table-scroll">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 60 }}>#</th>
-                  <th>Room Name</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {roomType.rooms.map((room, idx) => (
-                  <tr key={room.id}>
-                    <td>{idx + 1}</td>
-                    <td><strong>{room.name}</strong></td>
-                    <td>
-                      <span
-                        className={`status-pill ${
-                          String(room.status).toLowerCase() === 'available' ? 'active' : 'inactive'
-                        }`}
-                      >
-                        <span className="status-dot"></span>
-                        {room.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
       {/* CTA Box */}
       <div
         style={{
