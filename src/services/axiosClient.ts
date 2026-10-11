@@ -16,10 +16,19 @@ axiosClient.interceptors.request.use((config) => {
 })
 
 // Trả thẳng body (IBackendRes<T>) thay vì AxiosResponse.
-// TODO: thêm xử lý 401 / refresh token khi backend có API đăng nhập.
+// Xử lý 401 (hết hạn token): tự động dọn sạch token cũ và điều hướng về trang đăng nhập
 axiosClient.interceptors.response.use(
   (response) => response.data,
-  (error) => Promise.reject(error),
+  (error) => {
+    if (error?.response?.status === 401) {
+      const isLoginPage = window.location.pathname.includes('/login');
+      if (!isLoginPage) {
+        useAuthStore.getState().logout();
+        window.location.href = '/login?expired=1';
+      }
+    }
+    return Promise.reject(error);
+  },
 )
 
 export default axiosClient
