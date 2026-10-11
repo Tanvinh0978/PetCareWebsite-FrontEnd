@@ -205,7 +205,7 @@ const MyBookingsPage: React.FC = () => {
           >
             Details
           </Button>
-          {record.status === 0 && (
+          {(record.status === 0 || record.status === 1) && (
             <Button
               danger
               size="small"
@@ -380,7 +380,7 @@ const MyBookingsPage: React.FC = () => {
         open={detailModalOpen}
         onCancel={() => setDetailModalOpen(false)}
         footer={[
-          selectedBooking && selectedBooking.status === 0 && (
+          selectedBooking && (selectedBooking.status === 0 || selectedBooking.status === 1) && (
             <Button
               key="cancel"
               danger
@@ -528,6 +528,18 @@ const MyBookingsPage: React.FC = () => {
         <p>Are you sure you want to cancel this booking? This action cannot be undone.</p>
         <div style={{ marginTop: 12 }}>
           <Text strong>Reason for cancellation (optional):</Text>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8, marginBottom: 8 }}>
+            {['Change of plans', 'Pet is unwell', 'Booked wrong date', 'Other reason'].map((r) => (
+              <Tag
+                key={r}
+                color={cancelReason === r ? 'red' : 'default'}
+                style={{ cursor: 'pointer', borderRadius: 12, padding: '2px 10px' }}
+                onClick={() => setCancelReason(r)}
+              >
+                {r}
+              </Tag>
+            ))}
+          </div>
           <Input.TextArea
             rows={3}
             style={{ marginTop: 6 }}
