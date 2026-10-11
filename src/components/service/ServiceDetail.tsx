@@ -32,6 +32,15 @@ export default function ServiceDetail({ backTo, editTo }: { backTo: string; edit
         <h1>{service.name}</h1>
         {editTo && <Link to={editTo(service.id)} className="btn">Edit</Link>}
       </div>
+      {service.imageUrl && (
+        <div style={{ marginBottom: '1.5rem', borderRadius: '12px', overflow: 'hidden', maxHeight: '320px', border: '1px solid var(--slate-200)', backgroundColor: '#f8fafc' }}>
+          <img
+            src={service.imageUrl}
+            alt={service.name}
+            style={{ width: '100%', maxHeight: '320px', objectFit: 'cover', display: 'block' }}
+          />
+        </div>
+      )}
       <p>
         <span className="tag">{SERVICE_TYPE_LABEL[service.serviceType]}</span>
         {!service.isActive && <span className="tag off-tag">Inactive</span>}

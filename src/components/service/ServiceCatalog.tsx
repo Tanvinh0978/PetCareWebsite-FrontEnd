@@ -40,14 +40,40 @@ export default function ServiceCatalog({ detailBase, showSignInHint }: { detailB
       {!loading && !error && shown.length === 0 && <p>No matching services.</p>}
       <div className="grid">
         {shown.map((s) => (
-          <article key={s.id} className="card">
-            <div><span className="tag">{SERVICE_TYPE_LABEL[s.serviceType]}</span></div>
-            <h2>{s.name}</h2>
-            <p>{s.description}</p>
-            <div className="actions" style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
-              <Link to={detailBase + '/' + s.id} className="btn-action view" style={{ padding: '0.45rem 0.95rem' }}>
-                View details →
-              </Link>
+          <article key={s.id} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            {s.imageUrl ? (
+              <div style={{ height: 160, width: '100%', overflow: 'hidden', backgroundColor: '#f1f5f9' }}>
+                <img
+                  src={s.imageUrl}
+                  alt={s.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              </div>
+            ) : (
+              <div
+                style={{
+                  height: 110,
+                  width: '100%',
+                  backgroundColor: '#f8fafc',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '2rem',
+                  borderBottom: '1px solid #f1f5f9',
+                }}
+              >
+                🐾
+              </div>
+            )}
+            <div style={{ padding: '1.25rem 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', flex: 1, gap: '0.65rem' }}>
+              <div><span className="tag">{SERVICE_TYPE_LABEL[s.serviceType]}</span></div>
+              <h2>{s.name}</h2>
+              <p>{s.description}</p>
+              <div className="actions" style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
+                <Link to={detailBase + '/' + s.id} className="btn-action view" style={{ padding: '0.45rem 0.95rem' }}>
+                  View details →
+                </Link>
+              </div>
             </div>
           </article>
         ))}

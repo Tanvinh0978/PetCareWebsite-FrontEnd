@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { createService, getServiceById, updateService } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
+import ImageUpload from '@/components/common/ImageUpload';
 import {
   PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL,
   type PricingUnit, type ServiceType,
@@ -40,6 +41,7 @@ export default function ServiceFormPage() {
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(editing);
   const [name, setName] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [description, setDescription] = useState('');
   const [serviceType, setServiceType] = useState<ServiceType>('Grooming');
   const [rows, setRows] = useState<PriceRow[]>([emptyRow()]);
@@ -51,6 +53,7 @@ export default function ServiceFormPage() {
     getServiceById(id)
       .then((s) => {
         setName(s.name);
+        setImageUrl(s.imageUrl ?? '');
         setDescription(s.description ?? '');
         setServiceType(s.serviceType);
         setIsActive(s.isActive);
@@ -83,6 +86,7 @@ export default function ServiceFormPage() {
         name: name.trim(),
         description,
         serviceType,
+        imageUrl: imageUrl.trim() || undefined,
         prices: rows.map((r) => ({
           minWeight: num(r.minWeight),
           maxWeight: num(r.maxWeight),
@@ -119,6 +123,24 @@ export default function ServiceFormPage() {
       {loading && <p>Loading service details...</p>}
 
       <form onSubmit={onSubmit} className="form" hidden={loading}>
+        {/* Service Image Upload */}
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: '#0f172a' }}>
+            Service Photo
+          </label>
+          <ImageUpload
+            value={imageUrl}
+            onChange={(url) => setImageUrl(url)}
+            folder="services"
+            shape="square"
+            width={160}
+            height={120}
+            title="Upload Photo"
+            helperText="Upload service photo (PNG, JPG, WEBP up to 5MB)"
+            disabled={saving}
+          />
+        </div>
+
         <label>
           Service Name <span style={{ color: 'var(--danger)' }}>*</span>
           <input
