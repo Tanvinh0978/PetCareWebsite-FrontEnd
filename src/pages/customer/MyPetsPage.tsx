@@ -15,14 +15,10 @@ const MyPetsPage: React.FC = () => {
   const fetchPets = async () => {
     try {
       setLoading(true);
-      const res = await petService.fetchMyPets();
-      if (Array.isArray(res)) {
-        setPets(res);
-      } else if ((res as any)?.items) {
-        setPets((res as any).items);
-      } else {
-        setPets([]);
-      }
+      const res = await petService.fetchMyPets(true);
+      const list = Array.isArray(res) ? res : ((res as any)?.items || []);
+      const activePets = list.filter((p: any) => p.isActive !== false && !p.isDeleted);
+      setPets(activePets);
     } catch (error) {
       message.error('Failed to load pets');
     } finally {
@@ -37,13 +33,13 @@ const MyPetsPage: React.FC = () => {
   const handleDelete = (id: string) => {
     Modal.confirm({
       title: 'Are you sure you want to delete this pet?',
-      content: 'This action cannot be undone.',
+      content: 'This pet will be removed from your list.',
       okText: 'Yes, Delete',
       okType: 'danger',
       onOk: async () => {
         try {
           await petService.delete(id);
-          setPets(pets.filter(p => p.id !== id));
+          setPets(prev => prev.filter(p => p.id !== id));
           message.success('Pet deleted successfully');
         } catch (error) {
           message.error('Failed to delete pet');
@@ -101,7 +97,6 @@ const MyPetsPage: React.FC = () => {
                       <p><strong>Breed:</strong> {pet.breed || 'N/A'}</p>
                       <p><strong>Weight:</strong> {pet.weight} kg</p>
                       <p><strong>Age:</strong> {pet.age ? pet.age + ' years' : 'N/A'}</p>
-                      <p><strong>Status:</strong> {pet.isActive ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>}</p>
                     </div>
                   }
                 />
