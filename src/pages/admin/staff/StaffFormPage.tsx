@@ -1,8 +1,9 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { App } from 'antd'
+import { App, Checkbox, Spin } from 'antd'
 import { staffService } from '@/services/staff.service'
-import { STAFF_ROLES } from '@/types/staff.types'
+import { roleService } from '@/services/role.service'
+import type { RoleDTO } from '@/types/role.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 const AdminStaffFormPage: React.FC = () => {
@@ -18,10 +19,44 @@ const AdminStaffFormPage: React.FC = () => {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [address, setAddress] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<string>(STAFF_ROLES[0])
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])
   const [yearsOfExperience, setYearsOfExperience] = useState<number | string>(1)
-  const [status, setStatus] = useState<'Active' | 'Inactive'>('Active')
+  const [status, setStatus] = useState<number>(0) // 0: Active, 1: Inactive
+
+  const [roles, setRoles] = useState<RoleDTO[]>([])
+  const [loadingRoles, setLoadingRoles] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoadingRoles(true)
+    roleService
+      .getRoles()
+      .then((data) => {
+        if (!cancelled) {
+          setRoles(data)
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not fetch roles from API, using default roles:', err)
+        if (!cancelled) {
+          setRoles([
+            { id: 'A0000000-0000-0000-0000-000000000001', roleName: 'Admin', totalPermissions: 24 },
+            { id: 'A0000000-0000-0000-0000-000000000002', roleName: 'Receptionist', totalPermissions: 14 },
+            { id: 'A0000000-0000-0000-0000-000000000003', roleName: 'Boarding Staff', totalPermissions: 9 },
+            { id: 'A0000000-0000-0000-0000-000000000004', roleName: 'Grooming Staff', totalPermissions: 4 },
+          ])
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingRoles(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!id) return
@@ -32,13 +67,38 @@ const AdminStaffFormPage: React.FC = () => {
         setFullName(st.fullName)
         setEmail(st.email)
         setPhoneNumber(st.phoneNumber)
-        setRole(st.role || STAFF_ROLES[0])
+        setAddress(st.address || '')
         setYearsOfExperience(st.yearsOfExperience)
-        setStatus(st.status)
+        setStatus(st.status === 'Active' ? 0 : 1)
+        if (st.roleIds && st.roleIds.length > 0) {
+          setSelectedRoleIds(st.roleIds)
+        }
       })
       .catch((e) => setError(getApiErrorMessage(e)))
       .finally(() => setLoading(false))
   }, [id])
+
+  // Sync roleIds when roles finish loading if editing and roleIds wasn't available directly
+  useEffect(() => {
+    if (editing && roles.length > 0 && selectedRoleIds.length === 0 && id) {
+      staffService.fetchById(id).then((st) => {
+        if (st.roles && st.roles.length > 0) {
+          const matchedIds = roles
+            .filter((r) => st.roles.includes(r.roleName))
+            .map((r) => r.id)
+          if (matchedIds.length > 0) {
+            setSelectedRoleIds(matchedIds)
+          }
+        }
+      }).catch(() => {})
+    }
+  }, [editing, roles, id, selectedRoleIds.length])
+
+  const toggleRole = (roleId: string) => {
+    setSelectedRoleIds((prev) =>
+      prev.includes(roleId) ? prev.filter((r) => r !== roleId) : [...prev, roleId],
+    )
+  }
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -63,7 +123,12 @@ const AdminStaffFormPage: React.FC = () => {
     }
 
     if (!editing && !password) {
-      setError('Temporary initial password is required for new staff account.')
+      setError('Password is required for a new staff account (minimum 6 characters).')
+      return
+    }
+
+    if (selectedRoleIds.length === 0) {
+      setError('Please assign at least one role to this staff member.')
       return
     }
 
@@ -79,9 +144,10 @@ const AdminStaffFormPage: React.FC = () => {
         await staffService.update(id as string, {
           fullName: cleanName,
           phoneNumber: cleanPhone,
-          role,
+          address: address.trim() || undefined,
           yearsOfExperience: numExp,
           status,
+          roleIds: selectedRoleIds,
         })
         message.success(`Staff "${cleanName}" updated successfully.`)
       } else {
@@ -89,10 +155,10 @@ const AdminStaffFormPage: React.FC = () => {
           fullName: cleanName,
           email: cleanEmail,
           phoneNumber: cleanPhone,
+          address: address.trim() || undefined,
           password,
-          role,
           yearsOfExperience: numExp,
-          status,
+          roleIds: selectedRoleIds,
         })
         message.success(`Staff member "${cleanName}" created successfully.`)
       }
@@ -105,18 +171,18 @@ const AdminStaffFormPage: React.FC = () => {
   }
 
   return (
-    <section className="page" style={{ maxWidth: '780px' }}>
+    <section className="page" style={{ maxWidth: '820px' }}>
       <div className="page-head" style={{ marginBottom: '1.5rem' }}>
         <div>
           <h1>{editing ? 'Edit Staff Member' : 'Add New Staff Member'}</h1>
           <p className="page-subtitle">
             {editing
-              ? 'Update contact details, job title, and experience.'
-              : 'Register a new employee for veterinary, grooming, or care operations.'}
+              ? 'Update profile details, contact information, and role assignments.'
+              : 'Register a staff account and grant access roles according to job functions.'}
           </p>
         </div>
         <Link to="/admin/staff" className="btn btn-secondary">
-          ← Back to staff
+          ← Back to staff list
         </Link>
       </div>
 
@@ -136,7 +202,7 @@ const AdminStaffFormPage: React.FC = () => {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="e.g. Dr. Nguyen Thu Thao"
+            placeholder="e.g. Hương Mai / Nguyễn Văn A"
             required
           />
         </label>
@@ -149,7 +215,7 @@ const AdminStaffFormPage: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. thao.nguyen@petcare.com"
+              placeholder="e.g. staff@petcare.com"
               disabled={editing}
               style={editing ? { backgroundColor: '#f1f5f9', cursor: 'not-allowed' } : {}}
               required
@@ -162,43 +228,95 @@ const AdminStaffFormPage: React.FC = () => {
               type="tel"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="e.g. 0903 123 456"
+              placeholder="e.g. 0901 000 002"
               required
             />
           </label>
         </div>
 
-        {/* Initial Password when creating */}
+        {/* Address */}
+        <label>
+          Address (Optional)
+          <input
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="e.g. 123 Nguyen Trai, District 1, HCMC"
+          />
+        </label>
+
+        {/* Password (for new staff) */}
         {!editing && (
           <label>
-            Initial Account Password <span style={{ color: 'var(--danger)' }}>*</span>
+            Initial Password <span style={{ color: 'var(--danger)' }}>*</span>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimum 6 characters"
+              placeholder="Minimum 6 characters (e.g. Admin@123)"
               required
             />
           </label>
         )}
 
-        {/* Role & Experience */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <label>
-            Role / Position <span style={{ color: 'var(--danger)' }}>*</span>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              required
-            >
-              {STAFF_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
+        {/* Roles Assignment */}
+        <div style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.4rem', color: '#0f172a' }}>
+            Assigned Roles <span style={{ color: 'var(--danger)' }}>*</span>
           </label>
+          {loadingRoles ? (
+            <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
+              <Spin size="small" /> Loading available roles...
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                gap: '0.75rem',
+                padding: '1rem',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+              }}
+            >
+              {roles.map((r) => {
+                const isChecked = selectedRoleIds.includes(r.id)
+                return (
+                  <label
+                    key={r.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      cursor: 'pointer',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '6px',
+                      background: isChecked ? '#ecfdf5' : '#ffffff',
+                      border: `1px solid ${isChecked ? '#059669' : '#cbd5e1'}`,
+                      transition: 'all 0.15s ease',
+                      fontWeight: isChecked ? 600 : 400,
+                      color: isChecked ? '#047857' : '#334155',
+                      margin: 0,
+                    }}
+                  >
+                    <Checkbox
+                      checked={isChecked}
+                      onChange={() => toggleRole(r.id)}
+                    />
+                    <span>{r.roleName}</span>
+                  </label>
+                )
+              })}
+            </div>
+          )}
+          <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginTop: '0.25rem' }}>
+            A staff member can have multiple roles (e.g. Receptionist + Boarding Staff).
+          </span>
+        </div>
 
+        {/* Experience & Status */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <label>
             Years of Experience <span style={{ color: 'var(--danger)' }}>*</span>
             <input
@@ -207,25 +325,28 @@ const AdminStaffFormPage: React.FC = () => {
               max="50"
               value={yearsOfExperience}
               onChange={(e) => setYearsOfExperience(e.target.value)}
-              placeholder="e.g. 3"
+              placeholder="e.g. 2"
               required
             />
           </label>
+
+          {editing ? (
+            <label>
+              Status
+              <select
+                value={status}
+                onChange={(e) => setStatus(Number(e.target.value))}
+              >
+                <option value={0}>Active (Account enabled)</option>
+                <option value={1}>Inactive (Account suspended)</option>
+              </select>
+            </label>
+          ) : (
+            <div />
+          )}
         </div>
 
-        {/* Status */}
-        <label>
-          Status
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
-          >
-            <option value="Active">Active (Available for booking tasks)</option>
-            <option value="Inactive">Inactive (On leave / deactivated)</option>
-          </select>
-        </label>
-
-        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.75rem' }}>
           <button type="submit" className="btn" disabled={saving}>
             {saving ? 'Saving...' : editing ? 'Update Staff Member' : 'Register Staff Member'}
           </button>

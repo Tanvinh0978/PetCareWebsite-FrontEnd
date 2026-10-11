@@ -29,13 +29,18 @@ const PetFormPage: React.FC = () => {
     
     setLoading(true);
     petService.fetchById(id)
-      .then((pet) => {
-        setName(pet.name);
-        setSpecies(pet.species as string);
-        setBreed(pet.breed || '');
-        setAge(pet.age?.toString() || '');
-        setWeight(pet.weight?.toString() || '');
-        setNotes(pet.healthNotes || '');
+      .then((pet: any) => {
+        const result = pet?.result || pet?.data || pet;
+        if (result) {
+          setName(result.name || '');
+          setSpecies(result.species === 1 || result.species === 'Cat' ? 'Cat' : 'Dog');
+          setBreed(result.breed || '');
+          setAge(result.age?.toString() || '');
+          setWeight(result.weight?.toString() || '');
+          setNotes(result.healthNotes || '');
+        } else {
+          setError('Failed to load pet details');
+        }
       })
       .catch((err: unknown) => setError(getApiErrorMessage(err)))
       .finally(() => setLoading(false));
@@ -83,10 +88,10 @@ const PetFormPage: React.FC = () => {
       };
 
       if (editing) {
-        await petService.update(id!, payload);
+        await petService.update(id!, payload as any);
         message.success('Pet updated successfully!');
       } else {
-        await petService.create(payload);
+        await petService.create(payload as any);
         message.success('Pet added successfully!');
       }
 

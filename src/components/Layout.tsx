@@ -12,10 +12,12 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { ROLE_BASE, ROLE_LABEL, type Role } from "@/auth/roles";
 import { NAV } from "@/routes/nav";
 
+import { useAuthStore } from "@/store/useAuthStore";
+
 export default function Layout({ role }: { role: Role }) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((s) => s.user);
   const base = ROLE_BASE[role];
   const isAdminOrStaff = role === "admin" || role === "staff";
 
@@ -24,6 +26,9 @@ export default function Layout({ role }: { role: Role }) {
   const handleSignOut = () => {
     signOut();
     useAuthStore.getState().logout();
+    try {
+      localStorage.removeItem('petcare.customerId');
+    } catch {}
     navigate("/login");
   };
 
@@ -102,6 +107,10 @@ export default function Layout({ role }: { role: Role }) {
                     <circle cx="9" cy="7" r="4"></circle>
                     <polyline points="16 11 18 13 22 9"></polyline>
                   </svg>
+                ) : n.to === 'roles' ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
                 ) : n.to === 'room-types' ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -131,7 +140,9 @@ export default function Layout({ role }: { role: Role }) {
                 {role[0].toUpperCase()}
               </div>
               <div style={{ overflow: 'hidden' }}>
-                <p style={{ margin: 0, fontWeight: 600, color: '#f8fafc', fontSize: '0.9rem' }}>Logged User</p>
+                <p style={{ margin: 0, fontWeight: 600, color: '#f8fafc', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user?.name || user?.email || 'Logged User'}
+                </p>
                 <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{ROLE_LABEL[role]} Role</span>
               </div>
             </div>
@@ -194,27 +205,7 @@ export default function Layout({ role }: { role: Role }) {
               </div>
             ) : (
               <div className="customer-auth-status">
-                <Dropdown menu={{ items: userMenuItems }} trigger={['hover', 'click']} placement="bottomRight">
-                  <div
-                    className="customer-role-badge"
-                    style={{
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      userSelect: 'none',
-                      transition: 'all 0.2s',
-                    }}
-                    title="Account options"
-                  >
-                    <UserOutlined style={{ color: '#059669' }} />
-                    <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {displayName}
-                    </span>
-                    <DownOutlined style={{ fontSize: '10px', color: '#059669' }} />
-                  </div>
-                </Dropdown>
-
+                <span className="customer-role-badge">👤 {user?.name ? user.name.split(' ')[0] : 'Customer'}</span>
                 <button
                   type="button"
                   className="btn-action danger"

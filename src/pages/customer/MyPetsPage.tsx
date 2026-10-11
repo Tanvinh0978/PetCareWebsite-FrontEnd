@@ -15,13 +15,16 @@ const MyPetsPage: React.FC = () => {
   const fetchPets = async () => {
     try {
       setLoading(true);
-      // Chỉ lấy các bé thú cưng đang Active (những bé đã xóa mềm/Inactive sẽ bị ẩn đi)
-      const items = await petService.fetchMyPets(true);
-      setPets(items ?? []);
-    } catch (error: any) {
-      if (error?.response?.status !== 401) {
-        message.error(error?.response?.data?.message || 'Failed to load pets');
+      const res = await petService.fetchMyPets();
+      if (Array.isArray(res)) {
+        setPets(res);
+      } else if ((res as any)?.items) {
+        setPets((res as any).items);
+      } else {
+        setPets([]);
       }
+    } catch (error) {
+      message.error('Failed to load pets');
     } finally {
       setLoading(false);
     }
@@ -79,7 +82,7 @@ const MyPetsPage: React.FC = () => {
                   title={
                     <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
                       <span>{pet.name}</span>
-                      <Tag color="blue">{pet.species}</Tag>
+                      <Tag color="blue">{pet.species === 1 || pet.species === 'Cat' ? 'Cat' : 'Dog'}</Tag>
                     </Space>
                   }
                   description={
