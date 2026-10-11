@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Col, Row, Typography, Space, Modal, message, Spin, Empty, Tag } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { petService } from '@/services/pet.service';
 import { useAuthStore } from '@/store/useAuthStore';
+import PetDetailModal from '@/components/pet/PetDetailModal';
 
 const { Title, Text } = Typography;
 
 const MyPetsPage: React.FC = () => {
   const [pets, setPets] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedPet, setSelectedPet] = useState<any | null>(null);
   const navigate = useNavigate();
 
   const fetchPets = async () => {
@@ -69,6 +71,8 @@ const MyPetsPage: React.FC = () => {
             <Col xs={24} sm={12} md={8} lg={6} key={pet.id}>
               <Card
                 hoverable
+                onClick={() => setSelectedPet(pet)}
+                style={{ cursor: 'pointer' }}
                 cover={
                   pet.imageUrl ? (
                     <div style={{ height: 160, overflow: 'hidden', backgroundColor: '#f1f5f9' }}>
@@ -81,8 +85,9 @@ const MyPetsPage: React.FC = () => {
                   ) : undefined
                 }
                 actions={[
-                  <EditOutlined key="edit" onClick={() => navigate(`/customer/pets/${pet.id}/edit`)} />,
-                  <DeleteOutlined key="delete" onClick={() => handleDelete(pet.id)} style={{ color: 'red' }} />
+                  <EyeOutlined key="view" onClick={(e) => { e.stopPropagation(); setSelectedPet(pet); }} style={{ color: '#059669' }} title="View Details" />,
+                  <EditOutlined key="edit" onClick={(e) => { e.stopPropagation(); navigate(`/customer/pets/${pet.id}/edit`); }} title="Edit" />,
+                  <DeleteOutlined key="delete" onClick={(e) => { e.stopPropagation(); handleDelete(pet.id); }} style={{ color: 'red' }} title="Delete" />
                 ]}
               >
                 <Card.Meta
@@ -105,6 +110,12 @@ const MyPetsPage: React.FC = () => {
           ))}
         </Row>
       )}
+
+      <PetDetailModal
+        pet={selectedPet}
+        open={Boolean(selectedPet)}
+        onClose={() => setSelectedPet(null)}
+      />
     </div>
   );
 };

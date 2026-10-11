@@ -203,7 +203,28 @@ export default function Layout({ role }: { role: Role }) {
               </div>
             ) : (
               <div className="customer-auth-status">
-                <span className="customer-role-badge">👤 {user?.name ? user.name.split(' ')[0] : 'Customer'}</span>
+                <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+                  <button
+                    type="button"
+                    className="customer-role-badge"
+                    style={{
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      border: '1px solid var(--primary-border)',
+                      background: 'var(--primary-light)',
+                      color: '#065f46',
+                      fontWeight: 600,
+                      padding: '0.35rem 0.85rem',
+                      borderRadius: '999px',
+                      fontFamily: 'inherit',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    👤 {displayName} <DownOutlined style={{ fontSize: '10px' }} />
+                  </button>
+                </Dropdown>
                 <button
                   type="button"
                   className="btn-action danger"
