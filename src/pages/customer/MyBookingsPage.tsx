@@ -35,31 +35,38 @@ import {
 
 const { Title, Text } = Typography;
 
-export const BOOKING_STATUS_CONFIG: Record<
-  number,
-  { label: string; color: string; icon: React.ReactNode }
-> = {
-  0: { label: 'Pending', color: 'gold', icon: <ClockCircleOutlined /> },
-  1: { label: 'In Progress', color: 'blue', icon: <SyncOutlinedSpin /> },
-  2: { label: 'Completed', color: 'green', icon: <CheckCircleOutlined /> },
-  3: { label: 'Cancelled', color: 'red', icon: <CloseCircleOutlined /> },
+export const getBookingStatusConfig = (status: any) => {
+  const s = String(status ?? '').toLowerCase();
+  if (s === '0' || s === 'pending') {
+    return { label: 'Pending', color: 'gold', icon: <ClockCircleOutlined /> };
+  }
+  if (s === '1' || s === 'partially_completed' || s === 'inprogress' || s === 'in progress') {
+    return { label: 'In Progress', color: 'blue', icon: <ClockCircleOutlined style={{ color: '#1677ff' }} /> };
+  }
+  if (s === '2' || s === 'completed') {
+    return { label: 'Completed', color: 'green', icon: <CheckCircleOutlined /> };
+  }
+  if (s === '3' || s === 'cancelled' || s === 'canceled') {
+    return { label: 'Cancelled', color: 'red', icon: <CloseCircleOutlined /> };
+  }
+  return { label: String(status || 'Unknown'), color: 'default', icon: null };
 };
 
-function SyncOutlinedSpin() {
-  return <ClockCircleOutlined style={{ color: '#1677ff' }} />;
-}
+export const isCancellable = (status: any) => {
+  const s = String(status ?? '').toLowerCase();
+  return s === '0' || s === 'pending' || s === '1' || s === 'partially_completed';
+};
 
-export const ITEM_STATUS_CONFIG: Record<
-  number,
-  { label: string; color: string }
-> = {
-  0: { label: 'Pending', color: 'gold' },
-  1: { label: 'Confirmed', color: 'cyan' },
-  2: { label: 'Checked In', color: 'blue' },
-  3: { label: 'In Progress', color: 'processing' },
-  4: { label: 'Completed', color: 'green' },
-  5: { label: 'Cancelled', color: 'red' },
-  6: { label: 'No Show', color: 'default' },
+export const getItemStatusConfig = (status: any) => {
+  const s = String(status ?? '').toLowerCase();
+  if (s === '0' || s === 'pending') return { label: 'Pending', color: 'gold' };
+  if (s === '1' || s === 'confirmed') return { label: 'Confirmed', color: 'cyan' };
+  if (s === '2' || s === 'checked_in' || s === 'checkedin') return { label: 'Checked In', color: 'blue' };
+  if (s === '3' || s === 'in_progress' || s === 'inprogress') return { label: 'In Progress', color: 'processing' };
+  if (s === '4' || s === 'completed') return { label: 'Completed', color: 'green' };
+  if (s === '5' || s === 'cancelled' || s === 'canceled') return { label: 'Cancelled', color: 'red' };
+  if (s === '6' || s === 'no_show' || s === 'noshow') return { label: 'No Show', color: 'default' };
+  return { label: String(status || 'Unknown'), color: 'default' };
 };
 
 const MyBookingsPage: React.FC = () => {
@@ -182,8 +189,8 @@ const MyBookingsPage: React.FC = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (st: number) => {
-        const config = BOOKING_STATUS_CONFIG[st] || { label: 'Unknown', color: 'default', icon: null };
+      render: (st: any) => {
+        const config = getBookingStatusConfig(st);
         return (
           <Tag color={config.color} icon={config.icon} style={{ borderRadius: 12, padding: '2px 10px' }}>
             {config.label}
@@ -205,7 +212,7 @@ const MyBookingsPage: React.FC = () => {
           >
             Details
           </Button>
-          {(record.status === 0 || record.status === 1) && (
+          {isCancellable(record.status) && (
             <Button
               danger
               size="small"
@@ -370,17 +377,20 @@ const MyBookingsPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <CalendarOutlined style={{ color: '#059669' }} />
             <span>Booking Details</span>
-            {selectedBooking && (
-              <Tag color={BOOKING_STATUS_CONFIG[selectedBooking.status]?.color} style={{ marginLeft: 8 }}>
-                {BOOKING_STATUS_CONFIG[selectedBooking.status]?.label}
-              </Tag>
-            )}
+            {selectedBooking && (() => {
+              const cfg = getBookingStatusConfig(selectedBooking.status);
+              return (
+                <Tag color={cfg.color} icon={cfg.icon} style={{ marginLeft: 8 }}>
+                  {cfg.label}
+                </Tag>
+              );
+            })()}
           </div>
         }
         open={detailModalOpen}
         onCancel={() => setDetailModalOpen(false)}
         footer={[
-          selectedBooking && (selectedBooking.status === 0 || selectedBooking.status === 1) && (
+          selectedBooking && isCancellable(selectedBooking.status) && (
             <Button
               key="cancel"
               danger
@@ -444,10 +454,7 @@ const MyBookingsPage: React.FC = () => {
             </Title>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {selectedBooking.bookingItems?.map((item) => {
-                const itemStatus = ITEM_STATUS_CONFIG[item.status] || {
-                  label: 'Unknown',
-                  color: 'default',
-                };
+                const itemStatus = getItemStatusConfig(item.status);
                 return (
                   <Card
                     key={item.id}
