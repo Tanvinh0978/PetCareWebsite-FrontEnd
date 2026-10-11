@@ -203,28 +203,27 @@ export default function Layout({ role }: { role: Role }) {
               </div>
             ) : (
               <div className="customer-auth-status">
-                <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-                  <button
-                    type="button"
+                <Dropdown menu={{ items: userMenuItems }} trigger={['hover', 'click']} placement="bottomRight">
+                  <div
                     className="customer-role-badge"
                     style={{
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '6px',
-                      border: '1px solid var(--primary-border)',
-                      background: 'var(--primary-light)',
-                      color: '#065f46',
-                      fontWeight: 600,
-                      padding: '0.35rem 0.85rem',
-                      borderRadius: '999px',
-                      fontFamily: 'inherit',
-                      fontSize: '0.85rem',
+                      userSelect: 'none',
+                      transition: 'all 0.2s',
                     }}
+                    title="Account options"
                   >
-                    👤 {displayName} <DownOutlined style={{ fontSize: '10px' }} />
-                  </button>
+                    <UserOutlined style={{ color: '#059669' }} />
+                    <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {displayName}
+                    </span>
+                    <DownOutlined style={{ fontSize: '10px', color: '#059669' }} />
+                  </div>
                 </Dropdown>
+
                 <button
                   type="button"
                   className="btn-action danger"
