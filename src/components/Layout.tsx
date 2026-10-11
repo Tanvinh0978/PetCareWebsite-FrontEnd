@@ -12,8 +12,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { ROLE_BASE, ROLE_LABEL, type Role } from "@/auth/roles";
 import { NAV } from "@/routes/nav";
 
-import { useAuthStore } from "@/store/useAuthStore";
-
 export default function Layout({ role }: { role: Role }) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
