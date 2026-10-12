@@ -82,6 +82,14 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
     setSubmitting(true)
     setErrorMsg(null)
     try {
+      // Ensure backend status transitions are respected (1 -> 2 -> 3 -> 4)
+      if (task.status === 1) {
+        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, { status: 2 })
+        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, { status: 3 })
+      } else if (task.status === 2) {
+        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, { status: 3 })
+      }
+
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
         status: 4, // Completed
         resultNote: values.resultNote?.trim() || null,
