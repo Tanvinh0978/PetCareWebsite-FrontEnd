@@ -1,4 +1,5 @@
 import axiosClient from './axiosClient'
+import { useAuthStore } from '@/store/useAuthStore'
 import type {
   StaffDTO,
   CreateStaffDTO,
@@ -258,5 +259,78 @@ export const staffService = {
       return true
     }
     return false
+  },
+
+  getProfile: async (): Promise<StaffDTO> => {
+    try {
+      const res: any = await axiosClient.get('/api/Staffs/profile')
+      const raw = res?.result || res?.data || res
+      if (raw && (raw.id || raw.fullName)) {
+        return mapApiStaff(raw)
+      }
+    } catch (err) {
+      console.warn('Backend /api/Staffs/profile failed, checking user ID:', err)
+    }
+
+    const user = useAuthStore.getState().user
+    if (user?.id) {
+      try {
+        return await staffService.fetchById(user.id)
+      } catch (e) {
+        console.warn('Backend fetchById failed:', e)
+      }
+    }
+
+    const all = getLocalStaff()
+    const found = all.find((s) => s.id === user?.id || s.email === user?.email)
+    if (found) return found
+
+    return {
+      id: user?.id || 'staff',
+      fullName: user?.name || 'Staff Member',
+      email: user?.email || user?.login || 'staff@petcare.com',
+      phoneNumber: '',
+      yearsOfExperience: 0,
+      status: 'Active',
+      roles: ['Staff'],
+    }
+  },
+
+  updateProfile: async (payload: {
+    fullName: string
+    phoneNumber: string
+    address?: string
+    avatarUrl?: string
+    yearsOfExperience?: number
+  }): Promise<any> => {
+    try {
+      const res: any = await axiosClient.put('/api/Staffs/profile', payload)
+      return res?.result ?? res?.data ?? res
+    } catch (err) {
+      console.warn('Backend /api/Staffs/profile update failed:', err)
+      const user = useAuthStore.getState().user
+      if (user?.id) {
+        const all = getLocalStaff()
+        const idx = all.findIndex((s) => s.id === user.id || s.email === user.email)
+        if (idx !== -1) {
+          all[idx] = {
+            ...all[idx],
+            ...payload,
+            updatedAt: new Date().toISOString(),
+          }
+          saveLocalStaff(all)
+        }
+      }
+      return payload
+    }
+  },
+
+  changePassword: async (payload: {
+    currentPassword: string
+    newPassword: string
+    confirmNewPassword: string
+  }): Promise<any> => {
+    const res: any = await axiosClient.put('/api/Staffs/change-password', payload)
+    return res?.result ?? res?.data ?? res
   },
 }

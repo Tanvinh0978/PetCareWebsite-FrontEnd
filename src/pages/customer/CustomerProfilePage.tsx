@@ -27,6 +27,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import { customerService } from '@/services/customer.service';
 import { useAuthStore } from '@/store/useAuthStore';
+import { ImageUpload } from '@/components/common/ImageUpload';
 
 const { Title, Text } = Typography;
 
@@ -36,6 +37,7 @@ const CustomerProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(initialTab);
 
   const [loading, setLoading] = useState(false);
+  const [profileData, setProfileData] = useState<any>(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
@@ -58,22 +60,33 @@ const CustomerProfilePage: React.FC = () => {
     try {
       const data = await customerService.getProfile();
       if (data) {
+        setProfileData(data);
         profileForm.setFieldsValue({
           fullName: data.fullName || user?.name || '',
-          email: data.email || user?.email || '',
+          email: data.email || user?.email || user?.login || '',
           phoneNumber: data.phoneNumber || '',
           address: data.address || '',
-          avatarUrl: data.avatarUrl || '',
+          avatarUrl: data.avatarUrl || user?.avatarUrl || '',
         });
+        if (accessToken && user && (data.avatarUrl !== user.avatarUrl || (data.fullName && data.fullName !== user.name))) {
+          setAuth(accessToken, {
+            ...user,
+            avatarUrl: data.avatarUrl || user.avatarUrl,
+            name: data.fullName || user.name,
+          });
+        }
       }
     } catch (error: any) {
-      // Fallback to store data if api has an issue
-      profileForm.setFieldsValue({
+      console.warn('Failed to load customer profile from API, using store fallback:', error);
+      const fallback = {
         fullName: user?.name || '',
         email: user?.email || user?.login || '',
         phoneNumber: '',
         address: '',
-      });
+        avatarUrl: user?.avatarUrl || '',
+      };
+      setProfileData(fallback);
+      profileForm.setFieldsValue(fallback);
     } finally {
       setLoading(false);
     }
@@ -94,15 +107,26 @@ const CustomerProfilePage: React.FC = () => {
       });
       message.success('Profile updated successfully! 🎉');
 
-      // Update local auth store so user name changes immediately across headers
+      const updated = {
+        ...(profileData || {}),
+        fullName: values.fullName.trim(),
+        phoneNumber: values.phoneNumber.trim(),
+        address: values.address?.trim() || '',
+        avatarUrl: values.avatarUrl?.trim() || '',
+      };
+      setProfileData(updated);
+
+      // Update local auth store so user name and avatar change immediately across headers
       if (accessToken && user) {
         setAuth(accessToken, {
           ...user,
           name: values.fullName.trim(),
+          avatarUrl: values.avatarUrl?.trim() || '',
         });
       }
     } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Failed to update profile');
+      const msg = error?.response?.data?.message || error?.message || 'Failed to update profile';
+      message.error(msg);
     } finally {
       setSavingProfile(false);
     }
@@ -119,7 +143,8 @@ const CustomerProfilePage: React.FC = () => {
       message.success('Password changed successfully! 🔒');
       passwordForm.resetFields();
     } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Failed to change password');
+      const msg = error?.response?.data?.message || error?.message || 'Failed to change password';
+      message.error(msg);
     } finally {
       setSavingPassword(false);
     }
@@ -170,91 +195,116 @@ const CustomerProfilePage: React.FC = () => {
                   <UserOutlined /> Personal Profile
                 </span>
               ),
-              children: loading ? (
-                <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                  <Spin size="large" />
-                </div>
-              ) : (
-                <div style={{ paddingTop: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 }}>
-                    <Avatar
-                      size={72}
-                      style={{ backgroundColor: '#059669', fontSize: 28 }}
-                      icon={<UserOutlined />}
-                    >
-                      {user?.name?.charAt(0)?.toUpperCase()}
-                    </Avatar>
-                    <div>
-                      <Title level={4} style={{ margin: 0, color: '#0f172a' }}>
-                        {user?.name || 'Customer'}
-                      </Title>
-                      <Text type="secondary">{user?.email || user?.login}</Text>
+              children: (
+                <Spin spinning={loading} tip="Loading profile details...">
+                  <div style={{ paddingTop: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24, flexWrap: 'wrap' }}>
+                      <Avatar
+                        size={80}
+                        src={Form.useWatch('avatarUrl', profileForm) || profileData?.avatarUrl || user?.avatarUrl}
+                        style={{ backgroundColor: '#059669', fontSize: 32, border: '2px solid #10b981', flexShrink: 0 }}
+                        icon={<UserOutlined />}
+                      >
+                        {(profileData?.fullName || user?.name || 'C').charAt(0)?.toUpperCase()}
+                      </Avatar>
+                      <div>
+                        <Title level={4} style={{ margin: 0, color: '#0f172a' }}>
+                          {profileData?.fullName || user?.name || 'Customer'}
+                        </Title>
+                        <Text type="secondary">{profileData?.email || user?.email || user?.login}</Text>
+                      </div>
                     </div>
-                  </div>
 
-                  <Divider style={{ margin: '16px 0 24px' }} />
+                    <Divider style={{ margin: '16px 0 24px' }} />
 
-                  <Form
-                    form={profileForm}
-                    layout="vertical"
-                    onFinish={handleUpdateProfile}
+                    <Form
+                      form={profileForm}
+                      layout="vertical"
+                      initialValues={{
+                        fullName: user?.name || '',
+                        email: user?.email || user?.login || '',
+                        phoneNumber: '',
+                        address: '',
+                        avatarUrl: user?.avatarUrl || '',
+                      }}
+                      onFinish={handleUpdateProfile}
                     requiredMark={false}
                   >
-                    <Row gutter={20}>
-                      <Col xs={24} sm={12}>
+                    <Row gutter={24}>
+                      <Col xs={24} md={8}>
                         <Form.Item
-                          name="fullName"
-                          label="Full Name"
-                          rules={[{ required: true, message: 'Please enter your full name' }]}
+                          name="avatarUrl"
+                          label="Profile Avatar"
+                          help="Upload a photo (PNG, JPG under 5MB)"
                         >
-                          <Input
-                            prefix={<UserOutlined style={{ color: '#94a3b8' }} />}
-                            placeholder="e.g. John Doe"
-                            size="large"
-                            style={{ borderRadius: 8 }}
+                          <ImageUpload
+                            folder="avatars"
+                            shape="circle"
+                            width={120}
+                            height={120}
+                            title="Upload Avatar"
                           />
                         </Form.Item>
                       </Col>
 
-                      <Col xs={24} sm={12}>
-                        <Form.Item
-                          name="phoneNumber"
-                          label="Phone Number"
-                          rules={[
-                            { required: true, message: 'Please enter your phone number' },
-                            { pattern: /^[0-9+ ]{8,15}$/, message: 'Please enter a valid phone number' },
-                          ]}
-                        >
-                          <Input
-                            prefix={<PhoneOutlined style={{ color: '#94a3b8' }} />}
-                            placeholder="e.g. 0912345678"
-                            size="large"
-                            style={{ borderRadius: 8 }}
-                          />
-                        </Form.Item>
-                      </Col>
+                      <Col xs={24} md={16}>
+                        <Row gutter={16}>
+                          <Col xs={24} sm={12}>
+                            <Form.Item
+                              name="fullName"
+                              label="Full Name"
+                              rules={[{ required: true, message: 'Please enter your full name' }]}
+                            >
+                              <Input
+                                prefix={<UserOutlined style={{ color: '#94a3b8' }} />}
+                                placeholder="e.g. John Doe"
+                                size="large"
+                                style={{ borderRadius: 8 }}
+                              />
+                            </Form.Item>
+                          </Col>
 
-                      <Col xs={24} sm={12}>
-                        <Form.Item name="email" label="Email Address">
-                          <Input
-                            prefix={<MailOutlined style={{ color: '#94a3b8' }} />}
-                            disabled
-                            size="large"
-                            style={{ borderRadius: 8, backgroundColor: '#f1f5f9' }}
-                            suffix={<SafetyCertificateOutlined style={{ color: '#059669' }} />}
-                          />
-                        </Form.Item>
-                      </Col>
+                          <Col xs={24} sm={12}>
+                            <Form.Item
+                              name="phoneNumber"
+                              label="Phone Number"
+                              rules={[
+                                { required: true, message: 'Please enter your phone number' },
+                                { pattern: /^[0-9+ ]{8,15}$/, message: 'Please enter a valid phone number' },
+                              ]}
+                            >
+                              <Input
+                                prefix={<PhoneOutlined style={{ color: '#94a3b8' }} />}
+                                placeholder="e.g. 0912345678"
+                                size="large"
+                                style={{ borderRadius: 8 }}
+                              />
+                            </Form.Item>
+                          </Col>
 
-                      <Col xs={24} sm={12}>
-                        <Form.Item name="address" label="Address">
-                          <Input
-                            prefix={<HomeOutlined style={{ color: '#94a3b8' }} />}
-                            placeholder="e.g. 123 Nguyen Hue, District 1"
-                            size="large"
-                            style={{ borderRadius: 8 }}
-                          />
-                        </Form.Item>
+                          <Col xs={24} sm={12}>
+                            <Form.Item name="email" label="Email Address">
+                              <Input
+                                prefix={<MailOutlined style={{ color: '#94a3b8' }} />}
+                                disabled
+                                size="large"
+                                style={{ borderRadius: 8, backgroundColor: '#f1f5f9' }}
+                                suffix={<SafetyCertificateOutlined style={{ color: '#059669' }} />}
+                              />
+                            </Form.Item>
+                          </Col>
+
+                          <Col xs={24} sm={12}>
+                            <Form.Item name="address" label="Address">
+                              <Input
+                                prefix={<HomeOutlined style={{ color: '#94a3b8' }} />}
+                                placeholder="e.g. 123 Nguyen Hue, District 1"
+                                size="large"
+                                style={{ borderRadius: 8 }}
+                              />
+                            </Form.Item>
+                          </Col>
+                        </Row>
                       </Col>
                     </Row>
 
@@ -272,8 +322,9 @@ const CustomerProfilePage: React.FC = () => {
                     </div>
                   </Form>
                 </div>
-              ),
-            },
+              </Spin>
+            ),
+          },
             {
               key: 'password',
               label: (

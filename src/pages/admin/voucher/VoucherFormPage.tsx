@@ -1,11 +1,9 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { App } from 'antd'
 import { voucherService } from '@/services/voucher.service'
 import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types'
 import { getApiErrorMessage } from '@/utils/apiError'
-
-const BACK = '/admin/vouchers'
 
 // Convert a local datetime-local string to ISO 8601 UTC string
 const localToISO = (local: string): string => {
@@ -29,6 +27,8 @@ const isoToLocal = (iso: string): string => {
 const AdminVoucherFormPage: React.FC = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const backPath = location.pathname.startsWith('/staff') ? '/staff/vouchers' : '/admin/vouchers'
   const { message } = App.useApp()
   const editing = Boolean(id)
 
@@ -120,7 +120,7 @@ const AdminVoucherFormPage: React.FC = () => {
         await voucherService.create(payload)
         message.success('Voucher created successfully!')
       }
-      navigate(BACK)
+      navigate(backPath)
     } catch (err) {
       setError(getApiErrorMessage(err))
     } finally {
@@ -137,7 +137,7 @@ const AdminVoucherFormPage: React.FC = () => {
             {editing ? 'Update voucher code, discount, and validity dates.' : 'Add a new discount voucher to the system.'}
           </p>
         </div>
-        <Link to={BACK} className="btn btn-secondary">← Back</Link>
+        <Link to={backPath} className="btn btn-secondary">← Back</Link>
       </div>
 
       {loading && <p>Loading voucher details...</p>}
@@ -378,7 +378,7 @@ const AdminVoucherFormPage: React.FC = () => {
           <button type="submit" className="btn" disabled={saving}>
             {saving ? (editing ? 'Saving...' : 'Creating...') : (editing ? 'Save Changes' : 'Create Voucher')}
           </button>
-          <Link to={BACK} className="btn btn-secondary">Cancel</Link>
+          <Link to={backPath} className="btn btn-secondary">Cancel</Link>
         </div>
       </form>
     </section>

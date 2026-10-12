@@ -1,11 +1,13 @@
 import React, { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import ImageUpload from '@/components/common/ImageUpload';
 import { roomTypeService } from '@/services/roomType.service';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const AdminRoomTypeFormPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const baseRoomTypePath = location.pathname.startsWith('/staff') ? '/staff/room-types' : '/admin/room-types';
   const { id } = useParams<{ id: string }>();
   const editing = Boolean(id);
 
@@ -56,7 +58,7 @@ const AdminRoomTypeFormPage: React.FC = () => {
           imageUrl: imageUrl.trim() || undefined,
         });
       }
-      navigate('/admin/room-types');
+      navigate(baseRoomTypePath);
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
@@ -75,7 +77,7 @@ const AdminRoomTypeFormPage: React.FC = () => {
               : 'Add a new category of rooms for pet boarding.'}
           </p>
         </div>
-        <Link to="/admin/room-types" className="btn btn-secondary">
+        <Link to={baseRoomTypePath} className="btn btn-secondary">
           ← Back to room types
         </Link>
       </div>
@@ -128,7 +130,7 @@ const AdminRoomTypeFormPage: React.FC = () => {
           <button type="submit" className="btn" disabled={saving}>
             {saving ? 'Saving changes...' : editing ? 'Save changes' : 'Create room type'}
           </button>
-          <Link to="/admin/room-types" className="btn btn-secondary">
+          <Link to={baseRoomTypePath} className="btn btn-secondary">
             Cancel
           </Link>
         </div>

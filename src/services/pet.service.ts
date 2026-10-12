@@ -77,10 +77,12 @@ export const petService = {
       const pets = res?.result ?? res
       if (Array.isArray(pets)) return pets as PetDTO[]
     } catch {
-      // Fallback to general search filtered by customerId
+      // Fallback: try fetching current user's pets from /my-pets (avoids 403 on /api/Pets which requires Staff/Admin)
       try {
-        const paged = await petService.fetchWithPagination({ pageSize: 100 })
-        return paged.items.filter((p) => p.customerId === customerId)
+        const myPets = await petService.fetchMyPets()
+        if (myPets.length > 0) {
+          return myPets.filter((p) => !customerId || p.customerId === customerId)
+        }
       } catch {
         return []
       }

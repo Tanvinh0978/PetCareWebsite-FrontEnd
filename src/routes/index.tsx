@@ -35,6 +35,8 @@ import PetFormPage from "@/pages/customer/PetFormPage";
 import MyBookingsPage from "@/pages/customer/MyBookingsPage";
 import CustomerProfilePage from "@/pages/customer/CustomerProfilePage";
 import ReviewManagementPage from "@/pages/admin/review/ReviewManagementPage";
+import PaymentResultPage from "@/pages/customer/PaymentResultPage";
+import StaffProfilePage from "@/pages/staff/StaffProfilePage";
 
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -55,6 +57,7 @@ export default function AppRoutes() {
     { path: "/login", element: <PawstayAuthPage /> },
     { path: "/register", element: <PawstayAuthPage /> },
     { path: "/verify-otp", element: <PawstayAuthPage /> },
+    { path: "/payment-result", element: <PaymentResultPage /> },
     {
       path: "/admin",
       element: <RequireRole role="admin"><Layout role="admin" /></RequireRole>,
@@ -94,10 +97,31 @@ export default function AppRoutes() {
       element: <RequireRole role="staff"><Layout role="staff" /></RequireRole>,
       children: [
         { index: true, element: <StaffDashboardPage /> },
+        { path: "services", element: <AdminServiceListPage /> },
+        { path: "services/new", element: <AdminServiceFormPage /> },
+        { path: "services/:id", element: <ServiceDetail backTo="/staff/services" editTo={(id) => `/staff/services/${id}/edit`} /> },
+        { path: "services/:id/edit", element: <AdminServiceFormPage /> },
+        { path: "customers", element: <AdminCustomerListPage /> },
+        { path: "customers/new", element: <AdminCustomerFormPage /> },
+        { path: "customers/:id/edit", element: <AdminCustomerFormPage /> },
+        { path: "room-types", element: <AdminRoomTypeListPage /> },
+        { path: "room-types/new", element: <AdminRoomTypeFormPage /> },
+        { path: "room-types/:id/edit", element: <AdminRoomTypeFormPage /> },
+        { path: "rooms", element: <AdminRoomListPage /> },
+        { path: "rooms/new", element: <AdminRoomFormPage /> },
+        { path: "rooms/:id/edit", element: <AdminRoomFormPage /> },
         { path: "pets", element: <StaffPetListPage /> },
         { path: "pets/new", element: <StaffPetFormPage /> },
         { path: "pets/:id/edit", element: <StaffPetFormPage /> },
         { path: "reviews", element: <ReviewManagementPage /> },
+        { path: "staff", element: <AdminStaffListPage /> },
+        { path: "staff/new", element: <AdminStaffFormPage /> },
+        { path: "staff/:id/edit", element: <AdminStaffFormPage /> },
+        { path: "roles", element: <RolePermissionPage /> },
+        { path: "vouchers", element: <AdminVoucherListPage /> },
+        { path: "vouchers/new", element: <AdminVoucherFormPage /> },
+        { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
+        { path: "profile", element: <StaffProfilePage /> },
         // [new-page:staff]
         notFound,
       ],
@@ -114,6 +138,7 @@ export default function AppRoutes() {
         { path: "pets/:id/edit", element: <PetFormPage /> },
         { path: "booking", element: <CreateBookingPage /> },
         { path: "bookings", element: <MyBookingsPage /> },
+        { path: "payment-result", element: <PaymentResultPage /> },
         { path: "profile", element: <CustomerProfilePage /> },
 
         // [new-page:customer]

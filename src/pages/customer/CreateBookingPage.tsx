@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card } from 'antd';
+import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space } from 'antd';
 import { CalendarOutlined, CheckCircleFilled, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
@@ -36,6 +36,14 @@ const CreateBookingPage: React.FC = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    if (bookingType === 'Boarding') {
+      form.setFieldValue('paymentChoice', 'VNPAY');
+    } else if (bookingType === 'Grooming') {
+      form.setFieldValue('paymentChoice', 'PAY_AT_COUNTER');
+    }
+  }, [bookingType, form]);
 
   const fetchInitialData = async () => {
     try {
@@ -204,13 +212,18 @@ const CreateBookingPage: React.FC = () => {
       }
       
       if (bookingType === 'Boarding') {
+        let boardingDays = 1;
+        if (values.boardingDateRange && values.boardingDateRange.length === 2) {
+          boardingDays = Math.max(1, values.boardingDateRange[1].diff(values.boardingDateRange[0], 'day'));
+        }
+
         if (srvs.boardingId) {
           bookingItems.push({
             petId,
             serviceId: srvs.boardingId,
             scheduledStartAt: values.boardingDateRange[0].toISOString(),
             scheduledEndAt: values.boardingDateRange[1].toISOString(),
-            quantity: 1
+            quantity: boardingDays
           });
         }
   
@@ -220,7 +233,7 @@ const CreateBookingPage: React.FC = () => {
             serviceId: srvs.dietId,
             scheduledStartAt: values.boardingDateRange[0].toISOString(),
             scheduledEndAt: values.boardingDateRange[1].toISOString(),
-            quantity: 1
+            quantity: boardingDays
           });
         }
       }
@@ -228,11 +241,41 @@ const CreateBookingPage: React.FC = () => {
 
     try {
       setSubmitting(true);
-      await bookingService.create({ voucherCode: values.voucherCode, bookingItems });
+      const customerId = localStorage.getItem('petcare.customerId');
+      const paymentChoice = bookingType === 'Boarding' ? 'VNPAY' : (values.paymentChoice || 'PAY_AT_COUNTER');
+      const payload: any = {
+        voucherCode: values.voucherCode?.trim() || undefined,
+        paymentChoice,
+        bookingItems,
+      };
+      if (customerId && customerId.trim()) {
+        payload.customerId = customerId.trim();
+      }
+      const res: any = await bookingService.create(payload);
+
+      if (paymentChoice === 'VNPAY') {
+        let paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
+        const newBookingId = res?.result?.id || res?.data?.id || res?.id;
+        if (!paymentUrl && newBookingId) {
+          try {
+            const vnpayRes: any = await bookingService.createVnpayUrl(newBookingId);
+            paymentUrl = vnpayRes?.result?.paymentUrl || vnpayRes?.data?.paymentUrl || vnpayRes?.paymentUrl || (typeof vnpayRes?.result === 'string' ? vnpayRes.result : null);
+          } catch (vnpErr) {
+            console.error('Error creating VNPay URL:', vnpErr);
+          }
+        }
+        if (paymentUrl) {
+          message.loading({ content: 'Chuyển hướng đến VNPay...', key: 'vnpay-nav' });
+          window.location.href = paymentUrl;
+          return;
+        }
+      }
+
       message.success('Booking created successfully! 🎉');
       navigate('/customer/bookings');
     } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Failed to create booking');
+      const msg = error?.response?.data?.message || error?.message || 'Failed to create booking';
+      message.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -462,101 +505,101 @@ const CreateBookingPage: React.FC = () => {
                         ) : (
                           <>
                             <Radio.Group 
-                            style={{ width: '100%' }}
-                            value={pServices.boardingId}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setPetServices(prev => ({ 
-                                ...prev, 
-                                [petId]: { 
-                                  ...prev[petId], 
-                                  boardingId: val,
-                                  ...(val ? {} : { dietId: undefined })
-                                } 
-                              }));
-                            }}
-                          >
-                            <Row gutter={[16, 16]}>
-                            {boardingOptions.map(srv => {
-                              const price = getPriceForPet(srv, pet.weight);
-                              return (
-                                <Col span={24} key={srv.id}>
-                                  <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        {srv.imageUrl ? (
-                                          <img
-                                            src={srv.imageUrl}
-                                            alt={srv.name}
-                                            style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
-                                          />
-                                        ) : (
-                                          <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
-                                            🏨
-                                          </div>
-                                        )}
-                                        <Text strong>{srv.name}</Text>
-                                      </div>
-                                      <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
-                                    </div>
-                                  </Radio>
-                                </Col>
-                              );
-                            })}
-                          </Row>
-                        </Radio.Group>
-                        
-                        {pServices.boardingId && (
-                          <div style={{ marginTop: '12px' }}>
-                             <Button type="link" danger onClick={() => {
-                                setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
-                             }}>
-                                Clear room selection
-                             </Button>
-                          </div>
-                        )}
-
-                        {pServices.boardingId && dietOptions.length > 0 && (
-                          <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
-                            <Text strong style={{ display: 'block', marginBottom: '12px' }}>Additional diet service (Optional):</Text>
-                            <Radio.Group 
                               style={{ width: '100%' }}
-                              value={pServices.dietId}
-                              onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
+                              value={pServices.boardingId}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setPetServices(prev => ({ 
+                                  ...prev, 
+                                  [petId]: { 
+                                    ...prev[petId], 
+                                    boardingId: val,
+                                    ...(val ? {} : { dietId: undefined })
+                                  } 
+                                }));
+                              }}
                             >
                               <Row gutter={[16, 16]}>
-                                {dietOptions.map(srv => {
-                                  const price = getPriceForPet(srv, pet.weight);
-                                  return (
-                                    <Col span={24} key={srv.id}>
-                                      <Radio value={srv.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                                          {srv.imageUrl && (
+                              {boardingOptions.map(srv => {
+                                const price = getPriceForPet(srv, pet.weight);
+                                return (
+                                  <Col span={24} key={srv.id}>
+                                    <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                          {srv.imageUrl ? (
                                             <img
                                               src={srv.imageUrl}
                                               alt={srv.name}
-                                              style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                              style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
                                             />
+                                          ) : (
+                                            <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                                              🏨
+                                            </div>
                                           )}
-                                          <span>{srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text></span>
-                                        </span>
-                                      </Radio>
-                                    </Col>
-                                  );
-                                })}
-                              </Row>
-                            </Radio.Group>
-                            <div style={{ marginTop: '8px' }}>
-                              <Button type="link" size="small" onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}>
-                                 Clear diet selection
-                              </Button>
+                                          <Text strong>{srv.name}</Text>
+                                        </div>
+                                        <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
+                                      </div>
+                                    </Radio>
+                                  </Col>
+                                );
+                              })}
+                            </Row>
+                          </Radio.Group>
+                          
+                          {pServices.boardingId && (
+                            <div style={{ marginTop: '12px' }}>
+                               <Button type="link" danger onClick={() => {
+                                  setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
+                               }}>
+                                  Clear room selection
+                               </Button>
                             </div>
-                          </div>
-                        )}
+                          )}
+
+                          {pServices.boardingId && dietOptions.length > 0 && (
+                            <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
+                              <Text strong style={{ display: 'block', marginBottom: '12px' }}>Additional diet service (Optional):</Text>
+                              <Radio.Group 
+                                style={{ width: '100%' }}
+                                value={pServices.dietId}
+                                onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
+                              >
+                                <Row gutter={[16, 16]}>
+                                  {dietOptions.map(srv => {
+                                    const price = getPriceForPet(srv, pet.weight);
+                                    return (
+                                      <Col span={24} key={srv.id}>
+                                        <Radio value={srv.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                            {srv.imageUrl && (
+                                              <img
+                                                src={srv.imageUrl}
+                                                alt={srv.name}
+                                                style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                              />
+                                            )}
+                                            <span>{srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text></span>
+                                          </span>
+                                        </Radio>
+                                      </Col>
+                                    );
+                                  })}
+                                </Row>
+                              </Radio.Group>
+                              <div style={{ marginTop: '8px' }}>
+                                <Button type="link" size="small" onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}>
+                                   Clear diet selection
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </>
                       )}
-                      </div>
-                    )}
+                    </div>
+                  )}
 
                   </div>
                 )
@@ -747,7 +790,7 @@ const CreateBookingPage: React.FC = () => {
                   <GiftOutlined /> Voucher & Payment
                 </Title>
                 
-                <Form.Item name="voucherCode" style={{ marginBottom: 'auto' }}>
+                <Form.Item name="voucherCode" label={<Text strong>Mã giảm giá</Text>} style={{ marginBottom: '16px' }}>
                   <Input 
                     prefix={<GiftOutlined style={{ color: '#94a3b8' }} />} 
                     placeholder="Enter discount code" 
@@ -756,7 +799,53 @@ const CreateBookingPage: React.FC = () => {
                   />
                 </Form.Item>
 
-                <div style={{ marginTop: '32px' }}>
+                <div style={{ marginBottom: '20px' }}>
+                  <Text strong style={{ display: 'block', marginBottom: '8px', color: '#1e293b' }}>
+                    Phương thức thanh toán
+                  </Text>
+                  <Form.Item name="paymentChoice" style={{ marginBottom: 0 }}>
+                    <Radio.Group style={{ width: '100%' }}>
+                      <Space direction="vertical" style={{ width: '100%' }} size={12}>
+                        {bookingType !== 'Boarding' && (
+                          <Radio 
+                            value="PAY_AT_COUNTER" 
+                            style={{ 
+                              padding: '12px', 
+                              border: '1px solid #e2e8f0', 
+                              borderRadius: '8px', 
+                              width: '100%', 
+                              background: '#fff',
+                              margin: 0
+                            }}
+                          >
+                            <div>
+                              <Text strong>Thanh toán tại quầy</Text>
+                              <div style={{ fontSize: '12px', color: '#64748b' }}>Thanh toán trực tiếp khi hoàn thành dịch vụ tại quầy</div>
+                            </div>
+                          </Radio>
+                        )}
+                        <Radio 
+                          value="VNPAY" 
+                          style={{ 
+                            padding: '12px', 
+                            border: '1px solid #e2e8f0', 
+                            borderRadius: '8px', 
+                            width: '100%', 
+                            background: '#fff',
+                            margin: 0
+                          }}
+                        >
+                          <div>
+                            <Text strong>Thanh toán online qua VNPay</Text>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Thẻ ATM, Internet Banking, QR Code VNPay</div>
+                          </div>
+                        </Radio>
+                      </Space>
+                    </Radio.Group>
+                  </Form.Item>
+                </div>
+
+                <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text strong style={{ fontSize: '16px' }}>Total amount</Text>
                     <Title level={3} style={{ margin: 0, color: '#059669' }}>
@@ -790,7 +879,7 @@ const CreateBookingPage: React.FC = () => {
       />
 
       <div className="paw-bg-card" style={{ borderRadius: '16px', padding: '24px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
-        <Form form={form} layout="vertical" onFinish={onFinish}>
+        <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ paymentChoice: 'PAY_AT_COUNTER' }}>
           
           <div style={{ minHeight: 'auto', marginBottom: '16px' }}>
             {steps.map((step, index) => (

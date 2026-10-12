@@ -12,12 +12,15 @@ export const NAV: Record<Role, NavItem[]> = {
     { label: "Services", to: "services" },
     { label: "Room Types", to: "room-types" },
     { label: "My Pets", to: "pets" },
+    { label: "My Bookings", to: "bookings" },
+    { label: "My Profile", to: "profile" },
     { label: "Book Now", to: "booking" },
     // [new-page:nav-customer]
   ],
   staff: [
     { label: "Pets", to: "pets" },
     { label: "Reviews", to: "reviews" },
+    { label: "My Profile", to: "profile" },
     // [new-page:nav-staff]
   ],
   admin: [

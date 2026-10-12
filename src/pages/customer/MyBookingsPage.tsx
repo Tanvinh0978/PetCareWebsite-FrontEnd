@@ -28,6 +28,7 @@ import {
   CheckCircleFilled,
   ExclamationCircleOutlined,
   StarFilled,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -47,8 +48,8 @@ export const getBookingStatusConfig = (status: any) => {
   if (s === '0' || s === 'pending') {
     return { label: 'Pending', color: 'gold', icon: <ClockCircleOutlined /> };
   }
-  if (s === '1' || s === 'partially_completed' || s === 'inprogress' || s === 'in progress') {
-    return { label: 'In Progress', color: 'blue', icon: <ClockCircleOutlined style={{ color: '#1677ff' }} /> };
+  if (s === '1' || s === 'confirmed' || s === 'partially_completed' || s === 'inprogress' || s === 'in progress') {
+    return { label: 'Confirmed', color: 'blue', icon: <CheckCircleOutlined style={{ color: '#1677ff' }} /> };
   }
   if (s === '2' || s === 'completed') {
     return { label: 'Completed', color: 'green', icon: <CheckCircleOutlined /> };
@@ -59,15 +60,20 @@ export const getBookingStatusConfig = (status: any) => {
   return { label: String(status || 'Unknown'), color: 'default', icon: null };
 };
 
+export const isPending = (status: any) => {
+  const s = String(status ?? '').toLowerCase();
+  return s === '0' || s === 'pending';
+};
+
 export const isCancellable = (status: any) => {
   const s = String(status ?? '').toLowerCase();
-  return s === '0' || s === 'pending' || s === '1' || s === 'partially_completed';
+  return s === '0' || s === 'pending' || s === '1' || s === 'confirmed' || s === 'partially_completed';
 };
 
 export const getItemStatusConfig = (status: any) => {
   const s = String(status ?? '').toLowerCase();
   if (s === '0' || s === 'pending') return { label: 'Pending', color: 'gold' };
-  if (s === '1' || s === 'confirmed') return { label: 'Confirmed', color: 'cyan' };
+  if (s === '1' || s === 'confirmed') return { label: 'Confirmed', color: 'blue' };
   if (s === '2' || s === 'checked_in' || s === 'checkedin') return { label: 'Checked In', color: 'blue' };
   if (s === '3' || s === 'in_progress' || s === 'inprogress') return { label: 'In Progress', color: 'processing' };
   if (s === '4' || s === 'completed') return { label: 'Completed', color: 'green' };
@@ -223,7 +229,30 @@ const MyBookingsPage: React.FC = () => {
     });
   };
 
+  // VNPay payment state
+  const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
+
   const navigate = useNavigate();
+
+  const handlePayVnpay = async (bookingId: string) => {
+    try {
+      setPayingBookingId(bookingId);
+      message.loading({ content: 'Đang tạo liên kết thanh toán VNPay...', key: 'vnpay-pay' });
+      const res: any = await bookingService.createVnpayUrl(bookingId);
+      const paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
+      if (paymentUrl) {
+        message.success({ content: 'Chuyển hướng đến VNPay...', key: 'vnpay-pay' });
+        window.location.href = paymentUrl;
+      } else {
+        message.error({ content: 'Không tìm thấy liên kết thanh toán VNPay.', key: 'vnpay-pay' });
+      }
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || error?.message || 'Không thể tạo liên kết thanh toán';
+      message.error({ content: errorMsg, key: 'vnpay-pay' });
+    } finally {
+      setPayingBookingId(null);
+    }
+  };
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -364,6 +393,23 @@ const MyBookingsPage: React.FC = () => {
               Review
             </Button>
           )}
+          {isPending(record.status) && (
+            <Button
+              type="default"
+              size="small"
+              icon={<CreditCardOutlined />}
+              loading={payingBookingId === record.id}
+              style={{
+                borderColor: '#10b981',
+                color: '#059669',
+                borderRadius: 6,
+                fontWeight: 500,
+              }}
+              onClick={() => handlePayVnpay(record.id)}
+            >
+              Thanh toán VNPay
+            </Button>
+          )}
           {isCancellable(record.status) && (
             <Button
               danger
@@ -455,7 +501,7 @@ const MyBookingsPage: React.FC = () => {
               key: '1',
               label: (
                 <span>
-                  <Badge status="processing" /> In Progress
+                  <Badge color="#1677ff" /> Confirmed
                 </span>
               ),
             },
@@ -542,6 +588,18 @@ const MyBookingsPage: React.FC = () => {
         open={detailModalOpen}
         onCancel={() => setDetailModalOpen(false)}
         footer={[
+          selectedBooking && isPending(selectedBooking.status) && (
+            <Button
+              key="vnpay"
+              type="primary"
+              icon={<CreditCardOutlined />}
+              loading={payingBookingId === selectedBooking.id}
+              style={{ backgroundColor: '#059669', borderColor: '#059669' }}
+              onClick={() => handlePayVnpay(selectedBooking.id)}
+            >
+              Thanh toán VNPay
+            </Button>
+          ),
           selectedBooking && isCancellable(selectedBooking.status) && (
             <Button
               key="cancel"

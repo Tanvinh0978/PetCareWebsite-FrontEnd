@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Dropdown, type MenuProps } from "antd";
 import {
@@ -11,6 +12,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ROLE_BASE, ROLE_LABEL, type Role } from "@/auth/roles";
 import { NAV } from "@/routes/nav";
+import { getStaffNavItems, syncUserPermissions } from "@/auth/permissionHelper";
 
 export default function Layout({ role }: { role: Role }) {
   const { signOut } = useAuth();
@@ -18,6 +20,14 @@ export default function Layout({ role }: { role: Role }) {
   const user = useAuthStore((s) => s.user);
   const base = ROLE_BASE[role];
   const isAdminOrStaff = role === "admin" || role === "staff";
+
+  useEffect(() => {
+    if (role === "staff") {
+      syncUserPermissions();
+    }
+  }, [role, user?.id]);
+
+  const navItems = role === "staff" ? getStaffNavItems(user) : NAV[role];
 
   const displayName = user?.name || user?.login || "Customer";
 
@@ -70,7 +80,7 @@ export default function Layout({ role }: { role: Role }) {
       <div className="shell">
         <aside className="sidebar">
           <Link to={base || "/"} className="brand">
-            <span>🐾</span> PetCare <span style={{ fontSize: '0.75rem', background: '#334155', color: '#94a3b8', padding: '0.15rem 0.5rem', borderRadius: '4px', textTransform: 'uppercase' }}>{role}</span>
+            <span>🐾</span> PetCare <span style={{ fontSize: '0.75rem', background: '#334155', color: '#94a3b8', padding: '0.15rem 0.5rem', borderRadius: '4px', textTransform: 'uppercase' }}>{role === 'staff' && user?.roles?.[0] ? user.roles[0] : role}</span>
           </Link>
           <nav aria-label="Admin and Staff menu">
             <NavLink to={base || "/"} end>
@@ -82,7 +92,7 @@ export default function Layout({ role }: { role: Role }) {
               </svg>
               <span>Dashboard</span>
             </NavLink>
-            {NAV[role].map((n) => (
+            {navItems.map((n) => (
               <NavLink key={n.to} to={base + "/" + n.to}>
                 {n.to === 'pets' ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -91,6 +101,17 @@ export default function Layout({ role }: { role: Role }) {
                     <circle cx="17.5" cy="10.5" r="2.5"></circle>
                     <circle cx="8" cy="5.5" r="2"></circle>
                     <circle cx="16" cy="5.5" r="2"></circle>
+                  </svg>
+                ) : n.to === 'services' ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
+                ) : n.to === 'vouchers' ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
                   </svg>
                 ) : n.to === 'customers' ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -119,6 +140,11 @@ export default function Layout({ role }: { role: Role }) {
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="9" y1="3" x2="9" y2="21"></line>
                   </svg>
+                ) : n.to === 'profile' ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
                 ) : (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -133,15 +159,37 @@ export default function Layout({ role }: { role: Role }) {
             ))}
           </nav>
           <div className="sidebar-foot">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
-              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#334155', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                {role[0].toUpperCase()}
-              </div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.65rem',
+                marginBottom: '0.75rem',
+                cursor: role === 'staff' ? 'pointer' : 'default',
+              }}
+              onClick={() => {
+                if (role === 'staff') navigate('/staff/profile');
+              }}
+              title={role === 'staff' ? 'View My Profile' : undefined}
+            >
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt="Avatar"
+                  style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #38bdf8', flexShrink: 0 }}
+                />
+              ) : (
+                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#334155', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
+                  {(user?.name || role)[0].toUpperCase()}
+                </div>
+              )}
               <div style={{ overflow: 'hidden' }}>
                 <p style={{ margin: 0, fontWeight: 600, color: '#f8fafc', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {user?.name || user?.email || 'Logged User'}
                 </p>
-                <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{ROLE_LABEL[role]} Role</span>
+                <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                  {user?.roles?.[0] ? `${user.roles[0]} Role` : `${ROLE_LABEL[role]} Role`}
+                </span>
               </div>
             </div>
             <button
@@ -216,7 +264,15 @@ export default function Layout({ role }: { role: Role }) {
                     }}
                     title="Account options"
                   >
-                    <UserOutlined style={{ color: '#059669' }} />
+                    {user?.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt="Avatar"
+                        style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <UserOutlined style={{ color: '#059669' }} />
+                    )}
                     <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {displayName}
                     </span>
