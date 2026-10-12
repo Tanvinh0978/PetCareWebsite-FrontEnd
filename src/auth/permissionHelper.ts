@@ -223,6 +223,12 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
     items.push({ label: 'Vouchers', to: 'vouchers' })
   }
 
+  // Grooming Tasks
+  items.push({ label: 'Grooming Tasks', to: 'grooming-tasks' })
+
+  // Reviews
+  items.push({ label: 'Reviews', to: 'reviews' })
+
   // Always include My Profile
   items.push({ label: 'My Profile', to: 'profile' })
 

@@ -37,6 +37,7 @@ import CustomerProfilePage from "@/pages/customer/CustomerProfilePage";
 import ReviewManagementPage from "@/pages/admin/review/ReviewManagementPage";
 import PaymentResultPage from "@/pages/customer/PaymentResultPage";
 import StaffProfilePage from "@/pages/staff/StaffProfilePage";
+import GroomingTasksPage from "@/pages/staff/grooming/GroomingTasksPage";
 
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -87,6 +88,7 @@ export default function AppRoutes() {
         { path: "vouchers/new", element: <AdminVoucherFormPage /> },
         { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
         { path: "reviews", element: <ReviewManagementPage /> },
+        { path: "grooming-tasks", element: <GroomingTasksPage /> },
         
         // [new-page:admin]
         notFound,
@@ -97,6 +99,7 @@ export default function AppRoutes() {
       element: <RequireRole role="staff"><Layout role="staff" /></RequireRole>,
       children: [
         { index: true, element: <StaffDashboardPage /> },
+        { path: "grooming-tasks", element: <GroomingTasksPage /> },
         { path: "services", element: <AdminServiceListPage /> },
         { path: "services/new", element: <AdminServiceFormPage /> },
         { path: "services/:id", element: <ServiceDetail backTo="/staff/services" editTo={(id) => `/staff/services/${id}/edit`} /> },
