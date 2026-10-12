@@ -40,6 +40,7 @@ import {
 import dayjs, { Dayjs } from 'dayjs'
 import groomingTaskService from '@/services/groomingTask.service'
 import type { GroomingTaskResponseDTO } from '@/types/groomingTask.types'
+import { normalizeStatus } from '@/types/groomingTask.types'
 import CompleteGroomingTaskModal from '@/components/staff/CompleteGroomingTaskModal'
 
 const { Title, Text, Paragraph } = Typography
@@ -88,28 +89,40 @@ export const GroomingTasksPage: React.FC = () => {
   // Filter tasks by active tab
   const filteredTasks = useMemo(() => {
     if (activeTab === 'all') return tasks
-    if (activeTab === '1') return tasks.filter((t) => t.status === 1 || t.status === 0) // Confirmed / Pending
-    if (activeTab === '2') return tasks.filter((t) => t.status === 2) // Checked_In
-    if (activeTab === '3') return tasks.filter((t) => t.status === 3) // In_Progress
-    if (activeTab === '4') return tasks.filter((t) => t.status === 4) // Completed
-    return tasks
+    const tabNum = Number(activeTab)
+    if (tabNum === 1) {
+      return tasks.filter((t) => {
+        const s = normalizeStatus(t.status)
+        return s === 1 || s === 0
+      })
+    }
+    return tasks.filter((t) => normalizeStatus(t.status) === tabNum)
   }, [tasks, activeTab])
 
   // Count by status
   const counts = useMemo(() => {
-    const total = tasks.length
-    const confirmed = tasks.filter((t) => t.status === 1 || t.status === 0).length
-    const checkedIn = tasks.filter((t) => t.status === 2).length
-    const inProgress = tasks.filter((t) => t.status === 3).length
-    const completed = tasks.filter((t) => t.status === 4).length
-    return { total, confirmed, checkedIn, inProgress, completed }
+    let confirmed = 0
+    let checkedIn = 0
+    let inProgress = 0
+    let completed = 0
+
+    tasks.forEach((t) => {
+      const s = normalizeStatus(t.status)
+      if (s === 1 || s === 0) confirmed++
+      else if (s === 2) checkedIn++
+      else if (s === 3) inProgress++
+      else if (s === 4) completed++
+    })
+
+    return { total: tasks.length, confirmed, checkedIn, inProgress, completed }
   }, [tasks])
 
   // Check-In task handler (status -> 2)
   const handleCheckInTask = async (task: GroomingTaskResponseDTO) => {
     try {
       setActionLoadingItemId(task.itemId)
-      if (task.status === 0) {
+      const currentStatus = normalizeStatus(task.status)
+      if (currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 1,
           roomId: task.roomId || undefined,
@@ -136,14 +149,15 @@ export const GroomingTasksPage: React.FC = () => {
   const handleStartTask = async (task: GroomingTaskResponseDTO) => {
     try {
       setActionLoadingItemId(task.itemId)
+      const currentStatus = normalizeStatus(task.status)
       // If task is still Confirmed (1) or Pending (0), advance to Checked_In first
-      if (task.status === 0) {
+      if (currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 1,
           roomId: task.roomId || undefined,
         })
       }
-      if (task.status === 1 || task.status === 0) {
+      if (currentStatus === 1 || currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 2, // Checked_In
           roomId: task.roomId || undefined,
@@ -275,19 +289,10 @@ export const GroomingTasksPage: React.FC = () => {
               ),
             },
             {
-              key: '1',
-              label: (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
-                  <span>Confirmed</span>
-                  <Badge count={counts.confirmed} overflowCount={99} style={{ backgroundColor: '#2563eb' }} />
-                </span>
-              ),
-            },
-            {
               key: '2',
               label: (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
-                  <span>Ready / Checked-In</span>
+                  <span>Waiting / Checked-In</span>
                   <Badge count={counts.checkedIn} overflowCount={99} style={{ backgroundColor: '#f59e0b' }} />
                 </span>
               ),
@@ -307,6 +312,15 @@ export const GroomingTasksPage: React.FC = () => {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
                   <span>Completed</span>
                   <Badge count={counts.completed} overflowCount={99} style={{ backgroundColor: '#10b981' }} />
+                </span>
+              ),
+            },
+            {
+              key: '1',
+              label: (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
+                  <span>Confirmed</span>
+                  <Badge count={counts.confirmed} overflowCount={99} style={{ backgroundColor: '#2563eb' }} />
                 </span>
               ),
             },
@@ -337,11 +351,12 @@ export const GroomingTasksPage: React.FC = () => {
         ) : (
           <Row gutter={[20, 20]}>
             {filteredTasks.map((task) => {
-              const isDog = task.petSpecies === 0
-              const isConfirmed = task.status === 1 || task.status === 0
-              const isCheckedIn = task.status === 2
-              const isInProgress = task.status === 3
-              const isCompleted = task.status === 4
+              const status = normalizeStatus(task.status)
+              const isDog = task.petSpecies === 0 || String(task.petSpecies).toLowerCase() === 'dog'
+              const isConfirmed = status === 1 || status === 0
+              const isCheckedIn = status === 2
+              const isInProgress = status === 3
+              const isCompleted = status === 4
 
               const startTime = task.scheduledStartAt
                 ? dayjs(task.scheduledStartAt).format('HH:mm')
@@ -354,8 +369,14 @@ export const GroomingTasksPage: React.FC = () => {
                 <Col xs={24} md={12} lg={8} key={task.itemId}>
                   <Card
                     hoverable
+                    onClick={() => {
+                      if (isInProgress || isCompleted) {
+                        handleOpenCompleteModal(task)
+                      }
+                    }}
                     style={{
                       borderRadius: 14,
+                      cursor: isInProgress || isCompleted ? 'pointer' : 'default',
                       border: isInProgress
                         ? '2px solid #059669'
                         : isCheckedIn
@@ -364,9 +385,9 @@ export const GroomingTasksPage: React.FC = () => {
                         ? '1px solid #93c5fd'
                         : '1px solid #e2e8f0',
                       boxShadow: isInProgress
-                        ? '0 6px 16px rgba(5, 150, 105, 0.12)'
+                        ? '0 6px 16px rgba(5, 150, 105, 0.14)'
                         : isCheckedIn
-                        ? '0 4px 12px rgba(245, 158, 11, 0.12)'
+                        ? '0 4px 14px rgba(245, 158, 11, 0.14)'
                         : '0 2px 8px rgba(0, 0, 0, 0.04)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -630,7 +651,10 @@ export const GroomingTasksPage: React.FC = () => {
                     </div>
 
                     {/* Card Footer Actions */}
-                    <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 12, marginTop: 'auto' }}>
+                    <div
+                      style={{ borderTop: '1px solid #f1f5f9', paddingTop: 14, marginTop: 'auto' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {isConfirmed && (
                         <div style={{ display: 'flex', gap: 8 }}>
                           <Button
@@ -639,7 +663,7 @@ export const GroomingTasksPage: React.FC = () => {
                             onClick={() => handleCheckInTask(task)}
                             style={{
                               flex: 1,
-                              height: 38,
+                              height: 40,
                               borderRadius: 8,
                               fontWeight: 600,
                               color: '#b45309',
@@ -649,37 +673,29 @@ export const GroomingTasksPage: React.FC = () => {
                           >
                             Check In
                           </Button>
-                          <Popconfirm
-                            title="Start Grooming Session?"
-                            description={`Check in and start grooming service for ${task.petName} now?`}
-                            onConfirm={() => handleStartTask(task)}
-                            okText="Start Now"
-                            cancelText="Cancel"
-                            okButtonProps={{ style: { backgroundColor: '#2563eb' } }}
+                          <Button
+                            type="primary"
+                            loading={actionLoadingItemId === task.itemId}
+                            icon={<PlayCircleFilled />}
+                            onClick={() => handleStartTask(task)}
+                            style={{
+                              flex: 1.4,
+                              backgroundColor: '#2563eb',
+                              borderColor: '#2563eb',
+                              height: 40,
+                              fontWeight: 600,
+                              borderRadius: 8,
+                              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+                            }}
                           >
-                            <Button
-                              type="primary"
-                              loading={actionLoadingItemId === task.itemId}
-                              icon={<PlayCircleFilled />}
-                              style={{
-                                flex: 1.3,
-                                backgroundColor: '#2563eb',
-                                borderColor: '#2563eb',
-                                height: 38,
-                                fontWeight: 600,
-                                borderRadius: 8,
-                                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
-                              }}
-                            >
-                              ▶ Start Service
-                            </Button>
-                          </Popconfirm>
+                            ▶ Start Service
+                          </Button>
                           <Button
                             icon={<CheckCircleFilled />}
                             onClick={() => handleOpenCompleteModal(task)}
                             title="Complete & Submit Result"
                             style={{
-                              height: 38,
+                              height: 40,
                               borderRadius: 8,
                               fontWeight: 600,
                               color: '#059669',
@@ -693,41 +709,37 @@ export const GroomingTasksPage: React.FC = () => {
 
                       {isCheckedIn && (
                         <div style={{ display: 'flex', gap: 8 }}>
-                          <Popconfirm
-                            title="Start Grooming Session?"
-                            description={`Have you checked in ${task.petName} at the station and are ready to begin?`}
-                            onConfirm={() => handleStartTask(task)}
-                            okText="Start Now"
-                            cancelText="Cancel"
-                            okButtonProps={{ style: { backgroundColor: '#2563eb' } }}
-                          >
-                            <Button
-                              type="primary"
-                              loading={actionLoadingItemId === task.itemId}
-                              icon={<PlayCircleFilled />}
-                              style={{
-                                flex: 2,
-                                backgroundColor: '#2563eb',
-                                borderColor: '#2563eb',
-                                height: 38,
-                                fontWeight: 600,
-                                borderRadius: 8,
-                                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
-                              }}
-                            >
-                              ▶ Start Service
-                            </Button>
-                          </Popconfirm>
                           <Button
+                            type="primary"
+                            size="large"
+                            loading={actionLoadingItemId === task.itemId}
+                            icon={<PlayCircleFilled />}
+                            onClick={() => handleStartTask(task)}
+                            style={{
+                              flex: 2,
+                              backgroundColor: '#2563eb',
+                              borderColor: '#2563eb',
+                              height: 42,
+                              fontSize: 14,
+                              fontWeight: 600,
+                              borderRadius: 8,
+                              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                            }}
+                          >
+                            ▶ Start Service
+                          </Button>
+                          <Button
+                            size="large"
                             icon={<CheckCircleFilled />}
                             onClick={() => handleOpenCompleteModal(task)}
                             style={{
                               flex: 1,
-                              height: 38,
+                              height: 42,
                               borderRadius: 8,
                               fontWeight: 600,
                               color: '#059669',
                               borderColor: '#a7f3d0',
+                              backgroundColor: '#f0fdf4',
                             }}
                           >
                             Finish
@@ -738,16 +750,18 @@ export const GroomingTasksPage: React.FC = () => {
                       {isInProgress && (
                         <Button
                           type="primary"
+                          size="large"
                           block
                           icon={<CheckCircleFilled />}
                           onClick={() => handleOpenCompleteModal(task)}
                           style={{
                             backgroundColor: '#059669',
                             borderColor: '#059669',
-                            height: 38,
+                            height: 42,
+                            fontSize: 14,
                             fontWeight: 600,
                             borderRadius: 8,
-                            boxShadow: '0 2px 8px rgba(5, 150, 105, 0.25)',
+                            boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)',
                           }}
                         >
                           ✓ Complete & Submit Result
@@ -756,17 +770,22 @@ export const GroomingTasksPage: React.FC = () => {
 
                       {isCompleted && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: 13, color: '#059669', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                            <CheckCircleFilled /> Handed Over
+                          <span style={{ fontSize: 13, color: '#059669', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <CheckCircleFilled /> Handed Over & Finished
                           </span>
                           <Button
                             size="small"
-                            type="link"
+                            type="primary"
+                            ghost
                             icon={<EditOutlined />}
                             onClick={() => handleOpenCompleteModal(task)}
-                            style={{ color: '#475569', fontSize: 12 }}
+                            style={{
+                              borderRadius: 6,
+                              fontWeight: 500,
+                              fontSize: 12,
+                            }}
                           >
-                            Edit photos / notes
+                            View / Edit Result
                           </Button>
                         </div>
                       )}

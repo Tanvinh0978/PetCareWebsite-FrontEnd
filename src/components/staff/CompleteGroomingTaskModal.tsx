@@ -25,6 +25,7 @@ import {
 import ImageUpload from '@/components/common/ImageUpload'
 import groomingTaskService from '@/services/groomingTask.service'
 import type { GroomingTaskResponseDTO } from '@/types/groomingTask.types'
+import { normalizeStatus } from '@/types/groomingTask.types'
 
 const { Text, Title } = Typography
 const { TextArea } = Input
@@ -82,8 +83,10 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
     setSubmitting(true)
     setErrorMsg(null)
     try {
+      const currentStatus = normalizeStatus(task.status)
+
       // Ensure backend status transitions are respected (1 -> 2 -> 3 -> 4)
-      if (task.status === 1 || task.status === 0) {
+      if (currentStatus === 1 || currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 2,
           roomId: task.roomId || undefined,
@@ -92,7 +95,7 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
           status: 3,
           roomId: task.roomId || undefined,
         })
-      } else if (task.status === 2) {
+      } else if (currentStatus === 2) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 3,
           roomId: task.roomId || undefined,
@@ -121,7 +124,7 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
     }
   }
 
-  const isDog = task.petSpecies === 0
+  const isDog = task.petSpecies === 0 || String(task.petSpecies).toLowerCase() === 'dog'
 
   return (
     <Modal
@@ -205,9 +208,23 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
               </div>
             </div>
 
-            <Tag color="processing" style={{ padding: '4px 10px', borderRadius: 8, fontWeight: 600 }}>
-              In Progress
-            </Tag>
+            {normalizeStatus(task.status) === 4 ? (
+              <Tag color="success" style={{ padding: '4px 10px', borderRadius: 8, fontWeight: 600 }}>
+                Completed
+              </Tag>
+            ) : normalizeStatus(task.status) === 3 ? (
+              <Tag color="processing" style={{ padding: '4px 10px', borderRadius: 8, fontWeight: 600 }}>
+                In Progress
+              </Tag>
+            ) : normalizeStatus(task.status) === 2 ? (
+              <Tag color="warning" style={{ padding: '4px 10px', borderRadius: 8, fontWeight: 600 }}>
+                Ready / Checked-In
+              </Tag>
+            ) : (
+              <Tag color="blue" style={{ padding: '4px 10px', borderRadius: 8, fontWeight: 600 }}>
+                Confirmed
+              </Tag>
+            )}
           </div>
 
           {/* Health Alert Note if present */}

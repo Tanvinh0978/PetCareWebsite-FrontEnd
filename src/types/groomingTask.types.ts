@@ -36,10 +36,25 @@ export interface GroomingTaskResponseDTO {
   scheduledStartAt: string
   scheduledEndAt?: string | null
   durationMinutes: number
-  status: number // 2: CheckedIn, 3: InProgress, 4: Completed
+  status: number | string // Can be number (2, 3, 4) or string ('Checked_In', 'In_Progress', 'Completed')
   resultNote?: string | null
   beforeImageUrl?: string | null
   resultImageUrl?: string | null
+}
+
+export const normalizeStatus = (status: any): number => {
+  if (typeof status === 'number') return status
+  if (typeof status === 'string') {
+    const s = status.toLowerCase().trim()
+    if (s === 'pending' || s === '0') return 0
+    if (s === 'confirmed' || s === '1') return 1
+    if (s === 'checked_in' || s === 'checkedin' || s === '2') return 2
+    if (s === 'in_progress' || s === 'inprogress' || s === '3') return 3
+    if (s === 'completed' || s === '4') return 4
+    if (s === 'cancelled' || s === 'canceled' || s === '5') return 5
+    if (s === 'no_show' || s === 'noshow' || s === '6') return 6
+  }
+  return Number(status) || 0
 }
 
 export interface GetGroomingTasksParams {
