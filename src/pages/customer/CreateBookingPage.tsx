@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card } from 'antd';
+import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space } from 'antd';
 import { CalendarOutlined, CheckCircleFilled, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
@@ -229,23 +229,28 @@ const CreateBookingPage: React.FC = () => {
     try {
       setSubmitting(true);
       const customerId = localStorage.getItem('petcare.customerId');
+      const paymentChoice = values.paymentChoice || 'PAY_AT_COUNTER';
       const payload: any = {
         voucherCode: values.voucherCode?.trim() || undefined,
-        paymentChoice: 'PAY_AT_COUNTER',
+        paymentChoice,
         bookingItems,
       };
       if (customerId && customerId.trim()) {
         payload.customerId = customerId.trim();
       }
       const res: any = await bookingService.create(payload);
-      message.success('Booking created successfully! 🎉');
-      
-      const paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl;
-      if (paymentUrl) {
-        window.location.href = paymentUrl;
-      } else {
-        navigate('/customer/bookings');
+
+      if (paymentChoice === 'VNPAY') {
+        const paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
+        if (paymentUrl) {
+          message.loading({ content: 'Chuyển hướng đến VNPay...', key: 'vnpay-nav' });
+          window.location.href = paymentUrl;
+          return;
+        }
       }
+
+      message.success('Booking created successfully! 🎉');
+      navigate('/customer/bookings');
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Failed to create booking';
       message.error(msg);
@@ -763,7 +768,7 @@ const CreateBookingPage: React.FC = () => {
                   <GiftOutlined /> Voucher & Payment
                 </Title>
                 
-                <Form.Item name="voucherCode" style={{ marginBottom: 'auto' }}>
+                <Form.Item name="voucherCode" label={<Text strong>Mã giảm giá</Text>} style={{ marginBottom: '16px' }}>
                   <Input 
                     prefix={<GiftOutlined style={{ color: '#94a3b8' }} />} 
                     placeholder="Enter discount code" 
@@ -772,7 +777,51 @@ const CreateBookingPage: React.FC = () => {
                   />
                 </Form.Item>
 
-                <div style={{ marginTop: '32px' }}>
+                <div style={{ marginBottom: '20px' }}>
+                  <Text strong style={{ display: 'block', marginBottom: '8px', color: '#1e293b' }}>
+                    Phương thức thanh toán
+                  </Text>
+                  <Form.Item name="paymentChoice" initialValue="PAY_AT_COUNTER" style={{ marginBottom: 0 }}>
+                    <Radio.Group style={{ width: '100%' }}>
+                      <Space direction="vertical" style={{ width: '100%' }} size={12}>
+                        <Radio 
+                          value="PAY_AT_COUNTER" 
+                          style={{ 
+                            padding: '12px', 
+                            border: '1px solid #e2e8f0', 
+                            borderRadius: '8px', 
+                            width: '100%', 
+                            background: '#fff',
+                            margin: 0
+                          }}
+                        >
+                          <div>
+                            <Text strong>Thanh toán tại quầy</Text>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Thanh toán trực tiếp khi hoàn thành dịch vụ tại quầy</div>
+                          </div>
+                        </Radio>
+                        <Radio 
+                          value="VNPAY" 
+                          style={{ 
+                            padding: '12px', 
+                            border: '1px solid #e2e8f0', 
+                            borderRadius: '8px', 
+                            width: '100%', 
+                            background: '#fff',
+                            margin: 0
+                          }}
+                        >
+                          <div>
+                            <Text strong>Thanh toán online qua VNPay</Text>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Thẻ ATM, Internet Banking, QR Code VNPay</div>
+                          </div>
+                        </Radio>
+                      </Space>
+                    </Radio.Group>
+                  </Form.Item>
+                </div>
+
+                <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text strong style={{ fontSize: '16px' }}>Total amount</Text>
                     <Title level={3} style={{ margin: 0, color: '#059669' }}>
@@ -806,7 +855,7 @@ const CreateBookingPage: React.FC = () => {
       />
 
       <div className="paw-bg-card" style={{ borderRadius: '16px', padding: '24px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
-        <Form form={form} layout="vertical" onFinish={onFinish}>
+        <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ paymentChoice: 'PAY_AT_COUNTER' }}>
           
           <div style={{ minHeight: 'auto', marginBottom: '16px' }}>
             {steps.map((step, index) => (

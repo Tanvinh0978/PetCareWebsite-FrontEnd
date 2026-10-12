@@ -93,4 +93,13 @@ export const bookingService = {
   cancelBooking: async (id: string, cancellationReason = 'Customer requested cancellation'): Promise<any> => {
     return axiosClient.put(`/api/bookings/${id}/cancel`, { cancellationReason });
   },
+
+  createVnpayUrl: async (bookingId: string): Promise<any> => {
+    return axiosClient.post(`/api/bookings/${bookingId}/create-vnpay-url`);
+  },
+
+  verifyVnpayPayment: async (queryString: string): Promise<any> => {
+    const qs = queryString ? (queryString.startsWith('?') ? queryString : `?${queryString}`) : '';
+    return axiosClient.get(`/api/payments/vnpay-return${qs}`);
+  },
 };

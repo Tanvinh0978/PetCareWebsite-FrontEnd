@@ -34,6 +34,7 @@ import MyPetsPage from "@/pages/customer/MyPetsPage";
 import PetFormPage from "@/pages/customer/PetFormPage";
 import MyBookingsPage from "@/pages/customer/MyBookingsPage";
 import CustomerProfilePage from "@/pages/customer/CustomerProfilePage";
+import PaymentResultPage from "@/pages/customer/PaymentResultPage";
 import StaffProfilePage from "@/pages/staff/StaffProfilePage";
 
 
@@ -55,6 +56,7 @@ export default function AppRoutes() {
     { path: "/login", element: <PawstayAuthPage /> },
     { path: "/register", element: <PawstayAuthPage /> },
     { path: "/verify-otp", element: <PawstayAuthPage /> },
+    { path: "/payment-result", element: <PaymentResultPage /> },
     {
       path: "/admin",
       element: <RequireRole role="admin"><Layout role="admin" /></RequireRole>,
@@ -113,6 +115,7 @@ export default function AppRoutes() {
         { path: "pets/:id/edit", element: <PetFormPage /> },
         { path: "booking", element: <CreateBookingPage /> },
         { path: "bookings", element: <MyBookingsPage /> },
+        { path: "payment-result", element: <PaymentResultPage /> },
         { path: "profile", element: <CustomerProfilePage /> },
 
         // [new-page:customer]
