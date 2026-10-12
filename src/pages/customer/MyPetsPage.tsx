@@ -1,123 +1,296 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Card, Col, Row, Typography, Space, Modal, message, Spin, Empty, Tag } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { petService } from '@/services/pet.service';
-import { useAuthStore } from '@/store/useAuthStore';
-import PetDetailModal from '@/components/pet/PetDetailModal';
-
-const { Title, Text } = Typography;
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { petService } from '@/services/pet.service'
+import { isCat } from '@/types/pet.types'
+import type { PetDTO } from '@/types/pet.types'
+import PetDetailModal from '@/components/pet/PetDetailModal'
+import { getApiErrorMessage } from '@/utils/apiError'
 
 const MyPetsPage: React.FC = () => {
-  const [pets, setPets] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedPet, setSelectedPet] = useState<any | null>(null);
-  const navigate = useNavigate();
+  const [pets, setPets] = useState<PetDTO[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [selectedPet, setSelectedPet] = useState<PetDTO | null>(null)
+  const [petToDelete, setPetToDelete] = useState<PetDTO | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [toast, setToast] = useState('')
+  const navigate = useNavigate()
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3500)
+  }
 
   const fetchPets = async () => {
     try {
-      setLoading(true);
-      const res = await petService.fetchMyPets(true);
-      const list = Array.isArray(res) ? res : ((res as any)?.items || []);
-      const activePets = list.filter((p: any) => p.isActive !== false && !p.isDeleted);
-      setPets(activePets);
-    } catch (error) {
-      message.error('Failed to load pets');
+      setLoading(true)
+      setError('')
+      const res = await petService.fetchMyPets(true)
+      const list = Array.isArray(res) ? res : ((res as any)?.items || [])
+      setPets(list.filter((p: any) => p.isActive !== false && !p.isDeleted))
+    } catch (err) {
+      setError(getApiErrorMessage(err))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchPets();
-  }, []);
+    fetchPets()
+  }, [])
 
-  const handleDelete = (id: string) => {
-    Modal.confirm({
-      title: 'Are you sure you want to delete this pet?',
-      content: 'This pet will be removed from your list.',
-      okText: 'Yes, Delete',
-      okType: 'danger',
-      onOk: async () => {
-        try {
-          await petService.delete(id);
-          setPets(prev => prev.filter(p => p.id !== id));
-          message.success('Pet deleted successfully');
-        } catch (error) {
-          message.error('Failed to delete pet');
-        }
-      }
-    });
-  };
+  const handleDelete = (pet: PetDTO) => {
+    setPetToDelete(pet)
+  }
 
-  if (loading) {
-    return <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>;
+  const confirmDelete = async () => {
+    if (!petToDelete) return
+    setDeleting(true)
+    try {
+      await petService.delete(petToDelete.id)
+      setPets((prev) => prev.filter((p) => p.id !== petToDelete.id))
+      showToast(`"${petToDelete.name}" removed successfully.`)
+      setPetToDelete(null)
+    } catch (err) {
+      setError(getApiErrorMessage(err))
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <Title level={2} style={{ margin: 0 }}>My Pets</Title>
-        <Button type="primary" style={{ backgroundColor: '#059669' }} icon={<PlusOutlined />} onClick={() => navigate('/customer/pets/new')}>
-          Add New Pet
-        </Button>
-      </div>
-
-      {pets.length === 0 ? (
-        <Empty description="You haven't added any pets yet." />
-      ) : (
-        <Row gutter={[16, 16]}>
-          {pets.map(pet => (
-            <Col xs={24} sm={12} md={8} lg={6} key={pet.id}>
-              <Card
-                hoverable
-                onClick={() => setSelectedPet(pet)}
-                style={{ cursor: 'pointer' }}
-                cover={
-                  pet.imageUrl ? (
-                    <div style={{ height: 160, overflow: 'hidden', backgroundColor: '#f1f5f9' }}>
-                      <img
-                        alt={pet.name}
-                        src={pet.imageUrl}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                  ) : undefined
-                }
-                actions={[
-                  <EyeOutlined key="view" onClick={(e) => { e.stopPropagation(); setSelectedPet(pet); }} style={{ color: '#059669' }} title="View Details" />,
-                  <EditOutlined key="edit" onClick={(e) => { e.stopPropagation(); navigate(`/customer/pets/${pet.id}/edit`); }} title="Edit" />,
-                  <DeleteOutlined key="delete" onClick={(e) => { e.stopPropagation(); handleDelete(pet.id); }} style={{ color: 'red' }} title="Delete" />
-                ]}
-              >
-                <Card.Meta
-                  title={
-                    <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
-                      <span>{pet.name}</span>
-                      <Tag color="blue">{pet.species === 1 || pet.species === 'Cat' ? 'Cat' : 'Dog'}</Tag>
-                    </Space>
-                  }
-                  description={
-                    <div style={{ marginTop: '10px' }}>
-                      <p><strong>Breed:</strong> {pet.breed || 'N/A'}</p>
-                      <p><strong>Weight:</strong> {pet.weight} kg</p>
-                      <p><strong>Age:</strong> {pet.age ? pet.age + ' years' : 'N/A'}</p>
-                    </div>
-                  }
-                />
-              </Card>
-            </Col>
-          ))}
-        </Row>
+    <section className="page wide">
+      {/* Toast */}
+      {toast && (
+        <div
+          role="status"
+          style={{
+            position: 'fixed',
+            bottom: '1.5rem',
+            right: '1.5rem',
+            background: '#059669',
+            color: '#fff',
+            padding: '0.75rem 1.25rem',
+            borderRadius: 10,
+            fontWeight: 600,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+            zIndex: 9999,
+            fontSize: '0.9rem',
+          }}
+        >
+          ✓ {toast}
+        </div>
       )}
 
+      {/* Header */}
+      <div className="page-head">
+        <div>
+          <h1>My Pets</h1>
+          <p className="page-subtitle">Manage your furry family members.</p>
+        </div>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => navigate('/customer/pets/new')}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add New Pet
+        </button>
+      </div>
+
+      {error && <p className="msg error" role="alert">{error}</p>}
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '4rem 1rem', color: '#64748b' }}>
+          Loading your pets...
+        </div>
+      ) : pets.length === 0 ? (
+        <div className="table-empty-box" style={{ marginTop: '2rem' }}>
+          <span style={{ fontSize: '3rem' }}>🐾</span>
+          <h3>No pets yet</h3>
+          <p>You haven't added any pets to your account yet.</p>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => navigate('/customer/pets/new')}
+          >
+            + Add your first pet
+          </button>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: '1.25rem',
+            marginTop: '1rem',
+          }}
+        >
+          {pets.map((pet) => {
+            const isPetCat = isCat(pet.species)
+            const speciesLabel = isPetCat ? 'Cat' : 'Dog'
+            const speciesIcon = isPetCat ? '🐱' : '🐶'
+
+            return (
+              <div
+                key={pet.id}
+                style={{
+                  background: '#fff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 14,
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'box-shadow 0.15s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)')}
+              >
+                {/* Card Image */}
+                <div
+                  style={{
+                    height: 150,
+                    background: isPetCat
+                      ? 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)'
+                      : 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {pet.imageUrl ? (
+                    <img
+                      src={pet.imageUrl}
+                      alt={pet.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: '4rem' }}>{speciesIcon}</span>
+                  )}
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      background: isPetCat ? '#7e22ce' : '#0369a1',
+                      color: '#fff',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: 20,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    {speciesLabel}
+                  </span>
+                </div>
+
+                {/* Card Body */}
+                <div style={{ padding: '14px 16px', flex: 1 }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
+                    {pet.name}
+                  </h3>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.85rem', color: '#64748b' }}>
+                    <strong>Breed:</strong> {pet.breed || 'N/A'}
+                  </p>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.85rem', color: '#64748b' }}>
+                    <strong>Weight:</strong> {pet.weight} kg
+                  </p>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+                    <strong>Age:</strong> {pet.age !== undefined && pet.age !== null ? `${pet.age} yr` : 'N/A'}
+                  </p>
+                </div>
+
+                {/* Card Actions */}
+                <div
+                  style={{
+                    padding: '10px 16px',
+                    borderTop: '1px solid #f1f5f9',
+                    display: 'flex',
+                    gap: 8,
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="btn-action view"
+                    onClick={() => setSelectedPet(pet)}
+                    style={{ flex: 1, justifyContent: 'center' }}
+                    title="View Details"
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-action edit"
+                    onClick={() => navigate(`/customer/pets/${pet.id}/edit`)}
+                    style={{ flex: 1, justifyContent: 'center' }}
+                    title="Edit"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-action danger"
+                    onClick={() => handleDelete(pet)}
+                    title="Delete"
+                  >
+                    🗑
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Pet Detail Modal */}
       <PetDetailModal
         pet={selectedPet}
         open={Boolean(selectedPet)}
         onClose={() => setSelectedPet(null)}
       />
-    </div>
-  );
-};
 
-export default MyPetsPage;
+      {/* Delete Confirmation */}
+      {petToDelete && (
+        <div className="confirm-backdrop">
+          <div className="confirm-dialog" role="dialog" aria-modal="true">
+            <div className="confirm-icon danger">🗑</div>
+            <h3>Remove Pet?</h3>
+            <p>
+              Are you sure you want to remove{' '}
+              <strong>"{petToDelete.name}"</strong> from your account?
+            </p>
+            <div className="confirm-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={deleting}
+                onClick={() => setPetToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-action danger"
+                disabled={deleting}
+                onClick={confirmDelete}
+                style={{ padding: '0.65rem 1.4rem', color: '#fff' }}
+              >
+                {deleting ? 'Removing...' : 'Yes, Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
+export default MyPetsPage

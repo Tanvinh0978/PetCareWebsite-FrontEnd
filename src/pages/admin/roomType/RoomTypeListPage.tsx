@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { roomTypeService, type RoomTypeDTO } from '@/services/roomType.service'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 const AdminRoomTypeListPage: React.FC = () => {
+  const location = useLocation()
+  const baseRoomTypePath = location.pathname.startsWith('/staff') ? '/staff/room-types' : '/admin/room-types'
   const [data, setData] = useState<RoomTypeDTO[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -71,7 +73,7 @@ const AdminRoomTypeListPage: React.FC = () => {
           <h1>Room Types Management</h1>
           <p className="page-subtitle">View, search, and manage room categories in table format.</p>
         </div>
-        <Link to="/admin/room-types/new" className="btn">
+        <Link to={`${baseRoomTypePath}/new`} className="btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -151,7 +153,7 @@ const AdminRoomTypeListPage: React.FC = () => {
                           Clear filters
                         </button>
                       ) : (
-                        <Link to="/admin/room-types/new" className="btn">
+                        <Link to={`${baseRoomTypePath}/new`} className="btn">
                           + Add first room type
                         </Link>
                       )}
@@ -202,7 +204,7 @@ const AdminRoomTypeListPage: React.FC = () => {
                       <td className="col-actions">
                         <div className="action-group">
                           <Link
-                            to={`/admin/room-types/${c.id}/edit`}
+                            to={`${baseRoomTypePath}/${c.id}/edit`}
                             className="btn-action edit"
                             title="Edit room type"
                           >

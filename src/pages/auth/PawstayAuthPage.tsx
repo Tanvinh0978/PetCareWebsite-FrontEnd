@@ -101,19 +101,49 @@ export default function PawstayAuthPage() {
                 const staffId = result?.staffId || result?.StaffId || result?.id || result?.Id;
                 const fullName = result?.fullName || result?.FullName || result?.name || values.email;
                 const email = result?.email || result?.Email || values.email;
-                const rolesArray = result?.roles || result?.Roles || [];
+                let rolesArray: string[] = result?.roles || result?.Roles || [];
+                if (!rolesArray.length) {
+                    const guessedRole = values.email.toLowerCase().includes('receptionist')
+                        ? 'Receptionist'
+                        : values.email.toLowerCase().includes('boarding')
+                        ? 'Boarding Staff'
+                        : values.email.toLowerCase().includes('grooming')
+                        ? 'Grooming Staff'
+                        : values.email.toLowerCase().includes('admin')
+                        ? 'Admin'
+                        : 'Receptionist';
+                    rolesArray = [guessedRole];
+                }
+
                 const isAdmin = rolesArray.some((r: string) => String(r).toLowerCase() === 'admin');
                 const role = isAdmin ? 'admin' : 'staff';
-                
+                const permissionsArray: string[] = result?.permissions || result?.Permissions || [];
+
                 signIn(role);
                 
-                // Save to Zustand 
+                // Save to Zustand with permissions
                 useAuthStore.getState().setAuth(token, {
                     id: String(staffId || ''),
                     login: email,
                     name: fullName,
                     email: email,
-                    role: role
+                    role: role,
+                    roles: rolesArray,
+                    permissions: permissionsArray,
+                });
+
+                if (permissionsArray.length > 0) {
+                    useAuthStore.getState().setPermissions(permissionsArray);
+                    rolesArray.forEach((r: string) => {
+                        try {
+                            localStorage.setItem(`petcare.role_perms.${r}`, JSON.stringify(permissionsArray));
+                        } catch {}
+                    });
+                }
+                
+                // Sync permissions asynchronously if needed
+                import('@/auth/permissionHelper').then(({ syncUserPermissions }) => {
+                    syncUserPermissions();
                 });
                 
                 const userName = fullName || "there";
