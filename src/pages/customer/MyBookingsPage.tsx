@@ -41,8 +41,8 @@ export const getBookingStatusConfig = (status: any) => {
   if (s === '0' || s === 'pending') {
     return { label: 'Pending', color: 'gold', icon: <ClockCircleOutlined /> };
   }
-  if (s === '1' || s === 'partially_completed' || s === 'inprogress' || s === 'in progress') {
-    return { label: 'In Progress', color: 'blue', icon: <ClockCircleOutlined style={{ color: '#1677ff' }} /> };
+  if (s === '1' || s === 'confirmed' || s === 'partially_completed' || s === 'inprogress' || s === 'in progress') {
+    return { label: 'Confirmed', color: 'blue', icon: <CheckCircleOutlined style={{ color: '#1677ff' }} /> };
   }
   if (s === '2' || s === 'completed') {
     return { label: 'Completed', color: 'green', icon: <CheckCircleOutlined /> };
@@ -60,13 +60,13 @@ export const isPending = (status: any) => {
 
 export const isCancellable = (status: any) => {
   const s = String(status ?? '').toLowerCase();
-  return s === '0' || s === 'pending' || s === '1' || s === 'partially_completed';
+  return s === '0' || s === 'pending' || s === '1' || s === 'confirmed' || s === 'partially_completed';
 };
 
 export const getItemStatusConfig = (status: any) => {
   const s = String(status ?? '').toLowerCase();
   if (s === '0' || s === 'pending') return { label: 'Pending', color: 'gold' };
-  if (s === '1' || s === 'confirmed') return { label: 'Confirmed', color: 'cyan' };
+  if (s === '1' || s === 'confirmed') return { label: 'Confirmed', color: 'blue' };
   if (s === '2' || s === 'checked_in' || s === 'checkedin') return { label: 'Checked In', color: 'blue' };
   if (s === '3' || s === 'in_progress' || s === 'inprogress') return { label: 'In Progress', color: 'processing' };
   if (s === '4' || s === 'completed') return { label: 'Completed', color: 'green' };
@@ -349,7 +349,7 @@ const MyBookingsPage: React.FC = () => {
               key: '1',
               label: (
                 <span>
-                  <Badge status="processing" /> In Progress
+                  <Badge color="#1677ff" /> Confirmed
                 </span>
               ),
             },
