@@ -460,7 +460,8 @@ const CreateBookingPage: React.FC = () => {
                             </p>
                           </div>
                         ) : (
-                          <Radio.Group 
+                          <>
+                            <Radio.Group 
                             style={{ width: '100%' }}
                             value={pServices.boardingId}
                             onChange={(e) => {
@@ -552,6 +553,8 @@ const CreateBookingPage: React.FC = () => {
                             </div>
                           </div>
                         )}
+                        </>
+                      )}
                       </div>
                     )}
 

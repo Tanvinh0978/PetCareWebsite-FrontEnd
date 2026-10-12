@@ -3,6 +3,7 @@ import { Alert, Button, Descriptions, Spin, Tag, Typography } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 import { serviceService } from '@/services/service.service'
 import ServicePriceTable from '@/components/service.price.table'
+import ServiceReviewsSection from '@/components/review/ServiceReviewsSection'
 import { SERVICE_TYPE_LABELS, type ServiceDetailDTO } from '@/types/service.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
@@ -17,7 +18,7 @@ const ServiceDetailPage: React.FC = () => {
   }, [id])
 
   return (
-    <div className="page-container">
+    <div className="page-container" style={{ maxWidth: 1000, margin: '0 auto', padding: '24px 16px 64px' }}>
       <Button onClick={() => navigate('/services')} style={{ marginBottom: 16 }}>Back to services</Button>
       {error && <Alert type="error" showIcon message={error} />}
       {!service && !error && <Spin />}
@@ -30,6 +31,9 @@ const ServiceDetailPage: React.FC = () => {
           </Descriptions>
           <Typography.Title level={4}>Pricing</Typography.Title>
           <ServicePriceTable prices={service.prices} />
+
+          {/* Customer Reviews Section */}
+          <ServiceReviewsSection serviceId={service.id} serviceName={service.name} />
         </>
       )}
     </div>

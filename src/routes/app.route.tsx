@@ -12,6 +12,7 @@ import ServiceListPage from '@/pages/user/services/service.list.page.tsx'
 import ServiceDetailPage from '@/pages/user/services/service.detail.page.tsx'
 import ServiceManagement from '@/pages/admin/service/service.management.tsx'
 import AdminServiceDetail from '@/pages/admin/service/service.detail.tsx'
+import ReviewManagementPage from '@/pages/admin/review/ReviewManagementPage'
 import MyPetsPage from '@/pages/customer/MyPetsPage.tsx'
 import { useAuthStore } from '@/store/useAuthStore'
 import { ROLE } from '@/utils/roles'
@@ -34,6 +35,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/admin" element={<Navigate to="/admin/services" replace />} />
           <Route path="/admin/services" element={<ServiceManagement />} />
           <Route path="/admin/services/:id" element={<AdminServiceDetail />} />
+          <Route path="/admin/reviews" element={<ReviewManagementPage />} />
         </Route>
       </Route>
 
