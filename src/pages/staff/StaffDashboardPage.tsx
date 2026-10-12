@@ -39,7 +39,7 @@ export default function StaffDashboardPage() {
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <Link to="/staff/grooming-tasks" className="btn" style={{ background: '#059669', borderColor: '#059669' }}>
-            ✂️ Grooming Tasks
+            Grooming Tasks
           </Link>
           <Link to="/staff/pets/new" className="btn btn-secondary">
             + Register Intake Pet

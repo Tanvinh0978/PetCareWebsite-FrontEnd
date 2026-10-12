@@ -141,9 +141,8 @@ export const GroomingTasksPage: React.FC = () => {
         }}
       >
         <div>
-          <Title level={2} style={{ margin: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: '1.8rem' }}>✂️</span>
-            <span>Grooming & Spa Workstation</span>
+          <Title level={2} style={{ margin: 0, color: '#0f172a' }}>
+            Grooming & Spa Workstation
           </Title>
           <Text type="secondary" style={{ fontSize: 14 }}>
             Track assigned pets, start service sessions, and document completed results in real time
