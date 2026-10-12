@@ -83,18 +83,28 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
     setErrorMsg(null)
     try {
       // Ensure backend status transitions are respected (1 -> 2 -> 3 -> 4)
-      if (task.status === 1) {
-        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, { status: 2 })
-        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, { status: 3 })
+      if (task.status === 1 || task.status === 0) {
+        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
+          status: 2,
+          roomId: task.roomId || undefined,
+        })
+        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
+          status: 3,
+          roomId: task.roomId || undefined,
+        })
       } else if (task.status === 2) {
-        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, { status: 3 })
+        await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
+          status: 3,
+          roomId: task.roomId || undefined,
+        })
       }
 
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
         status: 4, // Completed
-        resultNote: values.resultNote?.trim() || null,
+        resultNote: values.resultNote?.trim() || 'Service completed successfully.',
         beforeImageUrl: beforeImage || null,
         resultImageUrl: resultImage || null,
+        roomId: task.roomId || undefined,
       })
 
       message.success(`Grooming session for ${task.petName} has been completed successfully!`)
@@ -333,7 +343,10 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
           <Form.Item
             name="resultNote"
             label={<Text strong>Care Notes & Result Feedback</Text>}
-            rules={[{ max: 1000, message: 'Notes cannot exceed 1000 characters!' }]}
+            rules={[
+              { required: true, message: 'Please provide care notes or result feedback!' },
+              { max: 1000, message: 'Notes cannot exceed 1000 characters!' },
+            ]}
           >
             <TextArea
               rows={4}

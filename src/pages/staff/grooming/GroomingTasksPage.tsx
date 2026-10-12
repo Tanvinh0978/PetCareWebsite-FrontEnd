@@ -112,10 +112,12 @@ export const GroomingTasksPage: React.FC = () => {
       if (task.status === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 1,
+          roomId: task.roomId || undefined,
         })
       }
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
         status: 2, // Checked_In
+        roomId: task.roomId || undefined,
       })
       message.success(`Checked in ${task.petName} successfully!`)
       fetchTasks()
@@ -138,15 +140,18 @@ export const GroomingTasksPage: React.FC = () => {
       if (task.status === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 1,
+          roomId: task.roomId || undefined,
         })
       }
       if (task.status === 1 || task.status === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 2, // Checked_In
+          roomId: task.roomId || undefined,
         })
       }
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
         status: 3, // In_Progress
+        roomId: task.roomId || undefined,
       })
       message.success(`Started grooming session for ${task.petName}!`)
       fetchTasks()
