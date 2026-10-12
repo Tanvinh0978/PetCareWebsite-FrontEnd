@@ -12,7 +12,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": { target: "https://localhost:7287", changeOrigin: true, secure: false },
+      "/api": { target: process.env.VITE_BACKEND_URL || "http://localhost:5286", changeOrigin: true, secure: false },
     },
   },
 });
