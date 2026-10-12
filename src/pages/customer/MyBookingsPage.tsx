@@ -24,6 +24,7 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -50,6 +51,11 @@ export const getBookingStatusConfig = (status: any) => {
     return { label: 'Cancelled', color: 'red', icon: <CloseCircleOutlined /> };
   }
   return { label: String(status || 'Unknown'), color: 'default', icon: null };
+};
+
+export const isPending = (status: any) => {
+  const s = String(status ?? '').toLowerCase();
+  return s === '0' || s === 'pending';
 };
 
 export const isCancellable = (status: any) => {
@@ -88,7 +94,30 @@ const MyBookingsPage: React.FC = () => {
   const [cancelReason, setCancelReason] = useState('');
   const [cancelLoading, setCancelLoading] = useState(false);
 
+  // VNPay payment state
+  const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
+
   const navigate = useNavigate();
+
+  const handlePayVnpay = async (bookingId: string) => {
+    try {
+      setPayingBookingId(bookingId);
+      message.loading({ content: 'Đang tạo liên kết thanh toán VNPay...', key: 'vnpay-pay' });
+      const res: any = await bookingService.createVnpayUrl(bookingId);
+      const paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
+      if (paymentUrl) {
+        message.success({ content: 'Chuyển hướng đến VNPay...', key: 'vnpay-pay' });
+        window.location.href = paymentUrl;
+      } else {
+        message.error({ content: 'Không tìm thấy liên kết thanh toán VNPay.', key: 'vnpay-pay' });
+      }
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || error?.message || 'Không thể tạo liên kết thanh toán';
+      message.error({ content: errorMsg, key: 'vnpay-pay' });
+    } finally {
+      setPayingBookingId(null);
+    }
+  };
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -212,6 +241,23 @@ const MyBookingsPage: React.FC = () => {
           >
             Details
           </Button>
+          {isPending(record.status) && (
+            <Button
+              type="default"
+              size="small"
+              icon={<CreditCardOutlined />}
+              loading={payingBookingId === record.id}
+              style={{
+                borderColor: '#10b981',
+                color: '#059669',
+                borderRadius: 6,
+                fontWeight: 500,
+              }}
+              onClick={() => handlePayVnpay(record.id)}
+            >
+              Thanh toán VNPay
+            </Button>
+          )}
           {isCancellable(record.status) && (
             <Button
               danger
@@ -390,6 +436,18 @@ const MyBookingsPage: React.FC = () => {
         open={detailModalOpen}
         onCancel={() => setDetailModalOpen(false)}
         footer={[
+          selectedBooking && isPending(selectedBooking.status) && (
+            <Button
+              key="vnpay"
+              type="primary"
+              icon={<CreditCardOutlined />}
+              loading={payingBookingId === selectedBooking.id}
+              style={{ backgroundColor: '#059669', borderColor: '#059669' }}
+              onClick={() => handlePayVnpay(selectedBooking.id)}
+            >
+              Thanh toán VNPay
+            </Button>
+          ),
           selectedBooking && isCancellable(selectedBooking.status) && (
             <Button
               key="cancel"
