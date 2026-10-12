@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Select, Spin } from 'antd'
 import ImageUpload from '@/components/common/ImageUpload'
 import { petService } from '@/services/pet.service'
 import { customerService } from '@/services/customer.service'
@@ -36,7 +35,10 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
   // Customer options for Admin & Staff
   const [customers, setCustomers] = useState<CustomerDTO[]>([])
   const [loadingCustomers, setLoadingCustomers] = useState(false)
-  const searchTimeoutRef = useRef<any>(null)
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const fetchCustomerOptions = (searchQuery = '') => {
     setLoadingCustomers(true)
@@ -46,13 +48,13 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
         pageSize: 50,
         isActive: true,
       })
-      .then((res) => {
-        if (res?.result?.items) {
-          setCustomers(res.result.items)
-          // Pre-select first customer only on initial load if none selected
-          if (!editing && !customerId && res.result.items.length > 0 && !searchQuery) {
-            setCustomerId(res.result.items[0].id)
-          }
+      .then((res: any) => {
+        const items = res?.result?.items ?? res?.items ?? []
+        setCustomers(items)
+        // Pre-select first customer only on initial load if none selected
+        if (!editing && !customerId && items.length > 0 && !searchQuery) {
+          setCustomerId(items[0].id)
+          setCustomerSearch(items[0].fullName)
         }
       })
       .catch(() => {})
@@ -66,13 +68,31 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
     }
   }, [fixedCustomerId])
 
-  const handleSearchCustomers = (val: string) => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
     }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const handleSearchCustomers = (val: string) => {
+    setCustomerSearch(val)
+    setCustomerId('')
+    setShowDropdown(true)
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
     searchTimeoutRef.current = setTimeout(() => {
       fetchCustomerOptions(val)
     }, 300)
+  }
+
+  const selectCustomer = (c: CustomerDTO) => {
+    setCustomerId(c.id)
+    setCustomerSearch(c.fullName)
+    setShowDropdown(false)
   }
 
   // Load existing pet when editing
@@ -216,47 +236,66 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
                 style={{ backgroundColor: '#f1f5f9', cursor: 'not-allowed' }}
               />
             ) : (
-              <Select
-                showSearch
-                value={customerId || undefined}
-                placeholder="Search owner by name, email, or phone number..."
-                notFoundContent={
-                  loadingCustomers ? (
-                    <div style={{ padding: '8px', textAlign: 'center' }}>
-                      <Spin size="small" /> Searching customers...
-                    </div>
-                  ) : (
-                    'No matching customers found'
-                  )
-                }
-                loading={loadingCustomers}
-                filterOption={false}
-                onSearch={handleSearchCustomers}
-                onChange={(val) => setCustomerId(val || '')}
-                style={{ width: '100%' }}
-                size="large"
-                allowClear
-                options={customers.map((c) => ({
-                  value: c.id,
-                  label: (
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '12px',
-                      }}
-                    >
-                      <span style={{ fontWeight: 600, color: '#0f172a' }}>
-                        {c.fullName}
-                      </span>
-                      <span style={{ color: '#64748b', fontSize: '0.82rem' }}>
-                        {[c.email, c.phoneNumber].filter(Boolean).join(' • ')}
-                      </span>
-                    </div>
-                  ),
-                }))}
-              />
+              <div ref={dropdownRef} style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={customerSearch}
+                  onChange={(e) => handleSearchCustomers(e.target.value)}
+                  onFocus={() => setShowDropdown(true)}
+                  placeholder="Search owner by name, email, or phone number..."
+                  autoComplete="off"
+                />
+                {showDropdown && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      background: '#fff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 8,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                      zIndex: 1000,
+                      maxHeight: 220,
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {loadingCustomers ? (
+                      <div style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.9rem' }}>
+                        Searching customers...
+                      </div>
+                    ) : customers.length === 0 ? (
+                      <div style={{ padding: '12px 16px', color: '#94a3b8', fontSize: '0.9rem' }}>
+                        No matching customers found
+                      </div>
+                    ) : (
+                      customers.map((c) => (
+                        <div
+                          key={c.id}
+                          onClick={() => selectCustomer(c)}
+                          style={{
+                            padding: '10px 16px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: 12,
+                            borderBottom: '1px solid #f1f5f9',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <span style={{ fontWeight: 600, color: '#0f172a' }}>{c.fullName}</span>
+                          <span style={{ color: '#64748b', fontSize: '0.82rem' }}>
+                            {[c.email, c.phoneNumber].filter(Boolean).join(' • ')}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
@@ -354,7 +393,7 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
 
         {/* Health Notes */}
         <label>
-          Health & Special Care Notes
+          Health &amp; Special Care Notes
           <textarea
             rows={2}
             value={healthNotes}

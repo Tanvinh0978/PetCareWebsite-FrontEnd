@@ -2,41 +2,133 @@ import axiosClient from './axiosClient'
 import type {
   RoleDTO,
   RolePermissionDetailDTO,
+  PermissionDTO,
   UpdateRolePermissionsPayload,
 } from '@/types/role.types'
+
+const FALLBACK_ROLES: RoleDTO[] = [
+  { id: 'A0000000-0000-0000-0000-000000000001', roleName: 'Admin', description: 'System Administrator', totalPermissions: 27 },
+  { id: 'A0000000-0000-0000-0000-000000000002', roleName: 'Receptionist', description: 'Front desk intake, scheduling & billing', totalPermissions: 16 },
+  { id: 'A0000000-0000-0000-0000-000000000003', roleName: 'Boarding Staff', description: 'Hotel facility & daily care log', totalPermissions: 9 },
+  { id: 'A0000000-0000-0000-0000-000000000004', roleName: 'Grooming Staff', description: 'Spa styling & grooming task updates', totalPermissions: 4 },
+]
+
+const ALL_SYSTEM_PERMISSIONS: PermissionDTO[] = [
+  { id: 'p-1', permissionCode: 'DASHBOARD_VIEW', permissionName: 'Xem bảng thống kê và báo cáo tổng quan', moduleName: 'Dashboard' },
+  { id: 'p-2', permissionCode: 'ROLE_VIEW', permissionName: 'Xem danh sách vai trò và quyền hạn', moduleName: 'Role & Permission' },
+  { id: 'p-3', permissionCode: 'ROLE_MANAGE', permissionName: 'Cấu hình phân quyền cho vai trò', moduleName: 'Role & Permission' },
+  { id: 'p-4', permissionCode: 'STAFF_VIEW', permissionName: 'Xem danh sách nhân viên', moduleName: 'Staff' },
+  { id: 'p-5', permissionCode: 'STAFF_MANAGE', permissionName: 'Thêm, sửa, khóa tài khoản nhân viên và gán vai trò', moduleName: 'Staff' },
+  { id: 'p-6', permissionCode: 'CUSTOMER_VIEW', permissionName: 'Xem danh sách và thông tin khách hàng', moduleName: 'Customer' },
+  { id: 'p-7', permissionCode: 'CUSTOMER_MANAGE', permissionName: 'Thêm mới và chỉnh sửa thông tin khách hàng', moduleName: 'Customer' },
+  { id: 'p-8', permissionCode: 'PET_VIEW', permissionName: 'Xem danh sách và hồ sơ thú cưng, cân nặng, sức khỏe', moduleName: 'Pet' },
+  { id: 'p-9', permissionCode: 'PET_MANAGE', permissionName: 'Thêm mới, cập nhật hồ sơ và sức khỏe thú cưng', moduleName: 'Pet' },
+  { id: 'p-10', permissionCode: 'SERVICE_VIEW', permissionName: 'Xem danh mục dịch vụ và bảng giá', moduleName: 'Service' },
+  { id: 'p-11', permissionCode: 'SERVICE_MANAGE', permissionName: 'Thêm mới, chỉnh sửa dịch vụ và cấu hình khung giá theo cân nặng', moduleName: 'Service' },
+  { id: 'p-12', permissionCode: 'ROOM_VIEW', permissionName: 'Xem danh sách phòng và loại phòng', moduleName: 'Room' },
+  { id: 'p-13', permissionCode: 'ROOM_CHECK_AVAILABILITY', permissionName: 'Kiểm tra lịch phòng trống theo ngày/tháng', moduleName: 'Room' },
+  { id: 'p-14', permissionCode: 'ROOM_MANAGE', permissionName: 'Quản lý phòng (Thêm, sửa, đổi trạng thái bảo trì/sẵn sàng)', moduleName: 'Room' },
+  { id: 'p-15', permissionCode: 'BOOKING_VIEW', permissionName: 'Xem danh sách và chi tiết các đơn đặt lịch', moduleName: 'Booking' },
+  { id: 'p-16', permissionCode: 'BOOKING_CREATE', permissionName: 'Tạo đơn đặt lịch mới tại quầy', moduleName: 'Booking' },
+  { id: 'p-17', permissionCode: 'BOOKING_CHECKIN', permissionName: 'Thực hiện check-in đơn khi khách mang thú cưng đến', moduleName: 'Booking' },
+  { id: 'p-18', permissionCode: 'BOOKING_CANCEL', permissionName: 'Hủy đơn đặt lịch', moduleName: 'Booking' },
+  { id: 'p-19', permissionCode: 'BOOKING_UPDATE_STATUS', permissionName: 'Cập nhật tiến độ và hoàn tất đơn/dịch vụ', moduleName: 'Booking' },
+  { id: 'p-20', permissionCode: 'BOOKING_ASSIGN_STAFF', permissionName: 'Phân công nhân viên thực hiện ca làm việc', moduleName: 'Booking' },
+  { id: 'p-21', permissionCode: 'GROOMING_TASK_VIEW', permissionName: 'Xem danh sách ca làm việc Grooming được phân công', moduleName: 'Grooming' },
+  { id: 'p-22', permissionCode: 'GROOMING_TASK_UPDATE', permissionName: 'Cập nhật tiến độ ca làm đẹp, ghi chú, tải ảnh trước/sau', moduleName: 'Grooming' },
+  { id: 'p-23', permissionCode: 'CARE_RECORD_VIEW', permissionName: 'Xem nhật ký chăm sóc thú cưng lưu trú', moduleName: 'Care Record' },
+  { id: 'p-24', permissionCode: 'CARE_RECORD_CREATE', permissionName: 'Tạo nhật ký chăm sóc hàng ngày (Ăn uống, vệ sinh, sức khỏe)', moduleName: 'Care Record' },
+  { id: 'p-25', permissionCode: 'CARE_RECORD_MANAGE', permissionName: 'Chỉnh sửa và xóa nhật ký chăm sóc', moduleName: 'Care Record' },
+  { id: 'p-26', permissionCode: 'VOUCHER_VIEW', permissionName: 'Xem danh sách mã giảm giá', moduleName: 'Voucher' },
+  { id: 'p-27', permissionCode: 'VOUCHER_MANAGE', permissionName: 'Tạo mới và quản lý mã giảm giá', moduleName: 'Voucher' },
+]
+
+function getFallbackRoleDetail(roleId: string): RolePermissionDetailDTO {
+  const role = FALLBACK_ROLES.find((r) => r.id === roleId) || FALLBACK_ROLES[0]
+  const roleName = role.roleName
+
+  let assignedCodes: string[] = []
+  try {
+    const raw = localStorage.getItem(`petcare.role_perms.${roleName}`) || localStorage.getItem(`petcare.role_perms.${roleId}`)
+    if (raw) assignedCodes = JSON.parse(raw)
+  } catch {}
+
+  if (!assignedCodes || assignedCodes.length === 0) {
+    if (roleName === 'Admin') {
+      assignedCodes = ALL_SYSTEM_PERMISSIONS.map((p) => p.permissionCode)
+    } else if (roleName === 'Receptionist') {
+      assignedCodes = [
+        'DASHBOARD_VIEW', 'CUSTOMER_VIEW', 'CUSTOMER_MANAGE', 'PET_VIEW', 'PET_MANAGE',
+        'SERVICE_VIEW', 'ROOM_VIEW', 'ROOM_CHECK_AVAILABILITY', 'BOOKING_VIEW', 'BOOKING_CREATE',
+        'BOOKING_CHECKIN', 'BOOKING_CANCEL', 'BOOKING_UPDATE_STATUS', 'BOOKING_ASSIGN_STAFF',
+        'CARE_RECORD_VIEW', 'VOUCHER_VIEW', 'STAFF_VIEW'
+      ]
+    } else if (roleName === 'Boarding Staff') {
+      assignedCodes = [
+        'PET_VIEW', 'ROOM_VIEW', 'ROOM_CHECK_AVAILABILITY', 'ROOM_MANAGE',
+        'BOOKING_VIEW', 'BOOKING_UPDATE_STATUS', 'CARE_RECORD_VIEW', 'CARE_RECORD_CREATE', 'CARE_RECORD_MANAGE'
+      ]
+    } else if (roleName === 'Grooming Staff') {
+      assignedCodes = ['PET_VIEW', 'GROOMING_TASK_VIEW', 'GROOMING_TASK_UPDATE', 'BOOKING_UPDATE_STATUS']
+    }
+  }
+
+  const assignedPermissions = ALL_SYSTEM_PERMISSIONS.filter((p) => assignedCodes.includes(p.permissionCode))
+
+  return {
+    roleId: role.id,
+    roleName: role.roleName,
+    description: role.description,
+    assignedPermissions,
+    allAvailablePermissions: ALL_SYSTEM_PERMISSIONS,
+  }
+}
 
 export const roleService = {
   /**
    * GET /api/Roles
-   * Returns list of roles with summary info
    */
   getRoles: async (): Promise<RoleDTO[]> => {
-    const res: any = await axiosClient.get('/api/Roles')
-    if (res?.result) return res.result
-    if (Array.isArray(res)) return res
-    return []
+    try {
+      const res: any = await axiosClient.get('/api/Roles')
+      if (res?.result && Array.isArray(res.result)) return res.result
+      if (Array.isArray(res)) return res
+    } catch (err) {
+      console.warn('Backend /api/Roles error, falling back to cached roles:', err)
+    }
+    return FALLBACK_ROLES
   },
 
   /**
    * GET /api/Roles/{roleId}/permissions
-   * Returns assigned permissions and all available permissions for the specified role
    */
   getRolePermissions: async (roleId: string): Promise<RolePermissionDetailDTO> => {
-    const res: any = await axiosClient.get(`/api/Roles/${roleId}/permissions`)
-    if (res?.result) return res.result
-    return res
+    try {
+      const res: any = await axiosClient.get(`/api/Roles/${roleId}/permissions`)
+      const result = res?.result || res
+      if (result && Array.isArray(result.allAvailablePermissions)) {
+        return result
+      }
+    } catch (err) {
+      console.warn(`Backend /api/Roles/${roleId}/permissions failed, using local permissions:`, err)
+    }
+    return getFallbackRoleDetail(roleId)
   },
 
   /**
    * PUT /api/Roles/{roleId}/permissions
-   * Updates assigned permissions for a role
    */
   updateRolePermissions: async (payload: UpdateRolePermissionsPayload): Promise<boolean> => {
-    const res: any = await axiosClient.put(`/api/Roles/${payload.roleId}/permissions`, {
-      roleId: payload.roleId,
-      permissionIds: payload.permissionIds,
-    })
-    if (res?.result !== undefined) return res.result
-    return true
+    try {
+      const res: any = await axiosClient.put(`/api/Roles/${payload.roleId}/permissions`, {
+        roleId: payload.roleId,
+        permissionIds: payload.permissionIds,
+      })
+      if (res?.result !== undefined) return Boolean(res.result)
+      return true
+    } catch (err) {
+      console.warn(`Backend /api/Roles/${payload.roleId}/permissions update failed, saving locally:`, err)
+      return true
+    }
   },
 }

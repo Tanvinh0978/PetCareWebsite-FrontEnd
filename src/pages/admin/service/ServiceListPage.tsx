@@ -1,10 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { deleteService, searchServices } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
 import { SERVICE_TYPE_LABEL, type PagedResult, type ServiceListItem, type ServiceType } from '@/types/service';
 
 export default function ServiceListPage() {
+  const location = useLocation();
+  const baseServicePath = location.pathname.startsWith('/staff') ? '/staff/services' : '/admin/services';
   const [params, setParams] = useSearchParams();
   const type = params.get('type') as ServiceType | null;
   const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all');
@@ -118,7 +120,7 @@ export default function ServiceListPage() {
           <h1>Services Management</h1>
           <p className="page-subtitle">View, search, and manage pet care services in table format.</p>
         </div>
-        <Link to="/admin/services/new" className="btn">
+        <Link to={`${baseServicePath}/new`} className="btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -248,7 +250,7 @@ export default function ServiceListPage() {
                           Clear filters
                         </button>
                       ) : (
-                        <Link to="/admin/services/new" className="btn">
+                        <Link to={`${baseServicePath}/new`} className="btn">
                           + Add first service
                         </Link>
                       )}
@@ -294,7 +296,7 @@ export default function ServiceListPage() {
                         )}
                       </td>
                       <td className="col-name">
-                        <Link to={`/admin/services/${s.id}`} title="View details">
+                        <Link to={`${baseServicePath}/${s.id}`} title="View details">
                           {s.name}
                         </Link>
                       </td>
@@ -317,7 +319,7 @@ export default function ServiceListPage() {
                       <td className="col-actions">
                         <div className="action-group">
                           <Link
-                            to={`/admin/services/${s.id}`}
+                            to={`${baseServicePath}/${s.id}`}
                             className="btn-action view"
                             title="View service details"
                           >
@@ -328,7 +330,7 @@ export default function ServiceListPage() {
                             View
                           </Link>
                           <Link
-                            to={`/admin/services/${s.id}/edit`}
+                            to={`${baseServicePath}/${s.id}/edit`}
                             className="btn-action edit"
                             title="Edit service & pricing"
                           >

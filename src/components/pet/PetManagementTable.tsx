@@ -1,13 +1,10 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
-import { App } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { petService } from '@/services/pet.service'
 import type { PetDTO } from '@/types/pet.types'
 import {
   PetSpecies,
   isCat,
-  getPetSpeciesLabel,
-  getPetSpeciesIcon,
 } from '@/types/pet.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 import PetDetailModal from './PetDetailModal'
@@ -24,7 +21,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
   subtitle = 'List and manage pets registered in the system.',
 }) => {
   const navigate = useNavigate()
-  const { message } = App.useApp()
 
   const [keywordInput, setKeywordInput] = useState('')
   const [keyword, setKeyword] = useState('')
@@ -37,10 +33,16 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
   const [data, setData] = useState<IPagedResult<PetDTO> | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [toast, setToast] = useState('')
 
   const [selectedPet, setSelectedPet] = useState<PetDTO | null>(null)
   const [petToDelete, setPetToDelete] = useState<PetDTO | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3500)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -104,7 +106,7 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
     setDeleting(true)
     try {
       await petService.delete(petToDelete.id)
-      message.success(`Pet "${petToDelete.name}" deactivated successfully.`)
+      showToast(`Pet "${petToDelete.name}" deleted successfully.`)
       setPetToDelete(null)
       setReload((n) => n + 1)
     } catch (e) {
@@ -136,6 +138,28 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
 
   return (
     <section className="page wide">
+      {/* Toast */}
+      {toast && (
+        <div
+          role="status"
+          style={{
+            position: 'fixed',
+            bottom: '1.5rem',
+            right: '1.5rem',
+            background: '#059669',
+            color: '#fff',
+            padding: '0.75rem 1.25rem',
+            borderRadius: 10,
+            fontWeight: 600,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+            zIndex: 9999,
+            fontSize: '0.9rem',
+          }}
+        >
+          ✓ {toast}
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="page-head">
         <div>
@@ -224,36 +248,27 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
           </div>
         </div>
 
-        {/* Species Filter Chips like Service category chips */}
+        {/* Species Filter Chips */}
         <div className="type-chips-row">
           <span className="type-chips-label">Species:</span>
           <button
             type="button"
             className={species === 'all' ? 'chip on' : 'chip'}
-            onClick={() => {
-              setPage(1)
-              setSpecies('all')
-            }}
+            onClick={() => { setPage(1); setSpecies('all') }}
           >
             All
           </button>
           <button
             type="button"
             className={species === 'dog' ? 'chip on' : 'chip'}
-            onClick={() => {
-              setPage(1)
-              setSpecies('dog')
-            }}
+            onClick={() => { setPage(1); setSpecies('dog') }}
           >
             🐶 Dogs
           </button>
           <button
             type="button"
             className={species === 'cat' ? 'chip on' : 'chip'}
-            onClick={() => {
-              setPage(1)
-              setSpecies('cat')
-            }}
+            onClick={() => { setPage(1); setSpecies('cat') }}
           >
             🐱 Cats
           </button>
@@ -407,7 +422,7 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
                               type="button"
                               className="btn-action danger"
                               onClick={() => setPetToDelete(pet)}
-                              title="Deactivate pet"
+                              title="Delete pet"
                             >
                               Delete
                             </button>
@@ -468,14 +483,14 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
         onClose={() => setSelectedPet(null)}
       />
 
-      {/* Delete / Deactivate Confirmation Dialog */}
+      {/* Delete Confirmation Dialog */}
       {petToDelete && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">
             <div className="confirm-icon danger">⚠️</div>
-            <h3>Deactivate Pet?</h3>
+            <h3>Delete Pet?</h3>
             <p>
-              Are you sure you want to deactivate{' '}
+              Are you sure you want to delete{' '}
               <strong>"{petToDelete.name}"</strong>?
               <br />
               The pet record will be marked as inactive.
@@ -496,7 +511,7 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
                 onClick={handleConfirmDelete}
                 style={{ padding: '0.65rem 1.4rem', color: '#fff' }}
               >
-                {deleting ? 'Deactivating...' : 'Confirm Deactivate'}
+                {deleting ? 'Deleting...' : 'Confirm Delete'}
               </button>
             </div>
           </div>

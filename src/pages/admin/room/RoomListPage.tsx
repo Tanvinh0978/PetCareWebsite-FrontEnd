@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { roomService, type RoomDTO } from '@/services/room.service'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 const AdminRoomListPage: React.FC = () => {
+  const location = useLocation()
+  const baseRoomPath = location.pathname.startsWith('/staff') ? '/staff/rooms' : '/admin/rooms'
   const [data, setData] = useState<IPagedResult<RoomDTO> | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -118,7 +120,7 @@ const AdminRoomListPage: React.FC = () => {
           <h1>Rooms Management</h1>
           <p className="page-subtitle">View, search, and manage individual rooms.</p>
         </div>
-        <Link to="/admin/rooms/new" className="btn">
+        <Link to={`${baseRoomPath}/new`} className="btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -225,7 +227,7 @@ const AdminRoomListPage: React.FC = () => {
                           Clear filters
                         </button>
                       ) : (
-                        <Link to="/admin/rooms/new" className="btn">
+                        <Link to={`${baseRoomPath}/new`} className="btn">
                           + Add first room
                         </Link>
                       )}
@@ -259,7 +261,7 @@ const AdminRoomListPage: React.FC = () => {
                           </button>
                           
                           <Link
-                            to={`/admin/rooms/${r.id}/edit`}
+                            to={`${baseRoomPath}/${r.id}/edit`}
                             className="btn-action edit"
                             title="Edit room"
                           >

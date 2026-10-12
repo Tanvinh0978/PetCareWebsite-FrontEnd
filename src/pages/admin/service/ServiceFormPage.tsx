@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { createService, getServiceById, updateService } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
 import ImageUpload from '@/components/common/ImageUpload';
@@ -37,6 +37,8 @@ function validate(name: string, rows: PriceRow[]): string {
 export default function ServiceFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const baseServicePath = location.pathname.startsWith('/staff') ? '/staff/services' : '/admin/services';
   const editing = Boolean(id);
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(editing);
@@ -96,7 +98,7 @@ export default function ServiceFormPage() {
       };
       if (id) await updateService(id, { ...payload, isActive });
       else await createService(payload);
-      navigate('/admin/services'); // Quay về danh sách sau khi lưu
+      navigate(baseServicePath); // Quay về danh sách sau khi lưu
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -115,7 +117,7 @@ export default function ServiceFormPage() {
               : 'Create a new pet care service with custom weight-bracket pricing.'}
           </p>
         </div>
-        <Link to="/admin/services" className="btn btn-secondary">
+        <Link to={baseServicePath} className="btn btn-secondary">
           ← Back to services
         </Link>
       </div>
@@ -293,7 +295,7 @@ export default function ServiceFormPage() {
           <button type="submit" className="btn" disabled={saving}>
             {saving ? 'Saving changes...' : editing ? 'Save changes' : 'Create service'}
           </button>
-          <Link to="/admin/services" className="btn btn-secondary">
+          <Link to={baseServicePath} className="btn btn-secondary">
             Cancel
           </Link>
         </div>

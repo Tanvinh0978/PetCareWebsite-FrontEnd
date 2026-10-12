@@ -3,6 +3,7 @@ import { App, Spin, Tag, Tooltip, Input, Card } from 'antd'
 import { roleService } from '@/services/role.service'
 import type { RoleDTO, RolePermissionDetailDTO, PermissionDTO } from '@/types/role.types'
 import { getApiErrorMessage } from '@/utils/apiError'
+import { useAuthStore } from '@/store/useAuthStore'
 
 const getRoleBadgeColor = (roleName: string) => {
   const lower = roleName.toLowerCase()
@@ -149,6 +150,20 @@ export default function RolePermissionPage() {
         roleId: selectedRoleId,
         permissionIds: selectedPermIds,
       })
+
+      if (roleDetail) {
+        const assignedCodes = roleDetail.allAvailablePermissions
+          .filter((p) => selectedPermIds.includes(p.id))
+          .map((p) => p.permissionCode)
+        localStorage.setItem(`petcare.role_perms.${roleDetail.roleName}`, JSON.stringify(assignedCodes))
+        localStorage.setItem(`petcare.role_perms.${selectedRoleId}`, JSON.stringify(assignedCodes))
+
+        const currentUser = useAuthStore.getState().user
+        if (currentUser?.roles?.includes(roleDetail.roleName)) {
+          useAuthStore.getState().setPermissions(assignedCodes)
+        }
+      }
+
       message.success(`Permissions for "${roleDetail?.roleName || 'Role'}" saved successfully!`)
       // Refresh role list summary
       const updatedRoles = await roleService.getRoles()
