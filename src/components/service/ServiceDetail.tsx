@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { getServiceById } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
 import { PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL, type ServiceDetail as Detail } from '@/types/service';
+import ServiceReviewsSection from '@/components/review/ServiceReviewsSection';
 
 const vnd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND' });
 
@@ -64,6 +65,10 @@ export default function ServiceDetail({ backTo, editTo }: { backTo: string; edit
           </div>
         </div>
       )}
+
+      {/* Customer Reviews Section */}
+      <ServiceReviewsSection serviceId={service.id} serviceName={service.name} />
+
       <div style={{ marginTop: '2rem' }}>
         <Link to={backTo} className="btn btn-secondary">
           ← Back to list

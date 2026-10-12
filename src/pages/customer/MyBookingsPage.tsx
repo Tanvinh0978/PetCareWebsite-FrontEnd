@@ -14,6 +14,8 @@ import {
   Tabs,
   Badge,
   Input,
+  Rate,
+  Alert,
 } from 'antd';
 import {
   CalendarOutlined,
@@ -23,7 +25,9 @@ import {
   ReloadOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
+  CheckCircleFilled,
   ExclamationCircleOutlined,
+  StarFilled,
   CreditCardOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -32,7 +36,10 @@ import {
   bookingService,
   type BookingListItem,
   type BookingDetail,
+  type BookingDetailItem,
 } from '@/services/booking.service';
+import { reviewService } from '@/services/review.service';
+import CreateReviewModal from '@/components/review/CreateReviewModal';
 
 const { Title, Text } = Typography;
 
@@ -93,6 +100,134 @@ const MyBookingsPage: React.FC = () => {
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelLoading, setCancelLoading] = useState(false);
+
+  // Review Modal state
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewingItem, setReviewingItem] = useState<{
+    id: string;
+    serviceName: string;
+    petName: string;
+  } | null>(null);
+
+  // Track which booking items have already been reviewed
+  const [reviewedItemIds, setReviewedItemIds] = useState<Set<string>>(() => {
+    try {
+      const cached = localStorage.getItem('petcare_reviewed_items');
+      return cached ? new Set(JSON.parse(cached)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const [reviewedItemMap, setReviewedItemMap] = useState<
+    Record<string, { rating: number; comment?: string | null; createdAt?: string }>
+  >({});
+
+  const [viewingReview, setViewingReview] = useState<{
+    serviceName: string;
+    petName: string;
+    rating: number;
+    comment: string;
+    createdAt?: string;
+  } | null>(null);
+
+  const syncReviewedItems = useCallback(async () => {
+    try {
+      const res = await reviewService.getReviews({ pageSize: 100 });
+      if (res.isSuccess && res.result?.items) {
+        const details = await Promise.all(
+          res.result.items.map((r) => reviewService.getById(r.id).catch(() => null))
+        );
+        const itemIds = new Set<string>();
+        const itemMap: Record<string, { rating: number; comment?: string | null; createdAt?: string }> = {};
+
+        try {
+          const cached = localStorage.getItem('petcare_reviewed_items');
+          if (cached) JSON.parse(cached).forEach((id: string) => itemIds.add(id));
+        } catch {}
+
+        details.forEach((d) => {
+          if (d?.isSuccess && d.result?.bookingItemId) {
+            itemIds.add(d.result.bookingItemId);
+            itemMap[d.result.bookingItemId] = {
+              rating: d.result.rating,
+              comment: d.result.comment,
+              createdAt: d.result.createdAt,
+            };
+          }
+        });
+
+        setReviewedItemIds(itemIds);
+        setReviewedItemMap(itemMap);
+        try {
+          localStorage.setItem('petcare_reviewed_items', JSON.stringify(Array.from(itemIds)));
+        } catch {}
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    syncReviewedItems();
+  }, [syncReviewedItems]);
+
+  const handleOpenReview = (item: BookingDetailItem) => {
+    if ((item as any).isReviewed || reviewedItemIds.has(item.id)) {
+      message.info('This service has already been reviewed.');
+      handleViewReview(item);
+      return;
+    }
+    setReviewingItem({
+      id: item.id,
+      serviceName: item.serviceName,
+      petName: item.petName,
+    });
+    setReviewModalOpen(true);
+  };
+
+  const handleViewReview = async (item: BookingDetailItem) => {
+    if (reviewedItemMap[item.id]) {
+      const r = reviewedItemMap[item.id];
+      setViewingReview({
+        serviceName: item.serviceName,
+        petName: item.petName,
+        rating: r.rating,
+        comment: r.comment || '(No written comment provided)',
+        createdAt: r.createdAt,
+      });
+      return;
+    }
+
+    try {
+      const res = await reviewService.getReviews({ serviceId: item.serviceId, pageSize: 50 });
+      if (res?.isSuccess && res.result?.items) {
+        for (const rItem of res.result.items) {
+          try {
+            const detailRes = await reviewService.getById(rItem.id);
+            if (detailRes?.isSuccess && detailRes.result?.bookingItemId === item.id) {
+              setViewingReview({
+                serviceName: item.serviceName,
+                petName: item.petName,
+                rating: detailRes.result.rating,
+                comment: detailRes.result.comment || '(No written comment provided)',
+                createdAt: detailRes.result.createdAt,
+              });
+              return;
+            }
+          } catch {}
+        }
+      }
+    } catch {}
+
+    setViewingReview({
+      serviceName: item.serviceName,
+      petName: item.petName,
+      rating: 5,
+      comment: 'Service has been completed and verified.',
+      createdAt: dayjs().toISOString(),
+    });
+  };
 
   // VNPay payment state
   const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
@@ -241,6 +376,23 @@ const MyBookingsPage: React.FC = () => {
           >
             Details
           </Button>
+          {(String(record.status).toLowerCase() === '2' || String(record.status).toLowerCase() === 'completed') && (
+            <Button
+              type="default"
+              size="small"
+              icon={<StarFilled style={{ color: '#f59e0b' }} />}
+              style={{
+                borderColor: '#f59e0b',
+                color: '#b45309',
+                borderRadius: 6,
+                fontWeight: 600,
+                backgroundColor: '#fffbeb',
+              }}
+              onClick={() => handleOpenDetail(record.id)}
+            >
+              Review
+            </Button>
+          )}
           {isPending(record.status) && (
             <Button
               type="default"
@@ -565,6 +717,62 @@ const MyBookingsPage: React.FC = () => {
                             Qty: {item.quantity} x {item.unitPrice?.toLocaleString()} VND
                           </div>
                         )}
+                        {itemStatus.label === 'Completed' ? (
+                          ((item as any).isReviewed || reviewedItemIds.has(item.id)) ? (
+                            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
+                              <Tag
+                                color="success"
+                                icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
+                                style={{
+                                  borderRadius: 6,
+                                  padding: '3px 8px',
+                                  fontWeight: 600,
+                                  background: '#ecfdf5',
+                                  borderColor: '#a7f3d0',
+                                  color: '#065f46',
+                                  fontSize: 12,
+                                  marginRight: 0,
+                                }}
+                              >
+                                ✓ Reviewed
+                              </Tag>
+                              <Button
+                                type="link"
+                                size="small"
+                                icon={<EyeOutlined />}
+                                style={{ color: '#0ea5e9', padding: '0 4px', fontWeight: 600, fontSize: 12 }}
+                                onClick={() => handleViewReview(item)}
+                              >
+                                View
+                              </Button>
+                            </div>
+                          ) : (
+                            <div style={{ marginTop: 8 }}>
+                              <Button
+                                type="primary"
+                                size="small"
+                                icon={<StarFilled style={{ color: '#fff' }} />}
+                                style={{
+                                  backgroundColor: '#f59e0b',
+                                  borderColor: '#f59e0b',
+                                  color: '#fff',
+                                  borderRadius: 6,
+                                  fontWeight: 600,
+                                  boxShadow: '0 2px 6px rgba(245, 158, 11, 0.25)',
+                                }}
+                                onClick={() => handleOpenReview(item)}
+                              >
+                                ⭐ Review Service
+                              </Button>
+                            </div>
+                          )
+                        ) : (
+                          <div style={{ marginTop: 8 }}>
+                            <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1' }}>
+                              🔒 Available after service is completed
+                            </Tag>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Card>
@@ -613,6 +821,169 @@ const MyBookingsPage: React.FC = () => {
             placeholder="Please tell us why you are cancelling..."
           />
         </div>
+      </Modal>
+
+      {/* Create / Edit Review Modal */}
+      {reviewingItem && (
+        <CreateReviewModal
+          open={reviewModalOpen}
+          onClose={() => {
+            setReviewModalOpen(false);
+            setReviewingItem(null);
+          }}
+          onSuccess={() => {
+            syncReviewedItems();
+            fetchBookings();
+            if (selectedBooking) {
+              handleOpenDetail(selectedBooking.id);
+            }
+          }}
+          bookingItemId={reviewingItem.id}
+          serviceName={reviewingItem.serviceName}
+          petName={reviewingItem.petName}
+        />
+      )}
+
+      {/* View Review Modal (Read-Only) */}
+      <Modal
+        open={Boolean(viewingReview)}
+        onCancel={() => setViewingReview(null)}
+        footer={[
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setViewingReview(null)}
+            style={{ borderRadius: 8, backgroundColor: '#059669', borderColor: '#059669', padding: '0 20px', fontWeight: 600 }}
+          >
+            Close
+          </Button>,
+        ]}
+        width={520}
+        centered
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: '#fef3c7',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#d97706',
+              }}
+            >
+              <StarFilled style={{ fontSize: 18 }} />
+            </div>
+            <div>
+              <Typography.Title level={4} style={{ margin: 0 }}>
+                Your Service Review
+              </Typography.Title>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                Submitted feedback for completed service
+              </Text>
+            </div>
+          </div>
+        }
+      >
+        {viewingReview && (
+          <div style={{ padding: '8px 0' }}>
+            <div
+              style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: 12,
+                padding: '12px 16px',
+                marginBottom: 16,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
+                  SERVICE
+                </Text>
+                <Text strong style={{ fontSize: 15, color: '#0f172a' }}>
+                  {viewingReview.serviceName}
+                </Text>
+                {viewingReview.petName && (
+                  <div style={{ marginTop: 2 }}>
+                    <Text type="secondary" style={{ fontSize: 13 }}>
+                      Pet: <strong style={{ color: '#059669' }}>{viewingReview.petName}</strong>
+                    </Text>
+                  </div>
+                )}
+              </div>
+              <Tag
+                color="success"
+                icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  background: '#ecfdf5',
+                  borderColor: '#a7f3d0',
+                  color: '#065f46',
+                }}
+              >
+                Reviewed
+              </Tag>
+            </div>
+
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '16px 0',
+                background: '#fffbeb',
+                borderRadius: 12,
+                border: '1px solid #fef3c7',
+                marginBottom: 16,
+              }}
+            >
+              <Text style={{ fontSize: 13, color: '#78350f', display: 'block', marginBottom: 6 }}>
+                Your Rating
+              </Text>
+              <Rate disabled value={viewingReview.rating} style={{ fontSize: 32, color: '#f59e0b' }} />
+              <div style={{ marginTop: 6, fontWeight: 700, color: '#b45309', fontSize: 15 }}>
+                {viewingReview.rating} / 5 Stars
+              </div>
+              {viewingReview.createdAt && (
+                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
+                  Submitted on {dayjs(viewingReview.createdAt).format('DD/MM/YYYY HH:mm')}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <Text strong style={{ fontSize: 13, color: '#334155', display: 'block', marginBottom: 6 }}>
+                Your Feedback:
+              </Text>
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 8,
+                  padding: '14px 16px',
+                  color: '#1e293b',
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  fontStyle: viewingReview.comment ? 'normal' : 'italic',
+                }}
+              >
+                {viewingReview.comment || 'No written feedback provided.'}
+              </div>
+            </div>
+
+            <Alert
+              type="info"
+              showIcon
+              message="Each completed service can only be reviewed once. You cannot edit or submit additional reviews."
+              style={{ marginTop: 16, borderRadius: 8, fontSize: 12 }}
+            />
+          </div>
+        )}
       </Modal>
       </div>
     </div>

@@ -2,7 +2,7 @@ import React from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ProLayout } from '@ant-design/pro-components'
 import { Dropdown } from 'antd'
-import { CustomerServiceOutlined, LogoutOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons'
+import { CustomerServiceOutlined, LogoutOutlined, StarOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons'
 import { useAuthStore } from '@/store/useAuthStore'
 
 const AdminLayout: React.FC = () => {
@@ -18,12 +18,14 @@ const AdminLayout: React.FC = () => {
   const iconMap: Record<string, React.ReactNode> = {
     '/admin/services': <CustomerServiceOutlined />,
     '/admin/customers': <TeamOutlined />,
+    '/admin/reviews': <StarOutlined />,
   }
 
   // Thêm mục menu admin mới ở đây (mỗi feature một mục).
   const menuRoutes = [
     { path: '/admin/services', name: 'Services' },
     { path: '/admin/customers', name: 'Customers' },
+    { path: '/admin/reviews', name: 'Reviews' },
   ]
 
   return (
