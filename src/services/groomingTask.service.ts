@@ -13,6 +13,30 @@ export interface PagedGroomingTasks {
   pageSize: number
 }
 
+function getStaffId(): string | undefined {
+  const user = useAuthStore.getState().user
+  if (user?.id) return user.id
+
+  const token = useAuthStore.getState().accessToken
+  if (token) {
+    try {
+      const payloadBase64 = token.split('.')[1]
+      if (payloadBase64) {
+        const decoded = JSON.parse(atob(payloadBase64))
+        return (
+          decoded.nameid ||
+          decoded.sub ||
+          decoded.UserId ||
+          decoded.StaffId ||
+          decoded.id ||
+          decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+        )
+      }
+    } catch {}
+  }
+  return undefined
+}
+
 export const groomingTaskService = {
   /**
    * GET /api/bookings/my-grooming-tasks
@@ -32,7 +56,7 @@ export const groomingTaskService = {
     } catch (err: any) {
       // Fallback: nếu /api/bookings/my-grooming-tasks trả 404 (do backend cũ chưa reload route), gọi qua staffId
       if (err?.response?.status === 404) {
-        const staffId = useAuthStore.getState().user?.id
+        const staffId = getStaffId()
         if (staffId) {
           const fallbackRes: any = await axiosClient.get(
             `/api/bookings/staff/${staffId}/grooming-tasks`,
@@ -60,7 +84,35 @@ export const groomingTaskService = {
     itemId: string,
     payload: UpdateGroomingTaskStatusPayload
   ): Promise<any> => {
-    return axiosClient.put(`/api/bookings/${bookingId}/items/${itemId}/status`, payload)
+    const currentStaffId = payload.staffId || getStaffId()
+    const body: any = {
+      status: payload.status,
+    }
+
+    if (currentStaffId) {
+      body.staffId = currentStaffId
+    }
+
+    if (payload.roomId) {
+      body.roomId = payload.roomId
+    }
+
+    if (payload.beforeImageUrl) {
+      body.beforeImageUrl = payload.beforeImageUrl
+    }
+
+    if (payload.resultImageUrl) {
+      body.resultImageUrl = payload.resultImageUrl
+    }
+
+    // Backend validator: ResultNote is required when status is Completed (4)
+    if (payload.status === 4) {
+      body.resultNote = payload.resultNote?.trim() || 'Service completed successfully.'
+    } else if (payload.resultNote) {
+      body.resultNote = payload.resultNote
+    }
+
+    return axiosClient.put(`/api/bookings/${bookingId}/items/${itemId}/status`, body)
   },
 }
 
