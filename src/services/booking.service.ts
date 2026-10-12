@@ -95,7 +95,7 @@ export const bookingService = {
   },
 
   createVnpayUrl: async (bookingId: string): Promise<any> => {
-    return axiosClient.post(`/api/bookings/${bookingId}/create-vnpay-url`);
+    return axiosClient.post(`/api/bookings/${bookingId}/create-vnpay-url`, {});
   },
 
   verifyVnpayPayment: async (queryString: string): Promise<any> => {

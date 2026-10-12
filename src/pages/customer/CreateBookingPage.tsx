@@ -37,6 +37,14 @@ const CreateBookingPage: React.FC = () => {
     fetchInitialData();
   }, []);
 
+  useEffect(() => {
+    if (bookingType === 'Boarding') {
+      form.setFieldValue('paymentChoice', 'VNPAY');
+    } else if (bookingType === 'Grooming') {
+      form.setFieldValue('paymentChoice', 'PAY_AT_COUNTER');
+    }
+  }, [bookingType, form]);
+
   const fetchInitialData = async () => {
     try {
       setLoading(true);
@@ -204,13 +212,18 @@ const CreateBookingPage: React.FC = () => {
       }
       
       if (bookingType === 'Boarding') {
+        let boardingDays = 1;
+        if (values.boardingDateRange && values.boardingDateRange.length === 2) {
+          boardingDays = Math.max(1, values.boardingDateRange[1].diff(values.boardingDateRange[0], 'day'));
+        }
+
         if (srvs.boardingId) {
           bookingItems.push({
             petId,
             serviceId: srvs.boardingId,
             scheduledStartAt: values.boardingDateRange[0].toISOString(),
             scheduledEndAt: values.boardingDateRange[1].toISOString(),
-            quantity: 1
+            quantity: boardingDays
           });
         }
   
@@ -220,7 +233,7 @@ const CreateBookingPage: React.FC = () => {
             serviceId: srvs.dietId,
             scheduledStartAt: values.boardingDateRange[0].toISOString(),
             scheduledEndAt: values.boardingDateRange[1].toISOString(),
-            quantity: 1
+            quantity: boardingDays
           });
         }
       }
@@ -229,7 +242,7 @@ const CreateBookingPage: React.FC = () => {
     try {
       setSubmitting(true);
       const customerId = localStorage.getItem('petcare.customerId');
-      const paymentChoice = values.paymentChoice || 'PAY_AT_COUNTER';
+      const paymentChoice = bookingType === 'Boarding' ? 'VNPAY' : (values.paymentChoice || 'PAY_AT_COUNTER');
       const payload: any = {
         voucherCode: values.voucherCode?.trim() || undefined,
         paymentChoice,
@@ -241,7 +254,16 @@ const CreateBookingPage: React.FC = () => {
       const res: any = await bookingService.create(payload);
 
       if (paymentChoice === 'VNPAY') {
-        const paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
+        let paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
+        const newBookingId = res?.result?.id || res?.data?.id || res?.id;
+        if (!paymentUrl && newBookingId) {
+          try {
+            const vnpayRes: any = await bookingService.createVnpayUrl(newBookingId);
+            paymentUrl = vnpayRes?.result?.paymentUrl || vnpayRes?.data?.paymentUrl || vnpayRes?.paymentUrl || (typeof vnpayRes?.result === 'string' ? vnpayRes.result : null);
+          } catch (vnpErr) {
+            console.error('Error creating VNPay URL:', vnpErr);
+          }
+        }
         if (paymentUrl) {
           message.loading({ content: 'Chuyển hướng đến VNPay...', key: 'vnpay-nav' });
           window.location.href = paymentUrl;
@@ -781,25 +803,27 @@ const CreateBookingPage: React.FC = () => {
                   <Text strong style={{ display: 'block', marginBottom: '8px', color: '#1e293b' }}>
                     Phương thức thanh toán
                   </Text>
-                  <Form.Item name="paymentChoice" initialValue="PAY_AT_COUNTER" style={{ marginBottom: 0 }}>
+                  <Form.Item name="paymentChoice" style={{ marginBottom: 0 }}>
                     <Radio.Group style={{ width: '100%' }}>
                       <Space direction="vertical" style={{ width: '100%' }} size={12}>
-                        <Radio 
-                          value="PAY_AT_COUNTER" 
-                          style={{ 
-                            padding: '12px', 
-                            border: '1px solid #e2e8f0', 
-                            borderRadius: '8px', 
-                            width: '100%', 
-                            background: '#fff',
-                            margin: 0
-                          }}
-                        >
-                          <div>
-                            <Text strong>Thanh toán tại quầy</Text>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>Thanh toán trực tiếp khi hoàn thành dịch vụ tại quầy</div>
-                          </div>
-                        </Radio>
+                        {bookingType !== 'Boarding' && (
+                          <Radio 
+                            value="PAY_AT_COUNTER" 
+                            style={{ 
+                              padding: '12px', 
+                              border: '1px solid #e2e8f0', 
+                              borderRadius: '8px', 
+                              width: '100%', 
+                              background: '#fff',
+                              margin: 0
+                            }}
+                          >
+                            <div>
+                              <Text strong>Thanh toán tại quầy</Text>
+                              <div style={{ fontSize: '12px', color: '#64748b' }}>Thanh toán trực tiếp khi hoàn thành dịch vụ tại quầy</div>
+                            </div>
+                          </Radio>
+                        )}
                         <Radio 
                           value="VNPAY" 
                           style={{ 
