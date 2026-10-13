@@ -18,6 +18,7 @@ export const NAV: Record<Role, NavItem[]> = {
     // [new-page:nav-customer]
   ],
   staff: [
+    { label: "Bookings", to: "bookings" },
     { label: "Grooming Tasks", to: "grooming-tasks" },
     { label: "Pets", to: "pets" },
     { label: "Reviews", to: "reviews" },
@@ -25,6 +26,7 @@ export const NAV: Record<Role, NavItem[]> = {
     // [new-page:nav-staff]
   ],
   admin: [
+    { label: "Bookings", to: "bookings" },
     { label: "Services", to: "services" },
     { label: "Customers", to: "customers" },
     { label: "Grooming Tasks", to: "grooming-tasks" },
