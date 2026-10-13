@@ -301,7 +301,7 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
         )}
 
         {/* Compact row: Avatar + Name + Species */}
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+        <div className="pet-basic-info" style={{ display: 'flex', gap: '1rem', alignItems: 'center', padding: '10px 14px', borderRadius: '8px' }}>
           <ImageUpload
             value={imageUrl}
             onChange={(url) => setImageUrl(url)}
