@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Descriptions, Empty, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd';
+import { Button, DatePicker, Descriptions, Dropdown, Empty, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import { CalendarOutlined, CheckOutlined, CloseOutlined, CreditCardOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
-import { bookingService, type BookingDetail, type BookingListItem, type CheckoutSummary } from '@/services/booking.service';
+import type { MenuProps } from 'antd';
+import { CalendarOutlined, CheckOutlined, CloseOutlined, CreditCardOutlined, EyeOutlined, MoreOutlined, ReloadOutlined, UserSwitchOutlined } from '@ant-design/icons';
+import dayjs, { type Dayjs } from 'dayjs';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { bookingService, type BookingDetail, type BookingDetailItem, type BookingListItem, type CheckoutSummary } from '@/services/booking.service';
+import { roomService, type RoomDTO } from '@/services/room.service';
+import { staffService } from '@/services/staff.service';
+import type { StaffDTO } from '@/types/staff.types';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const { Title, Text } = Typography;
@@ -14,14 +19,19 @@ const statusName = (status: number | string) => {
   if (value === '1' || value === 'confirmed') return 'Confirmed';
   if (value === '2' || value === 'completed') return 'Completed';
   if (value === '3' || value === 'cancelled' || value === 'canceled') return 'Cancelled';
-  if (value === 'partially_completed') return 'In Progress';
+  if (value === 'checked_in' || value === 'checkedin') return 'Checked In';
+  if (value === 'in_progress' || value === 'inprogress' || value === 'partially_completed') return 'In Progress';
   return String(status ?? 'Unknown');
 };
 const statusColor = (status: number | string) => ({ Pending: 'gold', Confirmed: 'blue', 'In Progress': 'processing', Completed: 'green', Cancelled: 'red' }[statusName(status)] ?? 'default');
 const canCheckIn = (status: number | string) => ['Pending', 'Confirmed'].includes(statusName(status));
 const canCancel = (status: number | string) => ['Pending', 'Confirmed'].includes(statusName(status));
+const isBoardingType = (type: number | string) => String(type).toLowerCase() === 'boarding' || String(type) === '1';
 
 export default function StaffBookingListPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const bookingBase = location.pathname.startsWith('/admin') ? '/admin/bookings' : '/staff/bookings';
   const [bookings, setBookings] = useState<BookingListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
@@ -29,11 +39,19 @@ export default function StaffBookingListPage() {
   const [status, setStatus] = useState<number>();
   const [keywordInput, setKeywordInput] = useState('');
   const [keyword, setKeyword] = useState('');
+  const [appointmentDate, setAppointmentDate] = useState<Dayjs | null>(dayjs());
   const [loading, setLoading] = useState(false);
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detail, setDetail] = useState<BookingDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [assignItem, setAssignItem] = useState<BookingDetailItem | null>(null);
+  const [staffOptions, setStaffOptions] = useState<StaffDTO[]>([]);
+  const [roomOptions, setRoomOptions] = useState<RoomDTO[]>([]);
+  const [selectedStaffId, setSelectedStaffId] = useState<string>();
+  const [selectedRoomId, setSelectedRoomId] = useState<string>();
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [assignOptionsLoading, setAssignOptionsLoading] = useState(false);
 
   const [cancelId, setCancelId] = useState<string>();
   const [cancelReason, setCancelReason] = useState('');
@@ -50,15 +68,15 @@ export default function StaffBookingListPage() {
   const loadBookings = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await bookingService.search({ keyword: keyword || undefined, status, pageNumber, pageSize });
-      setBookings(result.items);
+      const result = await bookingService.search({ keyword: keyword || undefined, status, date: appointmentDate?.format('YYYY-MM-DD'), pageNumber, pageSize });
+      setBookings([...result.items].sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()));
       setTotalCount(result.totalCount);
     } catch (error) {
       message.error(getApiErrorMessage(error, 'Failed to load bookings.'));
     } finally {
       setLoading(false);
     }
-  }, [keyword, status, pageNumber, pageSize]);
+  }, [keyword, status, appointmentDate, pageNumber, pageSize]);
 
   useEffect(() => { void loadBookings(); }, [loadBookings]);
 
@@ -73,6 +91,58 @@ export default function StaffBookingListPage() {
       setDetailOpen(false);
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  const openAssignment = async (item: BookingDetailItem) => {
+    setAssignItem(item);
+    setSelectedStaffId(item.staffId || undefined);
+    setSelectedRoomId(item.roomId || undefined);
+    setAssignOptionsLoading(true);
+    try {
+      const [staffRes, roomRes] = await Promise.all([
+        staffService.fetchWithPagination({ status: 'active', pageNumber: 1, pageSize: 100 }),
+        roomService.fetchWithPagination({ pageNumber: 1, pageSize: 100 }),
+      ]);
+      const allStaff = staffRes.items ?? [];
+      const expectedRole = isBoardingType(item.serviceType) ? 'boarding' : 'grooming';
+      const matchingStaff = allStaff.filter((staff) => staff.roles?.some((role) => role.toLowerCase().includes(expectedRole)));
+      setStaffOptions(matchingStaff.length ? matchingStaff : allStaff);
+      const allRooms = roomRes.result?.items ?? [];
+      setRoomOptions(allRooms.filter((room) => String(room.status).toLowerCase() === 'available' || room.id === item.roomId));
+    } catch (error) {
+      message.error(getApiErrorMessage(error, 'Could not load staff and rooms.'));
+      setStaffOptions([]);
+      setRoomOptions([]);
+    } finally {
+      setAssignOptionsLoading(false);
+    }
+  };
+
+  const saveAssignment = async () => {
+    if (!detail || !assignItem) return;
+    if (!selectedStaffId) {
+      message.warning('Select a staff member to assign this service.');
+      return;
+    }
+    if (isBoardingType(assignItem.serviceType) && !selectedRoomId) {
+      message.warning('Select a room for this boarding stay.');
+      return;
+    }
+    setAssignLoading(true);
+    try {
+      await bookingService.assignItem(detail.id, assignItem.id, {
+        staffId: selectedStaffId,
+        ...(selectedRoomId ? { roomId: selectedRoomId } : {}),
+      });
+      message.success('Staff and room assignment saved.');
+      setAssignItem(null);
+      setDetail(await bookingService.fetchById(detail.id));
+      await loadBookings();
+    } catch (error) {
+      message.error(getApiErrorMessage(error, 'Assignment failed.'));
+    } finally {
+      setAssignLoading(false);
     }
   };
 
@@ -148,21 +218,35 @@ export default function StaffBookingListPage() {
   };
 
   const columns: ColumnsType<BookingListItem> = [
-    { title: 'Booking', dataIndex: 'id', key: 'id', render: (id: string) => <Text copyable={{ text: id }}>{id.slice(0, 8)}…</Text> },
+    { title: 'No.', key: 'number', width: 75, render: (_: unknown, __: BookingListItem, index: number) => (pageNumber - 1) * pageSize + index + 1 },
     { title: 'Customer', dataIndex: 'customerName', key: 'customer', render: (_: string, row) => <div><div>{row.customerName}</div><Text type="secondary">{row.customerPhone || '—'}</Text></div> },
     { title: 'Pets / Services', dataIndex: 'itemsCount', key: 'itemsCount', render: (count: number) => count ?? 0 },
     { title: 'Total', dataIndex: 'totalPrice', key: 'totalPrice', render: (value: number) => money(value) },
     { title: 'Status', dataIndex: 'status', key: 'status', render: (value: number | string) => <Tag color={statusColor(value)}>{statusName(value)}</Tag> },
     { title: 'Created', dataIndex: 'createdAt', key: 'createdAt', render: (value: string) => value ? dayjs(value).format('MMM D, YYYY HH:mm') : '—' },
     {
-      title: 'Actions', key: 'actions', render: (_: unknown, row) => (
-        <Space wrap size="small">
-          <Button icon={<EyeOutlined />} onClick={() => void openDetails(row.id)}>Details</Button>
-          {canCheckIn(row.status) && <Button icon={<CheckOutlined />} onClick={() => handleCheckIn(row)}>Check in</Button>}
-          {!['Completed', 'Cancelled'].includes(statusName(row.status)) && <Button icon={<CreditCardOutlined />} onClick={() => void openCheckout(row.id)}>Checkout</Button>}
-          {canCancel(row.status) && <Button danger icon={<CloseOutlined />} onClick={() => { setCancelId(row.id); setCancelReason(''); }}>Cancel</Button>}
-        </Space>
-      ),
+      title: 'Actions', key: 'actions', render: (_: unknown, row) => {
+        const items: MenuProps['items'] = [
+          ...(canCheckIn(row.status) ? [{ key: 'check-in', label: 'Check in', icon: <CheckOutlined /> }] : []),
+          ...(!['Completed', 'Cancelled'].includes(statusName(row.status)) ? [{ key: 'checkout', label: 'Checkout', icon: <CreditCardOutlined /> }] : []),
+          ...(canCancel(row.status) ? [{ key: 'cancel', label: <span style={{ color: '#dc2626' }}>Cancel booking</span>, icon: <CloseOutlined /> }] : []),
+        ];
+        return (
+          <Space size="small">
+            <Button icon={<EyeOutlined />} onClick={() => void openDetails(row.id)}>Details</Button>
+            {items.length > 0 && <Dropdown
+              trigger={['click']}
+              menu={{ items, onClick: ({ key }) => {
+                if (key === 'check-in') handleCheckIn(row);
+                if (key === 'checkout') void openCheckout(row.id);
+                if (key === 'cancel') { setCancelId(row.id); setCancelReason(''); }
+              } }}
+            >
+              <Button icon={<MoreOutlined />}>More</Button>
+            </Dropdown>}
+          </Space>
+        );
+      },
     },
   ];
 
@@ -178,7 +262,10 @@ export default function StaffBookingListPage() {
           <Title level={2} style={{ margin: 0 }}>Bookings</Title>
           <Text type="secondary">Search bookings, check in arrivals, and settle payments at checkout.</Text>
         </div>
-        <Button icon={<ReloadOutlined />} onClick={() => void loadBookings()} loading={loading}>Refresh</Button>
+        <Space wrap>
+          <Button type="primary" icon={<CalendarOutlined />} onClick={() => navigate(`${bookingBase}/new`)}>+ Create walk-in booking</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => void loadBookings()} loading={loading}>Refresh</Button>
+        </Space>
       </div>
 
       <Space wrap style={{ margin: '1rem 0' }}>
@@ -189,6 +276,12 @@ export default function StaffBookingListPage() {
           onChange={(event) => setKeywordInput(event.target.value)}
           onSearch={(value) => { setPageNumber(1); setKeyword(value.trim()); }}
           style={{ width: 320 }}
+        />
+        <DatePicker
+          value={appointmentDate}
+          allowClear
+          placeholder="Appointment date"
+          onChange={(value) => { setPageNumber(1); setAppointmentDate(value); }}
         />
         <Select
           allowClear
@@ -222,7 +315,6 @@ export default function StaffBookingListPage() {
             <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }}>
               <Descriptions.Item label="Customer">{detail.customerName}</Descriptions.Item>
               <Descriptions.Item label="Phone">{detail.customerPhone || '—'}</Descriptions.Item>
-              <Descriptions.Item label="Booking ID">{detail.id}</Descriptions.Item>
               <Descriptions.Item label="Created">{dayjs(detail.createdAt).format('MMM D, YYYY HH:mm')}</Descriptions.Item>
               <Descriptions.Item label="Status"><Tag color={statusColor(detail.status)}>{statusName(detail.status)}</Tag></Descriptions.Item>
               <Descriptions.Item label="Total">{money(detail.totalPrice)}</Descriptions.Item>
@@ -241,6 +333,7 @@ export default function StaffBookingListPage() {
                 { title: 'Schedule', dataIndex: 'scheduledStartAt', key: 'schedule', render: (date: string, item) => <>{dayjs(date).format('MMM D, YYYY HH:mm')}{item.scheduledEndAt && <><br />to {dayjs(item.scheduledEndAt).format('MMM D, YYYY HH:mm')}</>}</> },
                 { title: 'Room', dataIndex: 'roomName', key: 'room', render: (value: string) => value || '—' },
                 { title: 'Staff', dataIndex: 'staffName', key: 'staff', render: (value: string) => value || '—' },
+                { title: 'Assignment', key: 'assignment', render: (_: unknown, item: BookingDetailItem) => <Button size="small" icon={<UserSwitchOutlined />} onClick={() => void openAssignment(item)}>Assign</Button> },
                 { title: 'Status', dataIndex: 'status', key: 'status', render: (value: number | string) => <Tag>{statusName(value)}</Tag> },
                 { title: 'Price', dataIndex: 'assignedPrice', key: 'price', render: (value: number) => money(value) },
               ]}
@@ -248,6 +341,48 @@ export default function StaffBookingListPage() {
             />
           </>
         )}
+      </Modal>
+
+      <Modal
+        title={<><UserSwitchOutlined /> Assign staff and room</>}
+        open={Boolean(assignItem)}
+        onCancel={() => setAssignItem(null)}
+        onOk={() => void saveAssignment()}
+        okText="Save assignment"
+        confirmLoading={assignLoading}
+        okButtonProps={{ disabled: assignOptionsLoading }}
+        destroyOnClose
+      >
+        {assignItem && <>
+          <p>Assign <Text strong>{assignItem.petName}</Text> · {assignItem.serviceName}</p>
+          {assignOptionsLoading ? <Spin /> : <div style={{ display: 'grid', gap: 16 }}>
+            <label>Staff member
+              <Select
+                showSearch
+                optionFilterProp="label"
+                placeholder="Select a staff member"
+                value={selectedStaffId}
+                onChange={setSelectedStaffId}
+                options={staffOptions.map((staff) => ({ value: staff.id, label: `${staff.fullName} · ${staff.roles?.join(', ') || 'Staff'}` }))}
+                style={{ width: '100%', marginTop: 6 }}
+              />
+            </label>
+            <label>Room
+              <Select
+                showSearch
+                allowClear
+                optionFilterProp="label"
+                placeholder={isBoardingType(assignItem.serviceType) ? 'Select an available boarding room' : 'Select a room (optional)'}
+                value={selectedRoomId}
+                onChange={setSelectedRoomId}
+                options={roomOptions.map((room) => ({ value: room.id, label: `${room.roomName} · ${room.roomTypeName}` }))}
+                style={{ width: '100%', marginTop: 6 }}
+              />
+            </label>
+            {staffOptions.length === 0 && <Text type="warning">No active staff were returned by the staff API.</Text>}
+            {roomOptions.length === 0 && isBoardingType(assignItem.serviceType) && <Text type="warning">No available rooms were returned by the rooms API.</Text>}
+          </div>}
+        </>}
       </Modal>
 
       <Modal

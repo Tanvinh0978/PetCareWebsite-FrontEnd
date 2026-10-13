@@ -37,6 +37,7 @@
   --leaf: var(--primary);
   --mint: var(--primary-light);
   --paper: #ffffff;
+  --theme-surface-inline: #ffffff;
   --sun: var(--accent);
   --line: var(--slate-200);
 
@@ -1331,6 +1332,7 @@ legend {
   --danger-border: #881337;
   --info-light: #082f49;
   --paper: #0b1220;
+  --theme-surface-inline: #252f3d;
   --line: #334155;
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, .22);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, .28);
@@ -1348,6 +1350,7 @@ legend {
   background: rgba(15, 23, 42, .96);
   border-bottom-color: #253247;
 }
+:root[data-theme="dark"] .customer-nav a.active { background: #172337; color: #e2e8f0; }
 :root[data-theme="dark"] .customer-footer { background: #070d18; }
 :root[data-theme="dark"] .sidebar {
   background: #0a1425;
@@ -1424,6 +1427,22 @@ legend {
 :root[data-theme="dark"] .table-card,
 :root[data-theme="dark"] .stat-card { transition: background-color .2s ease, color .2s ease; }
 
+/* Keep inline-styled panels in the same theme as the surrounding page. */
+:root[data-theme="dark"] [style*="background: rgb(255, 255, 255)"],
+:root[data-theme="dark"] [style*="background-color: rgb(255, 255, 255)"] {
+  background: var(--theme-surface-inline) !important;
+  border-color: #3d4a5b !important;
+  color: #e2e8f0 !important;
+}
+:root[data-theme="dark"] [style*="color: rgb(15, 23, 42)"],
+:root[data-theme="dark"] [style*="color: rgb(17, 24, 39)"],
+:root[data-theme="dark"] [style*="color: rgb(30, 41, 59)"],
+:root[data-theme="dark"] [style*="color: rgb(51, 65, 85)"],
+:root[data-theme="dark"] [style*="color: rgb(71, 85, 105)"],
+:root[data-theme="dark"] [style*="color: rgb(100, 116, 139)"] {
+  color: #cbd5e1 !important;
+}
+
 /* Shared image picker */
 .pet-basic-info {
   background: #f3f7f4;
@@ -1484,3 +1503,72 @@ legend {
   color: #c5ead4;
 }
 :root[data-theme="dark"] .image-upload-controls .ant-btn:hover { background: #1b3930; border-color: #10b981; color: #d9fbe5; }
+
+.boarding-tasks-page { padding-bottom: 48px; }
+.boarding-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.boarding-summary-row .ant-statistic {
+  padding: 16px 18px;
+  border: 1px solid #e2ebe5;
+  border-radius: 14px;
+  background: #f7faf8;
+}
+.boarding-summary-row .ant-statistic-title { color: #64756b; }
+.boarding-summary-row .ant-statistic-content { color: #1c6845; }
+.boarding-tabs { display: flex; gap: 8px; margin: 0 0 18px; }
+.boarding-tabs .ant-btn { height: 40px; border-radius: 10px; font-weight: 600; }
+.boarding-task-card { height: 100%; border-radius: 15px; }
+.boarding-pet-heading { display: flex; align-items: center; gap: 12px; }
+.boarding-latest-health {
+  padding: 12px 14px;
+  border: 1px solid #e2ebe5;
+  border-radius: 10px;
+  background: #f7faf8;
+  line-height: 1.5;
+}
+.boarding-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 14px;
+  margin-top: 14px;
+  border-top: 1px solid #e8eee9;
+}
+.boarding-pagination { display: flex; justify-content: flex-end; margin-top: 22px; }
+.counter-booking-card { border-radius: 16px; border: 1px solid #e2ebe5; box-shadow: 0 8px 24px rgba(15, 23, 42, .05); }
+.counter-booking-payment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid #dce8df;
+  border-radius: 10px;
+  background: #f3f7f4;
+  color: #4f6256;
+}
+.counter-booking-payment strong { margin-left: auto; color: #16804a; }
+:root[data-theme="dark"] .counter-booking-card { background: #172337; border-color: #344154; }
+:root[data-theme="dark"] .counter-booking-payment { background: #252f3d; border-color: #3d4a5b; color: #cbd5e1; }
+:root[data-theme="dark"] .counter-booking-payment strong { color: #6ee7b7; }
+:root[data-theme="dark"] .boarding-summary-row .ant-statistic {
+  border-color: #344154;
+  background: #172337;
+}
+:root[data-theme="dark"] .boarding-summary-row .ant-statistic-title { color: #a8b4c5; }
+:root[data-theme="dark"] .boarding-summary-row .ant-statistic-content { color: #6ee7b7; }
+:root[data-theme="dark"] .boarding-latest-health {
+  border-color: #3a4759;
+  background: #202b39;
+}
+:root[data-theme="dark"] .boarding-card-footer { border-top-color: #344154; }
+@media (max-width: 640px) {
+  .boarding-summary-row { grid-template-columns: 1fr; gap: 8px; }
+  .boarding-tabs { flex-direction: column; }
+  .boarding-tabs .ant-btn { width: 100%; }
+}

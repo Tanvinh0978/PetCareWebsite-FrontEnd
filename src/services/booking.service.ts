@@ -111,6 +111,7 @@ export interface CheckoutPayload {
 export interface BookingSearchParams {
   keyword?: string;
   status?: number;
+  date?: string;
   pageNumber: number;
   pageSize: number;
 }
@@ -155,6 +156,9 @@ export const bookingService = {
 
   checkIn: (id: string) =>
     axiosClient.put(`/api/bookings/${id}/check-in`, {}),
+
+  assignItem: (bookingId: string, itemId: string, payload: { staffId?: string; roomId?: string }) =>
+    axiosClient.put(`/api/bookings/${bookingId}/items/${itemId}/status`, payload),
 
   getCheckoutSummary: async (id: string): Promise<CheckoutSummary> => {
     const res: any = await axiosClient.get(`/api/bookings/${id}/checkout-summary`);

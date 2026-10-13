@@ -40,6 +40,7 @@ import {
 } from '@/services/booking.service';
 import { reviewService } from '@/services/review.service';
 import CreateReviewModal from '@/components/review/CreateReviewModal';
+import CareRecordTimelineModal from '@/components/staff/boarding/CareRecordTimelineModal';
 
 const { Title, Text } = Typography;
 
@@ -94,6 +95,7 @@ const MyBookingsPage: React.FC = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<BookingDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
 
   // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -665,6 +667,7 @@ const MyBookingsPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {selectedBooking.bookingItems?.map((item) => {
                 const itemStatus = getItemStatusConfig(item.status);
+                const isBoarding = String(item.serviceType) === '1' || String(item.serviceType).toLowerCase() === 'boarding';
                 return (
                   <Card
                     key={item.id}
@@ -682,7 +685,7 @@ const MyBookingsPage: React.FC = () => {
                             {item.serviceName}
                           </Text>
                           <Tag color="cyan">
-                            {String(item.serviceType) === '1' || String(item.serviceType).toLowerCase() === 'boarding'
+                            {isBoarding
                               ? 'Boarding / Hotel'
                               : 'Grooming & Spa'}
                           </Tag>
@@ -709,6 +712,17 @@ const MyBookingsPage: React.FC = () => {
                         )}
                       </div>
                       <div style={{ textAlign: 'right' }}>
+                        {isBoarding && (
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={<EyeOutlined />}
+                            onClick={() => setCareHistoryItem({ id: item.id, petName: item.petName })}
+                            style={{ padding: 0, marginBottom: 6 }}
+                          >
+                            Care history
+                          </Button>
+                        )}
                         <div style={{ fontSize: 15, fontWeight: 600, color: '#059669' }}>
                           {item.assignedPrice?.toLocaleString()} VND
                         </div>
@@ -782,6 +796,13 @@ const MyBookingsPage: React.FC = () => {
           </div>
         ) : null}
       </Modal>
+
+      <CareRecordTimelineModal
+        open={Boolean(careHistoryItem)}
+        bookingItemId={careHistoryItem?.id}
+        petName={careHistoryItem?.petName}
+        onClose={() => setCareHistoryItem(null)}
+      />
 
       {/* Cancel Confirmation Modal */}
       <Modal
