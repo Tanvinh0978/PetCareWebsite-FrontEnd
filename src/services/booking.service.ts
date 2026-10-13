@@ -19,6 +19,7 @@ export interface BookingListItem {
   id: string;
   customerId: string;
   customerName: string;
+  customerPhone: string;
   itemsCount: number;
   totalPrice: number;
   status: number | string; // 0: Pending, 1: Partially_Completed, 2: Completed, 3: Cancelled
@@ -29,7 +30,7 @@ export interface BookingDetailItem {
   id: string;
   petId: string;
   petName: string;
-  petSpecies: number;
+  petSpecies: number | string;
   petWeight: number;
   serviceId: string;
   serviceName: string;
@@ -63,6 +64,57 @@ export interface BookingDetail {
   bookingItems: BookingDetailItem[];
 }
 
+export interface CheckoutSummaryItem {
+  itemId: string;
+  petId: string;
+  petName: string;
+  serviceId: string;
+  serviceName: string;
+  serviceType: number | string;
+  roomId?: string | null;
+  roomName?: string | null;
+  staffId?: string | null;
+  staffName?: string | null;
+  quantity: number;
+  unitPrice: number;
+  assignedPrice: number;
+  status: number | string;
+  scheduledStartAt: string;
+  scheduledEndAt?: string | null;
+}
+
+export interface CheckoutSummary {
+  bookingId: string;
+  bookingStatus: number | string;
+  bookingCreatedAt: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  items: CheckoutSummaryItem[];
+  subTotal: number;
+  voucherCode?: string | null;
+  discountAmount: number;
+  totalPrice: number;
+  totalPaid: number;
+  remainingAmount: number;
+  paymentStatus: string;
+  canCheckout: boolean;
+}
+
+export interface CheckoutPayload {
+  paymentMethod: 'CASH' | 'BANK_TRANSFER';
+  amount: number | null;
+  note?: string;
+}
+
+export interface BookingSearchParams {
+  keyword?: string;
+  status?: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
 export interface PagedBookings {
   items: BookingListItem[];
   totalCount: number;
@@ -89,6 +141,28 @@ export const bookingService = {
     const res: any = await axiosClient.get(`/api/bookings/${id}`);
     return res?.result ?? res?.data ?? res;
   },
+
+  search: async (params: BookingSearchParams): Promise<PagedBookings> => {
+    const res: any = await axiosClient.get('/api/bookings/search', { params });
+    const paged = res?.result ?? res?.data?.result ?? res?.data ?? res;
+    return {
+      items: paged?.items ?? [],
+      totalCount: paged?.totalCount ?? 0,
+      pageNumber: paged?.pageNumber ?? params.pageNumber,
+      pageSize: paged?.pageSize ?? params.pageSize,
+    };
+  },
+
+  checkIn: (id: string) =>
+    axiosClient.put(`/api/bookings/${id}/check-in`, {}),
+
+  getCheckoutSummary: async (id: string): Promise<CheckoutSummary> => {
+    const res: any = await axiosClient.get(`/api/bookings/${id}/checkout-summary`);
+    return res?.result ?? res?.data?.result ?? res?.data ?? res;
+  },
+
+  checkout: (id: string, payload: CheckoutPayload) =>
+    axiosClient.post(`/api/bookings/${id}/checkout`, payload),
 
   cancelBooking: async (id: string, cancellationReason = 'Customer requested cancellation'): Promise<any> => {
     return axiosClient.put(`/api/bookings/${id}/cancel`, { cancellationReason });

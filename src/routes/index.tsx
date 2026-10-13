@@ -38,6 +38,7 @@ import ReviewManagementPage from "@/pages/admin/review/ReviewManagementPage";
 import PaymentResultPage from "@/pages/customer/PaymentResultPage";
 import StaffProfilePage from "@/pages/staff/StaffProfilePage";
 import GroomingTasksPage from "@/pages/staff/grooming/GroomingTasksPage";
+import StaffBookingListPage from "@/pages/staff/StaffBookingListPage";
 
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -88,6 +89,7 @@ export default function AppRoutes() {
         { path: "vouchers/new", element: <AdminVoucherFormPage /> },
         { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
         { path: "reviews", element: <ReviewManagementPage /> },
+        { path: "bookings", element: <StaffBookingListPage /> },
         { path: "grooming-tasks", element: <GroomingTasksPage /> },
         
         // [new-page:admin]
@@ -117,6 +119,7 @@ export default function AppRoutes() {
         { path: "pets/new", element: <StaffPetFormPage /> },
         { path: "pets/:id/edit", element: <StaffPetFormPage /> },
         { path: "reviews", element: <ReviewManagementPage /> },
+        { path: "bookings", element: <StaffBookingListPage /> },
         { path: "staff", element: <AdminStaffListPage /> },
         { path: "staff/new", element: <AdminStaffFormPage /> },
         { path: "staff/:id/edit", element: <AdminStaffFormPage /> },

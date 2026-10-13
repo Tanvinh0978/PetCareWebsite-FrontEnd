@@ -52,7 +52,7 @@ export default function PawstayAuthPage() {
         if (isExpired && !hasShownExpiredNotice.current) {
             hasShownExpiredNotice.current = true;
             message.warning({
-                content: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+                content: "Your session has expired. Please sign in again.",
                 key: "session-expired",
             });
             navigate(location.pathname, { replace: true });
