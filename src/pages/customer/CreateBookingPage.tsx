@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space } from 'antd';
 import { CalendarOutlined, CheckCircleFilled, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -83,23 +83,22 @@ const CreateBookingPage: React.FC = () => {
     return priceObj ? priceObj.price : 0;
   };
 
-  let hasGrooming = false;
-  let hasBoarding = false;
-  const boardingServiceIds = new Set<string>();
-
-  Object.values(petServices).forEach((srv: any) => {
-    if (srv?.groomingIds?.length > 0) hasGrooming = true;
-    if (srv?.boardingId) {
-      hasBoarding = true;
-      boardingServiceIds.add(srv.boardingId);
-    }
-  });
+  const { hasGrooming, hasBoarding, boardingServiceIds } = useMemo(() => {
+    let groomingSelected = false;
+    const boardingIds = new Set<string>();
+    Object.values(petServices).forEach((srv: any) => {
+      if (srv?.groomingIds?.length > 0) groomingSelected = true;
+      if (srv?.boardingId) boardingIds.add(srv.boardingId);
+    });
+    return { hasGrooming: groomingSelected, hasBoarding: boardingIds.size > 0, boardingServiceIds: boardingIds };
+  }, [petServices]);
 
   useEffect(() => {
     if (bookingType === 'Boarding') {
       const fetchAvailability = async () => {
         for (const bId of Array.from(boardingServiceIds)) {
-          if (!roomUnavailableMap[bId]) {
+          const boardingService = services.find((service) => service.id === bId);
+          if (boardingService?.roomTypeId && !roomUnavailableMap[bId]) {
             try {
               const roomRes = await roomService.checkAvailability({
                 serviceId: bId,
@@ -115,7 +114,7 @@ const CreateBookingPage: React.FC = () => {
       };
       fetchAvailability();
     }
-  }, [boardingServiceIds, roomUnavailableMap, bookingType]);
+  }, [boardingServiceIds, roomUnavailableMap, bookingType, services]);
 
   const mergedUnavailableDates = Array.from(boardingServiceIds).reduce((acc: string[], id: string) => {
     const dates = roomUnavailableMap[id] || [];
@@ -132,6 +131,14 @@ const CreateBookingPage: React.FC = () => {
     if (currentStep === 1) {
       if (bookingType === 'Grooming' && !hasGrooming) return message.warning('Please select at least 1 grooming service.');
       if (bookingType === 'Boarding' && !hasBoarding) return message.warning('Please select a room for the hotel.');
+      if (bookingType === 'Boarding') {
+        const unlinkedService = Array.from(boardingServiceIds)
+          .map((id) => services.find((service) => service.id === id))
+          .find((service) => !service?.roomTypeId);
+        if (unlinkedService) {
+          return message.error(`Boarding service "${unlinkedService.name}" has no room type linked. Please contact the store to configure this service.`);
+        }
+      }
     }
     if (currentStep === 2) {
       if (bookingType === 'Boarding' && (!boardingDateRange || boardingDateRange.length < 2)) return message.warning('Please select a boarding period (Check-in and Check-out).');
@@ -193,6 +200,16 @@ const CreateBookingPage: React.FC = () => {
   const totalAmount = calculateTotal();
 
   const onFinish = async (values: any) => {
+    if (bookingType === 'Boarding') {
+      const unlinkedService = Array.from(boardingServiceIds)
+        .map((id) => services.find((service) => service.id === id))
+        .find((service) => !service?.roomTypeId);
+      if (unlinkedService) {
+        message.error(`Boarding service "${unlinkedService.name}" has no room type linked. Please contact the store to configure this service.`);
+        return;
+      }
+    }
+
     const bookingItems: any[] = [];
     
     selectedPetIds.forEach(petId => {

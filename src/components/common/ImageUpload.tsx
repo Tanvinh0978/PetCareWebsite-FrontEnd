@@ -85,7 +85,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const isCircle = shape === 'circle'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div className="image-upload">
       <input
         ref={fileInputRef}
         type="file"
@@ -105,21 +105,13 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       >
         {/* Preview / Placeholder container */}
         <div
+          className={`image-upload-preview${value ? ' has-image' : ''}${isCircle ? ' is-circle' : ''}`}
           style={{
             width,
             height,
             minWidth: width,
             borderRadius: isCircle ? '50%' : '8px',
-            border: '2px dashed #cbd5e1',
-            backgroundColor: '#f8fafc',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            position: 'relative',
             cursor: disabled || uploading ? 'not-allowed' : 'pointer',
-            transition: 'border-color 0.2s',
           }}
           onClick={() => {
             if (!disabled && !uploading && !value) {
@@ -188,16 +180,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               </div>
             </>
           ) : (
-            <div style={{ textAlign: 'center', padding: '4px' }}>
+            <div className="image-upload-placeholder">
               <FileImageOutlined style={{ fontSize: typeof width === 'number' && width < 100 ? 20 : 26, color: '#94a3b8' }} />
-              <div
-                style={{
-                  fontSize: typeof width === 'number' && width < 100 ? '0.72rem' : '0.8rem',
-                  fontWeight: 600,
-                  color: '#475569',
-                  marginTop: 2,
-                }}
-              >
+              <div className="image-upload-title" style={{ fontSize: typeof width === 'number' && width < 100 ? '0.72rem' : '0.8rem' }}>
                 {title}
               </div>
             </div>
@@ -205,7 +190,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div className="image-upload-controls">
           <Space orientation="horizontal" size="small">
             <Button
               size="small"
