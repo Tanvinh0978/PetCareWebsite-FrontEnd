@@ -650,103 +650,58 @@ export const GroomingTasksPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Card Footer Actions */}
+                    {/* Card Footer Actions - Single Step Action Button */}
                     <div
                       style={{ borderTop: '1px solid #f1f5f9', paddingTop: 14, marginTop: 'auto' }}
                       onClick={(e) => e.stopPropagation()}
                     >
+                      {/* Step 1: Chưa check in -> Chỉ hiện nút Check In */}
                       {isConfirmed && (
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <Button
-                            icon={<LoginOutlined />}
-                            loading={actionLoadingItemId === task.itemId}
-                            onClick={() => handleCheckInTask(task)}
-                            style={{
-                              flex: 1,
-                              height: 40,
-                              borderRadius: 8,
-                              fontWeight: 600,
-                              color: '#b45309',
-                              borderColor: '#fde68a',
-                              backgroundColor: '#fffbeb',
-                            }}
-                          >
-                            Check In
-                          </Button>
-                          <Button
-                            type="primary"
-                            loading={actionLoadingItemId === task.itemId}
-                            icon={<PlayCircleFilled />}
-                            onClick={() => handleStartTask(task)}
-                            style={{
-                              flex: 1.4,
-                              backgroundColor: '#2563eb',
-                              borderColor: '#2563eb',
-                              height: 40,
-                              fontWeight: 600,
-                              borderRadius: 8,
-                              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
-                            }}
-                          >
-                            ▶ Start Service
-                          </Button>
-                          <Button
-                            icon={<CheckCircleFilled />}
-                            onClick={() => handleOpenCompleteModal(task)}
-                            title="Complete & Submit Result"
-                            style={{
-                              height: 40,
-                              borderRadius: 8,
-                              fontWeight: 600,
-                              color: '#059669',
-                              borderColor: '#a7f3d0',
-                            }}
-                          >
-                            Finish
-                          </Button>
-                        </div>
+                        <Button
+                          type="primary"
+                          size="large"
+                          block
+                          icon={<LoginOutlined />}
+                          loading={actionLoadingItemId === task.itemId}
+                          onClick={() => handleCheckInTask(task)}
+                          style={{
+                            backgroundColor: '#f59e0b',
+                            borderColor: '#f59e0b',
+                            height: 42,
+                            fontSize: 14,
+                            fontWeight: 600,
+                            borderRadius: 8,
+                            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)',
+                          }}
+                        >
+                          Check In
+                        </Button>
                       )}
 
+                      {/* Step 2: Đã check in -> Chỉ hiện nút Start Service */}
                       {isCheckedIn && (
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <Button
-                            type="primary"
-                            size="large"
-                            loading={actionLoadingItemId === task.itemId}
-                            icon={<PlayCircleFilled />}
-                            onClick={() => handleStartTask(task)}
-                            style={{
-                              flex: 2,
-                              backgroundColor: '#2563eb',
-                              borderColor: '#2563eb',
-                              height: 42,
-                              fontSize: 14,
-                              fontWeight: 600,
-                              borderRadius: 8,
-                              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-                            }}
-                          >
-                            ▶ Start Service
-                          </Button>
-                          <Button
-                            size="large"
-                            icon={<CheckCircleFilled />}
-                            onClick={() => handleOpenCompleteModal(task)}
-                            style={{
-                              flex: 1,
-                              height: 42,
-                              borderRadius: 8,
-                              fontWeight: 600,
-                              color: '#059669',
-                              borderColor: '#a7f3d0',
-                              backgroundColor: '#f0fdf4',
-                            }}
-                          >
-                            Finish
-                          </Button>
-                        </div>
+                        <Button
+                          type="primary"
+                          size="large"
+                          block
+                          loading={actionLoadingItemId === task.itemId}
+                          icon={<PlayCircleFilled />}
+                          onClick={() => handleStartTask(task)}
+                          style={{
+                            backgroundColor: '#2563eb',
+                            borderColor: '#2563eb',
+                            height: 42,
+                            fontSize: 14,
+                            fontWeight: 600,
+                            borderRadius: 8,
+                            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                          }}
+                        >
+                          ▶ Start Service
+                        </Button>
                       )}
 
+                      {/* Step 3: Đang làm -> Chỉ hiện nút Finish & Submit Result */}
                       {isInProgress && (
                         <Button
                           type="primary"
@@ -764,10 +719,11 @@ export const GroomingTasksPage: React.FC = () => {
                             boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)',
                           }}
                         >
-                          ✓ Complete & Submit Result
+                          ✓ Finish & Submit Result
                         </Button>
                       )}
 
+                      {/* Step 4: Đã hoàn tất -> Hiển thị kết quả */}
                       {isCompleted && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: 13, color: '#059669', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
