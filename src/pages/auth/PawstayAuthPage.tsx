@@ -688,16 +688,16 @@ export default function PawstayAuthPage() {
 
                     <div style={{ marginTop: 16, textAlign: 'center', color: colors.textMuted, fontSize: 13 }}>
                         {view === 'login' && (
-                            <>Don't have an account? <button type="button" onClick={() => handleSwitchView('register')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Sign up</button></>
+                            <>Don't have an account? <button type="button" onClick={() => handleSwitchView('register')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginLeft: 4 }}>Sign up</button></>
                         )}
                         {view === 'register' && (
-                            <>Already have an account? <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Sign in</button></>
+                            <>Already have an account? <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginLeft: 4 }}>Sign in</button></>
                         )}
                         {view === 'otp' && (
-                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', marginTop: 8 }}>Back to sign in</button>
+                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginTop: 8 }}>Back to sign in</button>
                         )}
                         {(view === 'forgot' || view === 'reset') && (
-                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', marginTop: 8 }}>← Back to sign in</button>
+                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginTop: 8 }}>← Back to sign in</button>
                         )}
                     </div>
 

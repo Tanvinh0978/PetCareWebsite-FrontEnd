@@ -193,7 +193,8 @@
 }
 
 .auth-link:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  opacity: 0.85;
 }
 
 .auth-btn-primary.ant-btn {
@@ -228,7 +229,8 @@
 }
 
 .auth-link-bold:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  opacity: 0.85;
 }
 
 .auth-back-link {
