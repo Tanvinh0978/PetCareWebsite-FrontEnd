@@ -59,6 +59,8 @@ export default function AppRoutes() {
     { path: "/login", element: <PawstayAuthPage /> },
     { path: "/register", element: <PawstayAuthPage /> },
     { path: "/verify-otp", element: <PawstayAuthPage /> },
+    { path: "/forgot-password", element: <PawstayAuthPage /> },
+    { path: "/reset-password", element: <PawstayAuthPage /> },
     { path: "/payment-result", element: <PaymentResultPage /> },
     {
       path: "/admin",
