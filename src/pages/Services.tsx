@@ -8,9 +8,9 @@ import { PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL, type Service, type ServiceType 
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
 function priceLabel(s: Service) {
-  if (s.prices.length === 0) return 'Liên hệ';
+  if (s.prices.length === 0) return 'Contact us';
   const lowest = s.prices.reduce((a, b) => (b.price < a.price ? b : a));
-  return `Từ ${vnd.format(lowest.price)} / ${PRICING_UNIT_LABEL[lowest.pricingUnit]}`;
+  return `From ${vnd.format(lowest.price)} / ${PRICING_UNIT_LABEL[lowest.pricingUnit]}`;
 }
 
 export default function Services() {
@@ -28,19 +28,19 @@ export default function Services() {
 
   return (
     <section className="page">
-      <h1>Dịch vụ</h1>
+      <h1>Services</h1>
       <div className="filters">
-        <button className={!type ? 'chip on' : 'chip'} onClick={() => setParams({})}>Tất cả</button>
+        <button className={!type ? 'chip on' : 'chip'} onClick={() => setParams({})}>All</button>
         {(Object.keys(SERVICE_TYPE_LABEL) as ServiceType[]).map((t) => (
           <button key={t} className={type === t ? 'chip on' : 'chip'} onClick={() => setParams({ loai: t })}>
             {SERVICE_TYPE_LABEL[t]}
           </button>
         ))}
       </div>
-      {loading && <p>Đang tải dịch vụ...</p>}
+      {loading && <p>Loading services...</p>}
       {error && <p className="msg error">{error}</p>}
       {!loading && !error && shown.length === 0 && (
-        <p>Chưa có dịch vụ nào trong nhóm này. <Link to="/quan-ly/dich-vu/moi">Thêm dịch vụ đầu tiên</Link>.</p>
+        <p>No services found in this category. <Link to="/admin/services/new">Add the first service</Link>.</p>
       )}
       <div className="grid">
         {shown.map((s) => (

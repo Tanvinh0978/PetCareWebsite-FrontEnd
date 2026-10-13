@@ -237,17 +237,17 @@ const MyBookingsPage: React.FC = () => {
   const handlePayVnpay = async (bookingId: string) => {
     try {
       setPayingBookingId(bookingId);
-      message.loading({ content: 'Đang tạo liên kết thanh toán VNPay...', key: 'vnpay-pay' });
+      message.loading({ content: 'Creating VNPay payment link...', key: 'vnpay-pay' });
       const res: any = await bookingService.createVnpayUrl(bookingId);
       const paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
       if (paymentUrl) {
-        message.success({ content: 'Chuyển hướng đến VNPay...', key: 'vnpay-pay' });
+        message.success({ content: 'Redirecting to VNPay...', key: 'vnpay-pay' });
         window.location.href = paymentUrl;
       } else {
-        message.error({ content: 'Không tìm thấy liên kết thanh toán VNPay.', key: 'vnpay-pay' });
+        message.error({ content: 'VNPay payment link was not found.', key: 'vnpay-pay' });
       }
     } catch (error: any) {
-      const errorMsg = error?.response?.data?.message || error?.message || 'Không thể tạo liên kết thanh toán';
+      const errorMsg = error?.response?.data?.message || error?.message || 'Unable to create a payment link.';
       message.error({ content: errorMsg, key: 'vnpay-pay' });
     } finally {
       setPayingBookingId(null);
@@ -407,7 +407,7 @@ const MyBookingsPage: React.FC = () => {
               }}
               onClick={() => handlePayVnpay(record.id)}
             >
-              Thanh toán VNPay
+              Pay with VNPay
             </Button>
           )}
           {isCancellable(record.status) && (
@@ -597,7 +597,7 @@ const MyBookingsPage: React.FC = () => {
               style={{ backgroundColor: '#059669', borderColor: '#059669' }}
               onClick={() => handlePayVnpay(selectedBooking.id)}
             >
-              Thanh toán VNPay
+              Pay with VNPay
             </Button>
           ),
           selectedBooking && isCancellable(selectedBooking.status) && (

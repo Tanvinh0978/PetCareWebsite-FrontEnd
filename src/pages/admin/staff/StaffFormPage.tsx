@@ -202,7 +202,7 @@ const AdminStaffFormPage: React.FC = () => {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="e.g. Hương Mai / Nguyễn Văn A"
+            placeholder="e.g. Alex Morgan"
             required
           />
         </label>

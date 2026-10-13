@@ -4,6 +4,7 @@ import { Dropdown, type MenuProps } from "antd";
 import {
   UserOutlined,
   CalendarOutlined,
+  HeartOutlined,
   LockOutlined,
   LogoutOutlined,
   DownOutlined,
@@ -53,6 +54,12 @@ export default function Layout({ role }: { role: Role }) {
     },
     { type: "divider" },
     {
+      key: "my-pets",
+      icon: <HeartOutlined style={{ color: "#059669" }} />,
+      label: "My Pets",
+      onClick: () => navigate("/customer/pets"),
+    },
+    {
       key: "my-bookings",
       icon: <CalendarOutlined style={{ color: "#059669" }} />,
       label: "My Bookings",
@@ -71,6 +78,15 @@ export default function Layout({ role }: { role: Role }) {
       danger: true,
       label: "Sign out",
       onClick: handleSignOut,
+    },
+  ];
+
+  const staffAccountItems: MenuProps["items"] = [
+    {
+      key: "staff-profile",
+      icon: <UserOutlined style={{ color: "#059669" }} />,
+      label: "My Profile",
+      onClick: () => navigate("/staff/profile"),
     },
   ];
 
@@ -171,18 +187,11 @@ export default function Layout({ role }: { role: Role }) {
             ))}
           </nav>
           <div className="sidebar-foot">
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.65rem',
-                marginBottom: '0.75rem',
-                cursor: role === 'staff' ? 'pointer' : 'default',
-              }}
-              onClick={() => {
-                if (role === 'staff') navigate('/staff/profile');
-              }}
-              title={role === 'staff' ? 'View My Profile' : undefined}
+            <Dropdown menu={{ items: staffAccountItems }} trigger={["click"]} placement="topRight" disabled={role !== 'staff'}>
+            <button
+              type="button"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem', width: '100%', padding: 0, border: 0, background: 'transparent', textAlign: 'left', cursor: role === 'staff' ? 'pointer' : 'default' }}
+              title={role === 'staff' ? 'Account options' : undefined}
             >
               {user?.avatarUrl ? (
                 <img
@@ -203,7 +212,9 @@ export default function Layout({ role }: { role: Role }) {
                   {user?.roles?.[0] ? `${user.roles[0]} Role` : `${ROLE_LABEL[role]} Role`}
                 </span>
               </div>
-            </div>
+              {role === 'staff' && <DownOutlined style={{ color: '#94a3b8', fontSize: 10, marginLeft: 'auto' }} />}
+            </button>
+            </Dropdown>
             <button
               type="button"
               className="btn-action danger"

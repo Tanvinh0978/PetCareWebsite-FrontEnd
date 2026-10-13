@@ -265,7 +265,7 @@ const CreateBookingPage: React.FC = () => {
           }
         }
         if (paymentUrl) {
-          message.loading({ content: 'Chuyển hướng đến VNPay...', key: 'vnpay-nav' });
+          message.loading({ content: 'Redirecting to VNPay...', key: 'vnpay-nav' });
           window.location.href = paymentUrl;
           return;
         }
@@ -498,8 +498,8 @@ const CreateBookingPage: React.FC = () => {
                           <div style={{ padding: '24px', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
                             <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '8px' }}>🏨</span>
                             <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
-                              Chưa có gói dịch vụ phòng lưu trú (Boarding) nào trong hệ thống.<br />
-                              Vui lòng thêm dịch vụ danh mục <strong>Boarding</strong> kèm bảng giá tại trang Admin để hiển thị tại đây.
+                              No boarding services are currently available.<br />
+                              Ask an administrator to add a <strong>Boarding</strong> service with pricing to display it here.
                             </p>
                           </div>
                         ) : (
@@ -790,7 +790,7 @@ const CreateBookingPage: React.FC = () => {
                   <GiftOutlined /> Voucher & Payment
                 </Title>
                 
-                <Form.Item name="voucherCode" label={<Text strong>Mã giảm giá</Text>} style={{ marginBottom: '16px' }}>
+                <Form.Item name="voucherCode" label={<Text strong>Discount code</Text>} style={{ marginBottom: '16px' }}>
                   <Input 
                     prefix={<GiftOutlined style={{ color: '#94a3b8' }} />} 
                     placeholder="Enter discount code" 
@@ -801,7 +801,7 @@ const CreateBookingPage: React.FC = () => {
 
                 <div style={{ marginBottom: '20px' }}>
                   <Text strong style={{ display: 'block', marginBottom: '8px', color: '#1e293b' }}>
-                    Phương thức thanh toán
+                    Payment method
                   </Text>
                   <Form.Item name="paymentChoice" style={{ marginBottom: 0 }}>
                     <Radio.Group style={{ width: '100%' }}>
@@ -819,8 +819,8 @@ const CreateBookingPage: React.FC = () => {
                             }}
                           >
                             <div>
-                              <Text strong>Thanh toán tại quầy</Text>
-                              <div style={{ fontSize: '12px', color: '#64748b' }}>Thanh toán trực tiếp khi hoàn thành dịch vụ tại quầy</div>
+                              <Text strong>Pay at the counter</Text>
+                              <div style={{ fontSize: '12px', color: '#64748b' }}>Pay at the front desk when the service is complete</div>
                             </div>
                           </Radio>
                         )}
@@ -836,8 +836,8 @@ const CreateBookingPage: React.FC = () => {
                           }}
                         >
                           <div>
-                            <Text strong>Thanh toán online qua VNPay</Text>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>Thẻ ATM, Internet Banking, QR Code VNPay</div>
+                            <Text strong>Pay online with VNPay</Text>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>ATM card, online banking, or VNPay QR code</div>
                           </div>
                         </Radio>
                       </Space>
