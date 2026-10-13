@@ -160,7 +160,7 @@ export const bookingService = {
   assignItem: (bookingId: string, itemId: string, payload: { staffId?: string; roomId?: string }) =>
     axiosClient.put(`/api/bookings/${bookingId}/items/${itemId}/status`, payload),
 
-  getCheckoutSummary: async (id: string): Promise<CheckoutSummary> => {
+  getCheckoutSummary: async (id: string): Promise<any> => {
     const res: any = await axiosClient.get(`/api/bookings/${id}/checkout-summary`);
     return res?.result ?? res?.data?.result ?? res?.data ?? res;
   },
@@ -179,5 +179,40 @@ export const bookingService = {
   verifyVnpayPayment: async (queryString: string): Promise<any> => {
     const qs = queryString ? (queryString.startsWith('?') ? queryString : `?${queryString}`) : '';
     return axiosClient.get(`/api/payments/vnpay-return${qs}`);
+  },
+
+  searchBookings: async (params?: {
+    keyword?: string;
+    status?: number | string;
+    dateFrom?: string;
+    dateTo?: string;
+    serviceDate?: string;
+    pageNumber?: number;
+    pageSize?: number;
+  }): Promise<PagedBookings> => {
+    const res: any = await axiosClient.get('/api/bookings/search', { params });
+    const paged = res?.result ?? res?.data ?? res;
+    return {
+      items: paged?.items ?? [],
+      totalCount: paged?.totalCount ?? 0,
+      pageNumber: paged?.pageNumber ?? 1,
+      pageSize: paged?.pageSize ?? 10,
+    };
+  },
+
+  updateBookingStatus: async (id: string, payload: number | { status: number }): Promise<any> => {
+    const body = typeof payload === 'number' ? { status: payload } : payload;
+    return axiosClient.put(`/api/bookings/${id}/status`, body);
+  },
+
+  checkInBooking: async (id: string): Promise<any> => {
+    return axiosClient.put(`/api/bookings/${id}/check-in`);
+  },
+
+  checkoutBooking: async (
+    id: string,
+    payload: { paymentMethod: string; amount?: number; transactionCode?: string; note?: string }
+  ): Promise<any> => {
+    return axiosClient.post(`/api/bookings/${id}/checkout`, payload);
   },
 };

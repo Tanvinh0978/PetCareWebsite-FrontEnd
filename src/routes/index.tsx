@@ -38,9 +38,10 @@ import ReviewManagementPage from "@/pages/admin/review/ReviewManagementPage";
 import PaymentResultPage from "@/pages/customer/PaymentResultPage";
 import StaffProfilePage from "@/pages/staff/StaffProfilePage";
 import GroomingTasksPage from "@/pages/staff/grooming/GroomingTasksPage";
-import StaffBookingListPage from "@/pages/staff/StaffBookingListPage";
+import BookingManagementPage from "@/pages/admin/booking/BookingManagementPage";
 import BoardingTasksPage from "@/pages/staff/boarding/BoardingTasksPage";
 import CounterBookingPage from "@/pages/staff/CounterBookingPage";
+
 
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
@@ -93,7 +94,7 @@ export default function AppRoutes() {
         { path: "vouchers/new", element: <AdminVoucherFormPage /> },
         { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
         { path: "reviews", element: <ReviewManagementPage /> },
-        { path: "bookings", element: <StaffBookingListPage /> },
+        { path: "bookings", element: <BookingManagementPage /> },
         { path: "bookings/new", element: <CounterBookingPage /> },
         { path: "grooming-tasks", element: <GroomingTasksPage /> },
         { path: "boarding-tasks", element: <BoardingTasksPage /> },
@@ -108,6 +109,8 @@ export default function AppRoutes() {
       element: <RequireRole role="staff"><Layout role="staff" /></RequireRole>,
       children: [
         { index: true, element: <StaffDashboardPage /> },
+        { path: "bookings", element: <BookingManagementPage /> },
+        { path: "bookings/new", element: <CounterBookingPage /> },
         { path: "grooming-tasks", element: <GroomingTasksPage /> },
         { path: "boarding-tasks", element: <BoardingTasksPage /> },
         { path: "manage-boarding", element: <BoardingTasksPage /> },
@@ -128,8 +131,6 @@ export default function AppRoutes() {
         { path: "pets/new", element: <StaffPetFormPage /> },
         { path: "pets/:id/edit", element: <StaffPetFormPage /> },
         { path: "reviews", element: <ReviewManagementPage /> },
-        { path: "bookings", element: <StaffBookingListPage /> },
-        { path: "bookings/new", element: <CounterBookingPage /> },
         { path: "staff", element: <AdminStaffListPage /> },
         { path: "staff/new", element: <AdminStaffFormPage /> },
         { path: "staff/:id/edit", element: <AdminStaffFormPage /> },
