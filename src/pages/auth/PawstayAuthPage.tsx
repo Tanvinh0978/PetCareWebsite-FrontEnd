@@ -2,7 +2,7 @@ import React, { useState, useId, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Form, Input, Button, Checkbox, message, Typography, Segmented } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined, EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { loginCustomer, loginStaff, registerCustomer, verifyOtp, resendOtp } from '@/api/authApi';
+import { loginCustomer, loginStaff, registerCustomer, verifyOtp, resendOtp, forgotPassword, resetPassword } from '@/api/authApi';
 import { useAuth } from "@/auth/AuthContext";
 import { ROLE_BASE } from "@/auth/roles";
 import { getErrorMessage } from "@/api/client";
@@ -10,7 +10,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import "./auth.css"; // Keep their original CSS for AntD overrides
 
 const { Title, Text } = Typography;
-type AuthState = 'login' | 'register' | 'otp';
+type AuthState = 'login' | 'register' | 'otp' | 'forgot' | 'reset';
 
 export default function PawstayAuthPage() {
     const { signIn } = useAuth();
@@ -20,6 +20,8 @@ export default function PawstayAuthPage() {
     const getInitialView = (): AuthState => {
         if (location.pathname.includes('register')) return 'register';
         if (location.pathname.includes('verify-otp')) return 'otp';
+        if (location.pathname.includes('forgot-password')) return 'forgot';
+        if (location.pathname.includes('reset-password')) return 'reset';
         return 'login';
     };
 
@@ -39,6 +41,11 @@ export default function PawstayAuthPage() {
     useEffect(() => {
         setView(getInitialView());
     }, [location.pathname]);
+
+    useEffect(() => {
+        const email = new URLSearchParams(location.search).get("email");
+        if (email) setSavedEmail(email);
+    }, [location.search]);
 
     useEffect(() => {
         if (countdown > 0) {
@@ -63,6 +70,8 @@ export default function PawstayAuthPage() {
         if (newView === 'login') navigate('/login');
         if (newView === 'register') navigate('/register');
         if (newView === 'otp') navigate(`/verify-otp?email=${encodeURIComponent(savedEmail)}`);
+        if (newView === 'forgot') navigate('/forgot-password');
+        if (newView === 'reset') navigate(`/reset-password?email=${encodeURIComponent(savedEmail)}`);
     };
 
     // Form Submits
@@ -236,6 +245,69 @@ export default function PawstayAuthPage() {
         }
     };
 
+    const onForgotPasswordFinish = async (values: { email: string }) => {
+        setLoading(true);
+        try {
+            const res = await forgotPassword({ email: values.email });
+            message.success(res.message || "Password reset verification code has been sent to your email.");
+            setSavedEmail(values.email);
+            setCountdown(60);
+            setOtp(["", "", "", "", "", ""]);
+            navigate(`/reset-password?email=${encodeURIComponent(values.email)}`);
+        } catch (error: any) {
+            message.error(getErrorMessage(error));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResendResetOtp = async () => {
+        if (!savedEmail) {
+            message.error("Email not found");
+            return;
+        }
+        setResending(true);
+        try {
+            const res = await forgotPassword({ email: savedEmail });
+            message.success(res.message || "New verification code sent to your email.");
+            setCountdown(60);
+            setOtp(["", "", "", "", "", ""]);
+            inputRefs.current[0]?.focus();
+        } catch (error: any) {
+            message.error(getErrorMessage(error));
+        } finally {
+            setResending(false);
+        }
+    };
+
+    const onResetPasswordFinish = async (values: any) => {
+        const code = otp.join("");
+        if (code.length < 6) {
+            message.warning("Please enter all 6 digits of the verification code.");
+            return;
+        }
+        if (!savedEmail) {
+            message.error("Email address not found. Please try again.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await resetPassword({
+                email: savedEmail,
+                otpCode: code,
+                newPassword: values.newPassword,
+                confirmNewPassword: values.confirmNewPassword,
+            });
+            message.success(res.message || "Password reset successful! Please log in with your new password.");
+            navigate("/login");
+        } catch (error: any) {
+            message.error(getErrorMessage(error));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const isOtpComplete = otp.every(d => d !== "");
 
     // Colors & Styles from new UI
@@ -284,14 +356,26 @@ export default function PawstayAuthPage() {
 
                     <div style={{ marginBottom: 16 }}>
                         <h2 style={{ color: colors.accent, margin: '0 0 8px 0', fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em' }}>
-                            {view === 'login' ? 'Welcome back.' : view === 'register' ? 'Join pawstay.' : 'Verify email.'}
+                            {view === 'login' 
+                                ? 'Welcome back.' 
+                                : view === 'register' 
+                                ? 'Join pawstay.' 
+                                : view === 'otp'
+                                ? 'Verify email.'
+                                : view === 'forgot'
+                                ? 'Reset password.'
+                                : 'Set new password.'}
                         </h2>
                         <p style={{ color: colors.textMuted, margin: 0, fontSize: 13, lineHeight: 1.4 }}>
                             {view === 'login' 
                                 ? "Sign in to book grooming, plan a cozy stay, and keep your pet's care in one place."
                                 : view === 'register'
                                 ? "Create an account to easily book appointments, manage your pet's profile, and more."
-                                : "We've sent a 6-digit verification code to your email. Enter it below."}
+                                : view === 'otp'
+                                ? "We've sent a 6-digit verification code to your email. Enter it below."
+                                : view === 'forgot'
+                                ? "Enter your email address and we'll send you a 6-digit verification code to reset your password."
+                                : `Enter the 6-digit verification code sent to ${savedEmail || 'your email'} and choose your new password.`}
                         </p>
                     </div>
 
@@ -373,7 +457,13 @@ export default function PawstayAuthPage() {
                                         <Form.Item name="remember" valuePropName="checked" noStyle>
                                             <Checkbox style={{color: colors.textMuted}}>Remember me</Checkbox>
                                         </Form.Item>
-                                        <a href="#" style={{ color: colors.accent, fontSize: 13, fontWeight: 700 }}>Forgot password?</a>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => handleSwitchView('forgot')} 
+                                            style={{ background: 'none', border: 'none', color: colors.accent, fontSize: 13, fontWeight: 700, cursor: 'pointer', padding: 0 }}
+                                        >
+                                            Forgot password?
+                                        </button>
                                     </div>
 
                                     <Button type="primary" htmlType="submit" loading={loading} block
@@ -476,6 +566,124 @@ export default function PawstayAuthPage() {
                                 </div>
                             </div>
                         )}
+
+                        {view === 'forgot' && (
+                            <Form name="forgotPassword" onFinish={onForgotPasswordFinish} layout="vertical" requiredMark={false}>
+                                <Form.Item 
+                                    name="email" 
+                                    label={<span style={{color: colors.accent, fontWeight: 700}}>Registered email address</span>}
+                                    normalize={(value) => value?.trim()}
+                                    rules={[
+                                        { required: true, message: 'Email is required' },
+                                        { type: 'email', message: 'Invalid email format' }
+                                    ]}
+                                    initialValue={savedEmail}
+                                >
+                                    <Input 
+                                        className="auth-input" 
+                                        prefix={<MailOutlined className="auth-input-icon" />} 
+                                        placeholder="you@example.com" 
+                                    />
+                                </Form.Item>
+
+                                <Button 
+                                    type="primary" 
+                                    htmlType="submit" 
+                                    loading={loading} 
+                                    block
+                                    style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700, fontSize: 14, marginTop: 8 }}
+                                >
+                                    Send Verification Code
+                                </Button>
+                            </Form>
+                        )}
+
+                        {view === 'reset' && (
+                            <Form name="resetPassword" onFinish={onResetPasswordFinish} layout="vertical" requiredMark={false}>
+                                <div style={{ color: colors.accent, fontWeight: 700, marginBottom: 8, fontSize: 13 }}>
+                                    6-Digit Verification Code
+                                </div>
+                                <div className="otp-input-row" onPaste={handleOtpPaste} style={{ margin: '0 0 16px 0', gap: 8 }}>
+                                    {otp.map((digit, i) => (
+                                        <input
+                                            key={i}
+                                            ref={el => { inputRefs.current[i] = el; }}
+                                            className={`otp-box ${digit ? "otp-box--filled" : ""}`}
+                                            type="text" inputMode="numeric" maxLength={1} value={digit}
+                                            onChange={e => handleOtpChange(i, e.target.value)}
+                                            onKeyDown={e => handleOtpKeyDown(i, e)}
+                                            autoComplete="off"
+                                            style={{ 
+                                                width: '100%', height: 48, borderRadius: 10,
+                                                textAlign: 'center', fontSize: 20, fontWeight: 700, color: colors.accent
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+
+                                <div style={{ textAlign: 'right', marginBottom: 16 }}>
+                                    <Button 
+                                        type="link" 
+                                        onClick={handleResendResetOtp} 
+                                        disabled={countdown > 0 || resending} 
+                                        loading={resending}
+                                        style={{ padding: 0, color: colors.accent, fontWeight: 700, fontSize: 13 }}
+                                    >
+                                        {countdown > 0 ? `Resend code in ${countdown}s` : "Resend code"}
+                                    </Button>
+                                </div>
+
+                                <Form.Item 
+                                    name="newPassword" 
+                                    label={<span style={{color: colors.accent, fontWeight: 700}}>New password</span>}
+                                    rules={[
+                                        { required: true, message: 'New password is required' },
+                                        { min: 6, message: 'Password must be at least 6 characters' }
+                                    ]}
+                                >
+                                    <Input.Password 
+                                        className="auth-input" 
+                                        prefix={<LockOutlined className="auth-input-icon" />} 
+                                        placeholder="Enter new password"
+                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item 
+                                    name="confirmNewPassword" 
+                                    label={<span style={{color: colors.accent, fontWeight: 700}}>Confirm new password</span>}
+                                    dependencies={['newPassword']}
+                                    rules={[
+                                        { required: true, message: 'Please confirm your new password' },
+                                        ({ getFieldValue }) => ({
+                                            validator(_, value) {
+                                                if (!value || getFieldValue('newPassword') === value) {
+                                                    return Promise.resolve();
+                                                }
+                                                return Promise.reject(new Error('Passwords do not match!'));
+                                            },
+                                        }),
+                                    ]}
+                                >
+                                    <Input.Password 
+                                        className="auth-input" 
+                                        prefix={<LockOutlined className="auth-input-icon" />} 
+                                        placeholder="Confirm your new password"
+                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
+                                    />
+                                </Form.Item>
+
+                                <Button 
+                                    type="primary" 
+                                    htmlType="submit" 
+                                    loading={loading} 
+                                    block
+                                    style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700, fontSize: 14, marginTop: 8 }}
+                                >
+                                    Reset Password
+                                </Button>
+                            </Form>
+                        )}
                     </div>
 
                     <div style={{ marginTop: 16, textAlign: 'center', color: colors.textMuted, fontSize: 13 }}>
@@ -486,7 +694,10 @@ export default function PawstayAuthPage() {
                             <>Already have an account? <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Sign in</button></>
                         )}
                         {view === 'otp' && (
-                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', marginTop: 8 }}>Back to login</button>
+                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', marginTop: 8 }}>Back to sign in</button>
+                        )}
+                        {(view === 'forgot' || view === 'reset') && (
+                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', marginTop: 8 }}>← Back to sign in</button>
                         )}
                     </div>
 
