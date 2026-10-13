@@ -228,6 +228,9 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
   // Grooming Tasks
   items.push({ label: 'Grooming Tasks', to: 'grooming-tasks' })
 
+  // Boarding Tasks
+  items.push({ label: 'Manage Boarding', to: 'manage-boarding' })
+
   // Bookings
   if (can([PERMISSIONS.BOOKING_VIEW, PERMISSIONS.BOOKING_MANAGE])) {
     items.push({ label: 'Bookings', to: 'bookings' })
