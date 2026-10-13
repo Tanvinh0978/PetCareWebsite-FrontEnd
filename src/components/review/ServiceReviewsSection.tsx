@@ -45,11 +45,13 @@ const { Title, Text, Paragraph } = Typography
 interface ServiceReviewsSectionProps {
   serviceId: string
   serviceName: string
+  showWriteButton?: boolean
 }
 
 export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
   serviceId,
   serviceName,
+  showWriteButton = false,
 }) => {
   const { user } = useAuthStore()
   const navigate = useNavigate()
@@ -193,29 +195,31 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
           </Text>
         </div>
 
-        <div style={{ textAlign: 'right' }}>
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            size="large"
-            loading={checkingBooking}
-            style={{
-              backgroundColor: '#059669',
-              borderColor: '#059669',
-              borderRadius: 8,
-              fontWeight: 600,
-              boxShadow: '0 2px 6px rgba(5, 150, 105, 0.25)',
-            }}
-            onClick={handleWriteReviewClick}
-          >
-            Write a Review
-          </Button>
-          <div style={{ marginTop: 4 }}>
-            <Text type="secondary" style={{ fontSize: 11, color: '#64748b' }}>
-              ✓ Only available for customers with completed appointments
-            </Text>
+        {showWriteButton && (
+          <div style={{ textAlign: 'right' }}>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              size="large"
+              loading={checkingBooking}
+              style={{
+                backgroundColor: '#059669',
+                borderColor: '#059669',
+                borderRadius: 8,
+                fontWeight: 600,
+                boxShadow: '0 2px 6px rgba(5, 150, 105, 0.25)',
+              }}
+              onClick={handleWriteReviewClick}
+            >
+              Write a Review
+            </Button>
+            <div style={{ marginTop: 4 }}>
+              <Text type="secondary" style={{ fontSize: 11, color: '#64748b' }}>
+                ✓ Only available for customers with completed appointments
+              </Text>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Rating Overview Summary */}
