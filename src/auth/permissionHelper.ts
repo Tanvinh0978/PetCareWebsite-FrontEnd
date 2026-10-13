@@ -45,6 +45,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.VOUCHER_VIEW,
     PERMISSIONS.VOUCHER_MANAGE,
     PERMISSIONS.STAFF_VIEW,
+    PERMISSIONS.BOOKING_VIEW,
+    PERMISSIONS.BOOKING_MANAGE,
   ],
   'Boarding Staff': [
     PERMISSIONS.ROOM_VIEW,
@@ -226,11 +228,16 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
   // Grooming Tasks
   items.push({ label: 'Grooming Tasks', to: 'grooming-tasks' })
 
+  // Boarding Tasks
+  items.push({ label: 'Manage Boarding', to: 'manage-boarding' })
+
+  // Bookings
+  if (can([PERMISSIONS.BOOKING_VIEW, PERMISSIONS.BOOKING_MANAGE])) {
+    items.push({ label: 'Bookings', to: 'bookings' })
+  }
+
   // Reviews
   items.push({ label: 'Reviews', to: 'reviews' })
-
-  // Always include My Profile
-  items.push({ label: 'My Profile', to: 'profile' })
 
   return items
 }

@@ -40,6 +40,7 @@ import {
 } from '@/services/booking.service';
 import { reviewService } from '@/services/review.service';
 import CreateReviewModal from '@/components/review/CreateReviewModal';
+import CareRecordTimelineModal from '@/components/staff/boarding/CareRecordTimelineModal';
 
 const { Title, Text } = Typography;
 
@@ -94,6 +95,7 @@ const MyBookingsPage: React.FC = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<BookingDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
 
   // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -237,17 +239,17 @@ const MyBookingsPage: React.FC = () => {
   const handlePayVnpay = async (bookingId: string) => {
     try {
       setPayingBookingId(bookingId);
-      message.loading({ content: 'Đang tạo liên kết thanh toán VNPay...', key: 'vnpay-pay' });
+      message.loading({ content: 'Creating VNPay payment link...', key: 'vnpay-pay' });
       const res: any = await bookingService.createVnpayUrl(bookingId);
       const paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
       if (paymentUrl) {
-        message.success({ content: 'Chuyển hướng đến VNPay...', key: 'vnpay-pay' });
+        message.success({ content: 'Redirecting to VNPay...', key: 'vnpay-pay' });
         window.location.href = paymentUrl;
       } else {
-        message.error({ content: 'Không tìm thấy liên kết thanh toán VNPay.', key: 'vnpay-pay' });
+        message.error({ content: 'VNPay payment link was not found.', key: 'vnpay-pay' });
       }
     } catch (error: any) {
-      const errorMsg = error?.response?.data?.message || error?.message || 'Không thể tạo liên kết thanh toán';
+      const errorMsg = error?.response?.data?.message || error?.message || 'Unable to create a payment link.';
       message.error({ content: errorMsg, key: 'vnpay-pay' });
     } finally {
       setPayingBookingId(null);
@@ -407,7 +409,7 @@ const MyBookingsPage: React.FC = () => {
               }}
               onClick={() => handlePayVnpay(record.id)}
             >
-              Thanh toán VNPay
+              Pay with VNPay
             </Button>
           )}
           {isCancellable(record.status) && (
@@ -597,7 +599,7 @@ const MyBookingsPage: React.FC = () => {
               style={{ backgroundColor: '#059669', borderColor: '#059669' }}
               onClick={() => handlePayVnpay(selectedBooking.id)}
             >
-              Thanh toán VNPay
+              Pay with VNPay
             </Button>
           ),
           selectedBooking && isCancellable(selectedBooking.status) && (
@@ -665,6 +667,7 @@ const MyBookingsPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {selectedBooking.bookingItems?.map((item) => {
                 const itemStatus = getItemStatusConfig(item.status);
+                const isBoarding = String(item.serviceType) === '1' || String(item.serviceType).toLowerCase() === 'boarding';
                 return (
                   <Card
                     key={item.id}
@@ -682,7 +685,7 @@ const MyBookingsPage: React.FC = () => {
                             {item.serviceName}
                           </Text>
                           <Tag color="cyan">
-                            {String(item.serviceType) === '1' || String(item.serviceType).toLowerCase() === 'boarding'
+                            {isBoarding
                               ? 'Boarding / Hotel'
                               : 'Grooming & Spa'}
                           </Tag>
@@ -709,6 +712,17 @@ const MyBookingsPage: React.FC = () => {
                         )}
                       </div>
                       <div style={{ textAlign: 'right' }}>
+                        {isBoarding && (
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={<EyeOutlined />}
+                            onClick={() => setCareHistoryItem({ id: item.id, petName: item.petName })}
+                            style={{ padding: 0, marginBottom: 6 }}
+                          >
+                            Care history
+                          </Button>
+                        )}
                         <div style={{ fontSize: 15, fontWeight: 600, color: '#059669' }}>
                           {item.assignedPrice?.toLocaleString()} VND
                         </div>
@@ -782,6 +796,13 @@ const MyBookingsPage: React.FC = () => {
           </div>
         ) : null}
       </Modal>
+
+      <CareRecordTimelineModal
+        open={Boolean(careHistoryItem)}
+        bookingItemId={careHistoryItem?.id}
+        petName={careHistoryItem?.petName}
+        onClose={() => setCareHistoryItem(null)}
+      />
 
       {/* Cancel Confirmation Modal */}
       <Modal

@@ -4,20 +4,25 @@ import { Dropdown, type MenuProps } from "antd";
 import {
   UserOutlined,
   CalendarOutlined,
+  HeartOutlined,
   LockOutlined,
   LogoutOutlined,
   DownOutlined,
+  MoonOutlined,
+  SunOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/auth/AuthContext";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ROLE_BASE, ROLE_LABEL, type Role } from "@/auth/roles";
 import { NAV } from "@/routes/nav";
 import { getStaffNavItems, syncUserPermissions } from "@/auth/permissionHelper";
+import { useTheme } from "@/theme/ThemeContext";
 
 export default function Layout({ role }: { role: Role }) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const { mode, toggleTheme } = useTheme();
   const base = ROLE_BASE[role];
   const isAdminOrStaff = role === "admin" || role === "staff";
 
@@ -53,6 +58,12 @@ export default function Layout({ role }: { role: Role }) {
     },
     { type: "divider" },
     {
+      key: "my-pets",
+      icon: <HeartOutlined style={{ color: "#059669" }} />,
+      label: "My Pets",
+      onClick: () => navigate("/customer/pets"),
+    },
+    {
       key: "my-bookings",
       icon: <CalendarOutlined style={{ color: "#059669" }} />,
       label: "My Bookings",
@@ -71,6 +82,15 @@ export default function Layout({ role }: { role: Role }) {
       danger: true,
       label: "Sign out",
       onClick: handleSignOut,
+    },
+  ];
+
+  const staffAccountItems: MenuProps["items"] = [
+    {
+      key: "staff-profile",
+      icon: <UserOutlined style={{ color: "#059669" }} />,
+      label: "My Profile",
+      onClick: () => navigate("/staff/profile"),
     },
   ];
 
@@ -171,18 +191,15 @@ export default function Layout({ role }: { role: Role }) {
             ))}
           </nav>
           <div className="sidebar-foot">
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.65rem',
-                marginBottom: '0.75rem',
-                cursor: role === 'staff' ? 'pointer' : 'default',
-              }}
-              onClick={() => {
-                if (role === 'staff') navigate('/staff/profile');
-              }}
-              title={role === 'staff' ? 'View My Profile' : undefined}
+            <button type="button" className="theme-toggle sidebar-theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+              {mode === 'light' ? <MoonOutlined /> : <SunOutlined />}
+              <span>{mode === 'light' ? 'Dark mode' : 'Light mode'}</span>
+            </button>
+            <Dropdown menu={{ items: staffAccountItems }} trigger={["click"]} placement="topRight" disabled={role !== 'staff'}>
+            <button
+              type="button"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem', width: '100%', padding: 0, border: 0, background: 'transparent', textAlign: 'left', cursor: role === 'staff' ? 'pointer' : 'default' }}
+              title={role === 'staff' ? 'Account options' : undefined}
             >
               {user?.avatarUrl ? (
                 <img
@@ -191,19 +208,21 @@ export default function Layout({ role }: { role: Role }) {
                   style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #38bdf8', flexShrink: 0 }}
                 />
               ) : (
-                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#334155', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
+                <div className="sidebar-avatar-fallback" style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#334155', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
                   {(user?.name || role)[0].toUpperCase()}
                 </div>
               )}
               <div style={{ overflow: 'hidden' }}>
-                <p style={{ margin: 0, fontWeight: 600, color: '#f8fafc', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <p className="sidebar-user-name" style={{ margin: 0, fontWeight: 600, color: '#f8fafc', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {user?.name || user?.email || 'Logged User'}
                 </p>
-                <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                <span className="sidebar-user-role" style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
                   {user?.roles?.[0] ? `${user.roles[0]} Role` : `${ROLE_LABEL[role]} Role`}
                 </span>
               </div>
-            </div>
+              {role === 'staff' && <DownOutlined style={{ color: '#94a3b8', fontSize: 10, marginLeft: 'auto' }} />}
+            </button>
+            </Dropdown>
             <button
               type="button"
               className="btn-action danger"
@@ -252,6 +271,10 @@ export default function Layout({ role }: { role: Role }) {
           </nav>
 
           <div className="customer-header-actions">
+            <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`} title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+              {mode === 'light' ? <MoonOutlined /> : <SunOutlined />}
+              <span>{mode === 'light' ? 'Dark' : 'Light'}</span>
+            </button>
             {role === "guest" ? (
               <div style={{ display: 'flex', gap: '8px' }}>
                 <Link to="/login" className="btn btn-sm" style={{ background: 'transparent', color: '#059669', border: '1px solid #059669' }}>

@@ -12,7 +12,7 @@ const LOCAL_STORAGE_KEY = 'petcare.staff.mock'
 const INITIAL_STAFF: StaffDTO[] = [
   {
     id: 'B0000000-0000-0000-0000-000000000001',
-    fullName: 'Quản Trị Viên',
+    fullName: 'Admin User',
     email: 'admin@petcare.com',
     phoneNumber: '0901000001',
     yearsOfExperience: 5,
@@ -21,7 +21,7 @@ const INITIAL_STAFF: StaffDTO[] = [
   },
   {
     id: 'B0000000-0000-0000-0000-000000000002',
-    fullName: 'Lễ Tân Hương Mai',
+    fullName: 'Receptionist Mai Huong',
     email: 'receptionist@petcare.com',
     phoneNumber: '0901000002',
     yearsOfExperience: 2,
@@ -30,7 +30,7 @@ const INITIAL_STAFF: StaffDTO[] = [
   },
   {
     id: 'B0000000-0000-0000-0000-000000000003',
-    fullName: 'Nhân Viên Trực Phòng Tuấn',
+    fullName: 'Boarding Staff Tuan',
     email: 'boarding@petcare.com',
     phoneNumber: '0901000003',
     yearsOfExperience: 3,
@@ -39,7 +39,7 @@ const INITIAL_STAFF: StaffDTO[] = [
   },
   {
     id: 'B0000000-0000-0000-0000-000000000004',
-    fullName: 'Thợ Cắt Tỉa Hoàng Anh',
+    fullName: 'Groomer Hoang Anh',
     email: 'grooming@petcare.com',
     phoneNumber: '0901000004',
     yearsOfExperience: 4,

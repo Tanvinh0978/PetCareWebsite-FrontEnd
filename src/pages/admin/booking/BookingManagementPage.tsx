@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import {
   Table,
   Tag,
@@ -24,6 +25,7 @@ import {
   ShopOutlined,
   CheckOutlined,
   CloseOutlined,
+  PlusOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
@@ -34,6 +36,10 @@ const { Title, Text } = Typography
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
 
 export default function BookingManagementPage() {
+  const location = useLocation()
+  const isStaff = location.pathname.startsWith('/staff')
+  const createBookingPath = isStaff ? '/staff/bookings/new' : '/admin/bookings/new'
+
   const [loading, setLoading] = useState(false)
   const [bookings, setBookings] = useState<BookingListItem[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -309,7 +315,21 @@ export default function BookingManagementPage() {
             Search bookings, filter by scheduled service date, confirm phone reservations, and handle customer check-outs.
           </Text>
         </div>
-        <div>
+        <Space size={8}>
+          <Link to={createBookingPath}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              style={{
+                borderRadius: 8,
+                fontWeight: 600,
+                backgroundColor: '#059669',
+                borderColor: '#059669',
+              }}
+            >
+              + Counter Booking
+            </Button>
+          </Link>
           <Button
             icon={<ReloadOutlined />}
             onClick={() => fetchBookings()}
@@ -318,7 +338,7 @@ export default function BookingManagementPage() {
           >
             Refresh
           </Button>
-        </div>
+        </Space>
       </div>
 
       {/* Filter Bar */}

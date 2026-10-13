@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { createService, getServiceById, updateService } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
 import ImageUpload from '@/components/common/ImageUpload';
+import { roomTypeService, type RoomTypeDTO } from '@/services/roomType.service';
 import {
   PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL,
   type PricingUnit, type ServiceType,
@@ -46,9 +47,36 @@ export default function ServiceFormPage() {
   const [imageUrl, setImageUrl] = useState('');
   const [description, setDescription] = useState('');
   const [serviceType, setServiceType] = useState<ServiceType>('Grooming');
+  const [roomTypeId, setRoomTypeId] = useState('');
+  const [roomTypes, setRoomTypes] = useState<RoomTypeDTO[]>([]);
+  const [roomTypesLoading, setRoomTypesLoading] = useState(false);
   const [rows, setRows] = useState<PriceRow[]>([emptyRow()]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (serviceType !== 'Boarding') return;
+
+    let active = true;
+    setRoomTypesLoading(true);
+    roomTypeService.fetchAll()
+      .then((res) => {
+        if (!active) return;
+        if (res.isSuccess && res.result) {
+          setRoomTypes(res.result);
+        } else {
+          setError(res.message || 'Failed to load room types.');
+        }
+      })
+      .catch((e) => {
+        if (active) setError(getErrorMessage(e));
+      })
+      .finally(() => {
+        if (active) setRoomTypesLoading(false);
+      });
+
+    return () => { active = false; };
+  }, [serviceType]);
 
   useEffect(() => {
     if (!id) return;
@@ -58,6 +86,7 @@ export default function ServiceFormPage() {
         setImageUrl(s.imageUrl ?? '');
         setDescription(s.description ?? '');
         setServiceType(s.serviceType);
+        setRoomTypeId(s.roomTypeId ?? '');
         setIsActive(s.isActive);
         setRows(
           s.prices.length
@@ -80,8 +109,11 @@ export default function ServiceFormPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const problem = validate(name, rows);
-    setError(problem);
-    if (problem) return;
+    const validationError = serviceType === 'Boarding' && !roomTypeId
+      ? 'Please select an associated room type for boarding services.'
+      : problem;
+    setError(validationError);
+    if (validationError) return;
     setSaving(true);
     try {
       const payload = {
@@ -89,6 +121,7 @@ export default function ServiceFormPage() {
         description,
         serviceType,
         imageUrl: imageUrl.trim() || undefined,
+        roomTypeId: serviceType === 'Boarding' ? roomTypeId : undefined,
         prices: rows.map((r) => ({
           minWeight: num(r.minWeight),
           maxWeight: num(r.maxWeight),
@@ -167,6 +200,33 @@ export default function ServiceFormPage() {
             ))}
           </select>
         </label>
+
+        {serviceType === 'Boarding' && (
+          <label>
+            Associated Room Type (Room category) <span style={{ color: 'var(--danger)' }}>*</span>
+            <select
+              value={roomTypeId}
+              onChange={(e) => setRoomTypeId(e.target.value)}
+              disabled={roomTypesLoading || saving}
+              required
+            >
+              <option value="" disabled>
+                {roomTypesLoading ? 'Loading room types...' : 'Select a room type...'}
+              </option>
+              {roomTypes.map((roomType) => (
+                <option key={roomType.id} value={roomType.id}>{roomType.name}</option>
+              ))}
+            </select>
+            {!roomTypesLoading && roomTypes.length === 0 && (
+              <span style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>
+                No room types are available. Create a room type before saving this boarding service.
+              </span>
+            )}
+            <span role="status" style={{ color: '#92400e', fontSize: '0.85rem' }}>
+              The current service API does not save room type associations. This selection will not persist until the API supports it.
+            </span>
+          </label>
+        )}
 
         <label>
           Description

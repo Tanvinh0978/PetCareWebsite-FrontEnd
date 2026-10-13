@@ -91,7 +91,7 @@ const PaymentResultPage: React.FC = () => {
           setVerifyStatus('error');
         }
       } catch (error: any) {
-        const errorMsg = error?.response?.data?.message || error?.message || 'Không thể xác thực giao dịch thanh toán.';
+        const errorMsg = error?.response?.data?.message || error?.message || 'Unable to verify the payment transaction.';
         setVerifyMessage(errorMsg);
         
         const searchParams = new URLSearchParams(queryString);
@@ -117,24 +117,24 @@ const PaymentResultPage: React.FC = () => {
   const handleRetryPayment = async () => {
     const bookingId = paymentData?.bookingId;
     if (!bookingId) {
-      message.error('Không tìm thấy mã đơn hàng để tạo lại liên kết thanh toán.');
+      message.error('Booking ID was not found. Unable to create a new payment link.');
       return;
     }
 
     try {
       setRetrying(true);
-      message.loading({ content: 'Đang tạo liên kết thanh toán mới...', key: 'vnpay-retry' });
+      message.loading({ content: 'Creating a new payment link...', key: 'vnpay-retry' });
       const res: any = await bookingService.createVnpayUrl(bookingId);
       const newPaymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
       
       if (newPaymentUrl) {
-        message.success({ content: 'Chuyển hướng đến cổng thanh toán VNPay...', key: 'vnpay-retry' });
+        message.success({ content: 'Redirecting to VNPay...', key: 'vnpay-retry' });
         window.location.href = newPaymentUrl;
       } else {
-        message.error({ content: 'Không nhận được liên kết thanh toán VNPay. Vui lòng thử lại sau.', key: 'vnpay-retry' });
+        message.error({ content: 'VNPay did not return a payment link. Please try again later.', key: 'vnpay-retry' });
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Có lỗi xảy ra khi tạo liên kết thanh toán.';
+      const msg = err?.response?.data?.message || err?.message || 'An error occurred while creating the payment link.';
       message.error({ content: msg, key: 'vnpay-retry' });
     } finally {
       setRetrying(false);
@@ -160,7 +160,7 @@ const PaymentResultPage: React.FC = () => {
             <span>🐾</span> PetCare
           </div>
         </Link>
-        <Text type="secondary" style={{ fontSize: '14px' }}>Cổng thông tin thanh toán dịch vụ thú cưng</Text>
+        <Text type="secondary" style={{ fontSize: '14px' }}>Pet care service payment portal</Text>
       </div>
 
       <Card
@@ -179,10 +179,10 @@ const PaymentResultPage: React.FC = () => {
             <Spin size="large" />
             <div style={{ marginTop: 24 }}>
               <Title level={4} style={{ color: '#1e293b', marginBottom: 8 }}>
-                Đang kiểm tra kết quả thanh toán...
+                Checking payment result...
               </Title>
               <Text type="secondary">
-                Vui lòng không đóng trình duyệt, hệ thống đang xác thực chữ ký bảo mật từ VNPay.
+                Please keep this page open while we verify VNPay's secure signature.
               </Text>
             </div>
           </div>
@@ -190,10 +190,10 @@ const PaymentResultPage: React.FC = () => {
           <Result
             status="success"
             icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
-            title="Thanh toán thành công!"
+            title="Payment successful!"
             subTitle={
               verifyMessage ||
-              'Giao dịch thanh toán trực tuyến qua VNPay đã được xác nhận thành công.'
+              'Your online payment through VNPay has been confirmed.'
             }
             extra={[
               <Button
@@ -204,7 +204,7 @@ const PaymentResultPage: React.FC = () => {
                 style={{ backgroundColor: '#059669', borderRadius: 8, padding: '0 24px' }}
                 onClick={() => navigate('/customer/bookings')}
               >
-                Xem đơn đặt của tôi
+                View My Bookings
               </Button>,
               <Button
                 key="home"
@@ -213,7 +213,7 @@ const PaymentResultPage: React.FC = () => {
                 style={{ borderRadius: 8, padding: '0 24px' }}
                 onClick={() => navigate('/')}
               >
-                Về trang chủ
+                Back to Home
               </Button>,
             ]}
           >
@@ -229,28 +229,28 @@ const PaymentResultPage: React.FC = () => {
                 }}
               >
                 <Title level={5} style={{ marginBottom: 16, color: '#0f172a' }}>
-                  Thông tin giao dịch
+                  Transaction Information
                 </Title>
                 <Descriptions column={{ xs: 1, sm: 2 }} size="small" bordered>
-                  <Descriptions.Item label="Mã giao dịch">
+                  <Descriptions.Item label="Transaction ID">
                     <Text strong style={{ fontFamily: 'monospace' }}>
                       {paymentData.transactionNo || 'N/A'}
                     </Text>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Mã đơn đặt">
+                  <Descriptions.Item label="Booking ID">
                     <Text strong style={{ fontFamily: 'monospace', color: '#059669' }}>
                       {paymentData.bookingId ? `#${paymentData.bookingId.slice(0, 8).toUpperCase()}` : 'N/A'}
                     </Text>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Số tiền đã thanh toán">
+                  <Descriptions.Item label="Amount Paid">
                     <Text strong style={{ color: '#059669', fontSize: 16 }}>
                       {paymentData.amount !== undefined ? `${paymentData.amount.toLocaleString()} VND` : 'N/A'}
                     </Text>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Ngân hàng">
+                  <Descriptions.Item label="Bank">
                     <Tag color="blue">{paymentData.bankCode || 'VNPay'}</Tag>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Thời gian thanh toán" span={2}>
+                  <Descriptions.Item label="Payment Time" span={2}>
                     {formatPayDate(paymentData.payDate)}
                   </Descriptions.Item>
                 </Descriptions>
@@ -261,10 +261,10 @@ const PaymentResultPage: React.FC = () => {
           <Result
             status="error"
             icon={<CloseCircleFilled style={{ color: '#ef4444' }} />}
-            title="Thanh toán thất bại"
+            title="Payment failed"
             subTitle={
               verifyMessage ||
-              'Giao dịch bị hủy hoặc xảy ra lỗi trong quá trình thanh toán qua VNPay.'
+              'The transaction was cancelled or an error occurred during VNPay payment.'
             }
             extra={[
               <Space key="actions" wrap style={{ justifyContent: 'center', width: '100%' }}>
@@ -279,7 +279,7 @@ const PaymentResultPage: React.FC = () => {
                     style={{ borderRadius: 8, padding: '0 24px' }}
                     onClick={handleRetryPayment}
                   >
-                    Thử thanh toán lại
+                    Try payment again
                   </Button>
                 )}
                 <Button
@@ -289,7 +289,7 @@ const PaymentResultPage: React.FC = () => {
                   style={{ borderRadius: 8, padding: '0 24px' }}
                   onClick={() => navigate('/customer/bookings')}
                 >
-                  Về danh sách đơn
+                  Back to Bookings
                 </Button>
                 <Button
                   key="home"
@@ -298,7 +298,7 @@ const PaymentResultPage: React.FC = () => {
                   style={{ borderRadius: 8, padding: '0 20px' }}
                   onClick={() => navigate('/')}
                 >
-                  Về trang chủ
+                  Back to Home
                 </Button>
               </Space>,
             ]}
@@ -315,28 +315,28 @@ const PaymentResultPage: React.FC = () => {
                 }}
               >
                 <Title level={5} style={{ marginBottom: 16, color: '#991b1b' }}>
-                  Chi tiết kết quả
+                  Result Details
                 </Title>
                 <Descriptions column={{ xs: 1, sm: 2 }} size="small" bordered>
                   {paymentData.bookingId && (
-                    <Descriptions.Item label="Mã đơn đặt">
+                    <Descriptions.Item label="Booking ID">
                       <Text strong style={{ fontFamily: 'monospace' }}>
                         #{paymentData.bookingId.slice(0, 8).toUpperCase()}
                       </Text>
                     </Descriptions.Item>
                   )}
                   {paymentData.responseCode && (
-                    <Descriptions.Item label="Mã phản hồi">
+                    <Descriptions.Item label="Response Code">
                       <Tag color="red">{paymentData.responseCode}</Tag>
                     </Descriptions.Item>
                   )}
                   {paymentData.amount !== undefined && (
-                    <Descriptions.Item label="Số tiền yêu cầu">
+                    <Descriptions.Item label="Requested Amount">
                       {paymentData.amount.toLocaleString()} VND
                     </Descriptions.Item>
                   )}
                   {paymentData.bankCode && (
-                    <Descriptions.Item label="Ngân hàng">
+                    <Descriptions.Item label="Bank">
                       {paymentData.bankCode}
                     </Descriptions.Item>
                   )}
@@ -347,8 +347,8 @@ const PaymentResultPage: React.FC = () => {
         ) : (
           <Result
             status="warning"
-            title="Không tìm thấy thông tin giao dịch"
-            subTitle="Trang này được sử dụng để hiển thị kết quả sau khi hoàn tất giao dịch thanh toán VNPay."
+            title="Transaction information not found"
+            subTitle="This page displays the result after a VNPay payment transaction is completed."
             extra={[
               <Button
                 type="primary"
@@ -358,7 +358,7 @@ const PaymentResultPage: React.FC = () => {
                 style={{ backgroundColor: '#059669', borderRadius: 8 }}
                 onClick={() => navigate('/')}
               >
-                Về trang chủ
+                Back to Home
               </Button>,
               <Button
                 key="my-bookings"
@@ -367,7 +367,7 @@ const PaymentResultPage: React.FC = () => {
                 style={{ borderRadius: 8 }}
                 onClick={() => navigate('/customer/bookings')}
               >
-                Xem danh sách đơn
+                View My Bookings
               </Button>,
             ]}
           />
