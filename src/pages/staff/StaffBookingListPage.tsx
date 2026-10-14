@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, DatePicker, Descriptions, Dropdown, Empty, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd';
+import { Alert, Button, DatePicker, Descriptions, Dropdown, Empty, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { CalendarOutlined, CheckOutlined, CloseOutlined, CreditCardOutlined, EyeOutlined, MoreOutlined, ReloadOutlined, UserSwitchOutlined } from '@ant-design/icons';
@@ -33,6 +33,22 @@ const hasInProgressItem = (items: BookingDetailItem[] = []) => items.some((item)
 const canCancelBooking = (booking: Pick<BookingDetail, 'status' | 'bookingItems'>) =>
   canCancelByStatus(booking.status) && !hasInProgressItem(booking.bookingItems);
 const isBoardingType = (type: number | string) => String(type).toLowerCase() === 'boarding' || String(type) === '1';
+const isCheckoutExemptItem = (status: number | string) => ['5', '6', 'cancelled', 'canceled', 'no_show', 'noshow'].includes(String(status).trim().toLowerCase());
+const isTaskCompleted = (status: number | string) => ['4', 'completed'].includes(String(status).trim().toLowerCase());
+const taskStatusName = (status: number | string) => {
+  const value = String(status ?? '').trim().toLowerCase();
+  return ({ '0': 'Pending', '1': 'Confirmed', '2': 'Checked In', '3': 'In Progress', '4': 'Completed', '5': 'Cancelled', '6': 'No Show' } as Record<string, string>)[value]
+    ?? value.replace(/_/g, ' ').replace(/\b\w/g, (letter: string) => letter.toUpperCase());
+};
+const getCheckoutBlockers = (items: CheckoutSummary['items'] = []) => items.flatMap((item) => {
+  if (isCheckoutExemptItem(item.status)) return [];
+  const itemLabel = `${item.petName} · ${item.serviceName}`;
+  const reasons: string[] = [];
+  if (!item.staffId) reasons.push(`${itemLabel}: staff has not been assigned.`);
+  if (isBoardingType(item.serviceType) && !item.roomId) reasons.push(`${itemLabel}: boarding room has not been assigned.`);
+  if (!isTaskCompleted(item.status)) reasons.push(`${itemLabel}: task is not completed.`);
+  return reasons;
+});
 
 export default function StaffBookingListPage() {
   const navigate = useNavigate();
@@ -65,6 +81,7 @@ export default function StaffBookingListPage() {
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutSummary, setCheckoutSummary] = useState<CheckoutSummary | null>(null);
+  const [checkoutBlockers, setCheckoutBlockers] = useState<string[]>([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutSaving, setCheckoutSaving] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'BANK_TRANSFER'>('CASH');
@@ -173,12 +190,14 @@ export default function StaffBookingListPage() {
   const openCheckout = async (id: string) => {
     setCheckoutOpen(true);
     setCheckoutSummary(null);
+    setCheckoutBlockers([]);
     setCheckoutLoading(true);
     setPaymentMethod('CASH');
     setNote('');
     try {
       const summary = await bookingService.getCheckoutSummary(id);
       setCheckoutSummary(summary);
+      setCheckoutBlockers(getCheckoutBlockers(summary.items ?? []));
       setAmount((summary.remainingAmount ?? 0) > 0 ? summary.remainingAmount : null);
     } catch (error) {
       message.error(getApiErrorMessage(error, 'Failed to load checkout summary.'));
@@ -190,6 +209,10 @@ export default function StaffBookingListPage() {
 
   const submitCheckout = async () => {
     if (!checkoutSummary) return;
+    if (checkoutBlockers.length > 0) {
+      message.warning('Complete all service tasks and assignments before checkout.');
+      return;
+    }
     if ((checkoutSummary.remainingAmount ?? 0) > 0 && amount === 0) {
       message.warning('Enter an amount greater than 0, or clear the field to collect the remaining balance.');
       return;
@@ -412,7 +435,7 @@ export default function StaffBookingListPage() {
         onOk={() => void submitCheckout()}
         okText="Collect payment & complete"
         confirmLoading={checkoutSaving}
-        okButtonProps={{ disabled: !checkoutSummary?.canCheckout }}
+        okButtonProps={{ disabled: !checkoutSummary?.canCheckout || checkoutBlockers.length > 0 }}
         width={700}
       >
         {checkoutLoading ? <Spin /> : checkoutSummary && (
@@ -433,12 +456,22 @@ export default function StaffBookingListPage() {
               columns={[
                 { title: 'Pet', dataIndex: 'petName', key: 'pet' },
                 { title: 'Service', dataIndex: 'serviceName', key: 'service' },
+                { title: 'Task status', dataIndex: 'status', key: 'status', render: (value: number | string) => <Tag color={isTaskCompleted(value) ? 'green' : isCheckoutExemptItem(value) ? 'default' : 'gold'}>{taskStatusName(value)}</Tag> },
                 { title: 'Room', dataIndex: 'roomName', key: 'room', render: (value: string) => value || '—' },
                 { title: 'Staff', dataIndex: 'staffName', key: 'staff', render: (value: string) => value || '—' },
                 { title: 'Amount', dataIndex: 'assignedPrice', key: 'amount', render: (value: number) => money(value) },
               ]}
               scroll={{ x: 500 }}
             />
+            {checkoutBlockers.length > 0 && (
+              <Alert
+                type="warning"
+                showIcon
+                message="Checkout is unavailable until every active task is assigned and completed."
+                description={<ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>{checkoutBlockers.map((reason) => <li key={reason}>{reason}</li>)}</ul>}
+                style={{ marginTop: 12 }}
+              />
+            )}
             {!checkoutSummary.canCheckout && <Text type="danger">This booking cannot be checked out.</Text>}
             <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
               <label>Payment method
