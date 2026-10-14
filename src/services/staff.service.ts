@@ -186,32 +186,15 @@ export const staffService = {
   },
 
   create: async (data: CreateStaffDTO): Promise<string> => {
-    try {
-      const res: any = await axiosClient.post('/api/Staffs', data)
-      const newId = res?.result || res?.id
-      if (newId) return String(newId)
-    } catch (err) {
-      console.warn('Backend /api/Staffs create failed, using local storage:', err)
-      // Throw if not falling back or let local succeed
+    const res: any = await axiosClient.post('/api/Staffs', data)
+    const newId = res?.result ?? res?.data?.result ?? res?.id
+    if (res?.isSuccess === false || res?.IsSuccess === false) {
+      throw new Error(res?.message || res?.Message || 'The server rejected the staff account.')
     }
-
-    const all = getLocalStaff()
-    const newId = `s-${Date.now().toString(36)}`
-    const newStaff: StaffDTO = {
-      id: newId,
-      fullName: data.fullName,
-      email: data.email,
-      phoneNumber: data.phoneNumber,
-      address: data.address,
-      avatarUrl: data.avatarUrl,
-      yearsOfExperience: Number(data.yearsOfExperience) || 0,
-      roles: ['Staff'],
-      roleIds: data.roleIds,
-      status: 'Active',
-      createdAt: new Date().toISOString(),
+    if (!newId) {
+      throw new Error('The server did not confirm staff creation. Please check the staff list before trying again.')
     }
-    saveLocalStaff([newStaff, ...all])
-    return newId
+    return String(newId)
   },
 
   update: async (id: string, data: UpdateStaffDTO): Promise<string> => {

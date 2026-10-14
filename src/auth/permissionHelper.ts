@@ -179,6 +179,12 @@ export function hasPermission(
 export function getStaffNavItems(user: IUser | null): NavItem[] {
   const items: NavItem[] = []
   const effective = getUserEffectivePermissions(user)
+  const roleNames = user?.roles?.length ? user.roles : [guessRoleFromUser(user)]
+  const normalizedRoles = roleNames.map((role) => role.toLowerCase())
+  const isAdmin = user?.role === 'admin' || normalizedRoles.includes('admin')
+  const isReceptionist = normalizedRoles.includes('receptionist')
+  const isBoardingStaff = normalizedRoles.includes('boarding staff')
+  const isGroomingStaff = normalizedRoles.includes('grooming staff')
 
   const can = (codes: string[]) =>
     user?.role === 'admin' || codes.some((c) => effective.includes(c))
@@ -193,8 +199,10 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
     items.push({ label: 'Customers', to: 'customers' })
   }
 
-  // Room Types & Rooms
+  // Receptionists and admins manage room inventory. Boarding staff work from
+  // assigned room cards and should not see inventory pages they cannot access.
   if (
+    (isAdmin || isReceptionist) &&
     can([
       PERMISSIONS.ROOM_VIEW,
       PERMISSIONS.ROOM_MANAGE,
@@ -225,11 +233,15 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
     items.push({ label: 'Vouchers', to: 'vouchers' })
   }
 
-  // Grooming Tasks
-  items.push({ label: 'Grooming Tasks', to: 'grooming-tasks' })
+  // Keep role-specific task views out of other staff workspaces.
+  if (isAdmin || isReceptionist || isGroomingStaff) {
+    items.push({ label: 'Grooming Tasks', to: 'grooming-tasks' })
+  }
 
   // Boarding Tasks
-  items.push({ label: 'Manage Boarding', to: 'manage-boarding' })
+  if (isAdmin || isReceptionist || isBoardingStaff) {
+    items.push({ label: 'Manage Boarding', to: 'manage-boarding' })
+  }
 
   // Bookings
   if (can([PERMISSIONS.BOOKING_VIEW, PERMISSIONS.BOOKING_MANAGE])) {
