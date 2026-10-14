@@ -17,3 +17,18 @@ export const loginStaff = async (data: any) => {
 };
 export const verifyOtp = async (data: any) => { const response = await http.post<ApiResponse<any>>('/auth/verify-otp', data); return response.data; };
 export const resendOtp = async (data: any) => { const response = await http.post<ApiResponse<any>>('/auth/resend-otp', data); return response.data; };
+
+export const forgotPassword = async (data: { email: string }) => {
+  const response = await http.post<ApiResponse<string>>('/auth/forgot-password', data);
+  return response.data;
+};
+
+export const resetPassword = async (data: {
+  email: string;
+  otpCode: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}) => {
+  const response = await http.post<ApiResponse<boolean>>('/auth/reset-password', data);
+  return response.data;
+};

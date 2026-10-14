@@ -240,7 +240,7 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
 
   // Boarding Tasks
   if (isAdmin || isReceptionist || isBoardingStaff) {
-    items.push({ label: 'Manage Boarding', to: 'manage-boarding' })
+    items.push({ label: 'Boarding Tasks', to: 'manage-boarding' })
   }
 
   // Bookings
@@ -251,7 +251,8 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
   // Reviews
   items.push({ label: 'Reviews', to: 'reviews' })
 
-  return items
+  // Deduplicate items by route path
+  return items.filter((item, index, self) => index === self.findIndex((t) => t.to === item.to))
 }
 
 /**
