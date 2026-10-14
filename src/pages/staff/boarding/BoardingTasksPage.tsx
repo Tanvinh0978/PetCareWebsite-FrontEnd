@@ -204,7 +204,7 @@ export default function BoardingTasksPage() {
                         }}
                       >
                         <Text strong style={{ color: '#c2410c' }}>
-                          🍲 Khẩu phần ăn kèm:{' '}
+                          🍲 Diet add-on:{' '}
                         </Text>
                         <Text style={{ color: '#9a3412', fontWeight: 500 }}>
                           {task.dietServiceName}

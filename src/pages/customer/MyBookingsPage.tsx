@@ -11,7 +11,6 @@ import {
   message,
   Spin,
   Empty,
-  Tabs,
   Badge,
   Input,
   Rate,
@@ -335,7 +334,7 @@ const MyBookingsPage: React.FC = () => {
       ),
     },
     {
-      title: 'Loại dịch vụ',
+      title: 'Service Type',
       dataIndex: 'bookingType',
       key: 'bookingType',
       render: (_: any, record: BookingListItem) => (
@@ -345,7 +344,7 @@ const MyBookingsPage: React.FC = () => {
       ),
     },
     {
-      title: 'Thời gian hẹn',
+      title: 'Scheduled Time',
       dataIndex: 'scheduledStartAt',
       key: 'scheduledStartAt',
       render: (_: any, record: BookingListItem) => {
@@ -362,7 +361,7 @@ const MyBookingsPage: React.FC = () => {
             </div>
             {endStr && endStr !== startStr && record.bookingType === 'Boarding' && (
               <div style={{ fontSize: 12, color: '#64748b', marginLeft: 19 }}>
-                Đến: {endStr}
+                To: {endStr}
               </div>
             )}
           </div>
@@ -370,7 +369,7 @@ const MyBookingsPage: React.FC = () => {
       },
     },
     {
-      title: 'Dịch vụ',
+      title: 'Services',
       key: 'services',
       render: (_: any, record: BookingListItem) => {
         if (record.serviceNames && record.serviceNames.length > 0) {
@@ -380,7 +379,7 @@ const MyBookingsPage: React.FC = () => {
                 {record.serviceNames.join(', ')}
               </Text>
               <div style={{ fontSize: 12, color: '#64748b' }}>
-                {record.itemsCount} dịch vụ
+                {record.itemsCount} service(s)
               </div>
             </div>
           );
@@ -530,7 +529,7 @@ const MyBookingsPage: React.FC = () => {
         </Space>
       </div>
 
-      {/* Filter Section: Service Type Tabs & Date / Status / Dropdown controls */}
+      {/* Filter Section */}
       <Card
         style={{
           borderRadius: 12,
@@ -538,45 +537,8 @@ const MyBookingsPage: React.FC = () => {
           border: '1px solid #e2e8f0',
           marginBottom: 20,
         }}
-        bodyStyle={{ padding: '12px 20px' }}
+        bodyStyle={{ padding: '16px 20px' }}
       >
-        {/* Service Type Tabs */}
-        <Tabs
-          activeKey={serviceType === undefined ? 'all' : String(serviceType)}
-          onChange={(key) => {
-            setPageNumber(1);
-            setServiceType(key === 'all' ? undefined : Number(key));
-          }}
-          style={{ marginBottom: 12 }}
-          items={[
-            {
-              key: 'all',
-              label: (
-                <span style={{ fontSize: 14, fontWeight: 500 }}>
-                  Tất cả
-                </span>
-              ),
-            },
-            {
-              key: '0',
-              label: (
-                <span style={{ fontSize: 14, fontWeight: 500 }}>
-                  ✂️ Grooming &amp; Spa
-                </span>
-              ),
-            },
-            {
-              key: '1',
-              label: (
-                <span style={{ fontSize: 14, fontWeight: 500 }}>
-                  🏨 Khách sạn (Boarding)
-                </span>
-              ),
-            },
-          ]}
-        />
-
-        {/* Filter Controls Row: DatePicker, Dropdown, Status, Reset */}
         <div
           style={{
             display: 'flex',
@@ -584,7 +546,6 @@ const MyBookingsPage: React.FC = () => {
             gap: 16,
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingTop: 4,
           }}
         >
           <Space wrap size={16} align="center">
@@ -592,7 +553,7 @@ const MyBookingsPage: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <CalendarOutlined style={{ color: '#059669', fontSize: 15 }} />
               <Text strong style={{ fontSize: 13, color: '#334155' }}>
-                Ngày hẹn:
+                Service Date:
               </Text>
               <DatePicker
                 value={serviceDate ? dayjs(serviceDate, 'YYYY-MM-DD') : null}
@@ -601,50 +562,16 @@ const MyBookingsPage: React.FC = () => {
                   setServiceDate(date ? date.format('YYYY-MM-DD') : undefined);
                 }}
                 format="DD/MM/YYYY"
-                placeholder="Chọn ngày hẹn"
+                placeholder="Select service date"
                 allowClear
-                style={{ width: 160, borderRadius: 8 }}
+                style={{ width: 170, borderRadius: 8 }}
               />
             </div>
-
-            {/* Quick date shortcuts */}
-            <Space size={6}>
-              <Button
-                size="small"
-                type={serviceDate === dayjs().format('YYYY-MM-DD') ? 'primary' : 'default'}
-                style={{
-                  borderRadius: 6,
-                  backgroundColor: serviceDate === dayjs().format('YYYY-MM-DD') ? '#059669' : undefined,
-                }}
-                onClick={() => {
-                  const today = dayjs().format('YYYY-MM-DD');
-                  setServiceDate(serviceDate === today ? undefined : today);
-                  setPageNumber(1);
-                }}
-              >
-                Hôm nay
-              </Button>
-              <Button
-                size="small"
-                type={serviceDate === dayjs().add(1, 'day').format('YYYY-MM-DD') ? 'primary' : 'default'}
-                style={{
-                  borderRadius: 6,
-                  backgroundColor: serviceDate === dayjs().add(1, 'day').format('YYYY-MM-DD') ? '#059669' : undefined,
-                }}
-                onClick={() => {
-                  const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
-                  setServiceDate(serviceDate === tomorrow ? undefined : tomorrow);
-                  setPageNumber(1);
-                }}
-              >
-                Ngày mai
-              </Button>
-            </Space>
 
             {/* Service Type Dropdown */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Text strong style={{ fontSize: 13, color: '#334155' }}>
-                Loại dịch vụ:
+                Service Type:
               </Text>
               <Select
                 value={serviceType === undefined ? 'all' : String(serviceType)}
@@ -654,9 +581,9 @@ const MyBookingsPage: React.FC = () => {
                 }}
                 style={{ width: 190 }}
                 options={[
-                  { value: 'all', label: 'Tất cả' },
+                  { value: 'all', label: 'All Services' },
                   { value: '0', label: '✂️ Grooming & Spa' },
-                  { value: '1', label: '🏨 Khách sạn (Boarding)' },
+                  { value: '1', label: '🏨 Boarding' },
                 ]}
               />
             </div>
@@ -664,7 +591,7 @@ const MyBookingsPage: React.FC = () => {
             {/* Status Filter */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Text strong style={{ fontSize: 13, color: '#334155' }}>
-                Trạng thái:
+                Status:
               </Text>
               <Select
                 value={statusFilter === undefined ? 'all' : String(statusFilter)}
@@ -672,14 +599,14 @@ const MyBookingsPage: React.FC = () => {
                   setPageNumber(1);
                   setStatusFilter(val === 'all' ? undefined : Number(val));
                 }}
-                style={{ width: 180 }}
+                style={{ width: 170 }}
                 options={[
-                  { value: 'all', label: 'Tất cả trạng thái' },
+                  { value: 'all', label: 'All Statuses' },
                   {
                     value: '0',
                     label: (
                       <span>
-                        <Badge status="warning" /> Chờ xác nhận
+                        <Badge status="warning" /> Pending
                       </span>
                     ),
                   },
@@ -687,7 +614,7 @@ const MyBookingsPage: React.FC = () => {
                     value: '1',
                     label: (
                       <span>
-                        <Badge color="#1677ff" /> Đã xác nhận
+                        <Badge color="#1677ff" /> Confirmed
                       </span>
                     ),
                   },
@@ -695,7 +622,7 @@ const MyBookingsPage: React.FC = () => {
                     value: '2',
                     label: (
                       <span>
-                        <Badge status="success" /> Đã hoàn thành
+                        <Badge status="success" /> Completed
                       </span>
                     ),
                   },
@@ -703,7 +630,7 @@ const MyBookingsPage: React.FC = () => {
                     value: '3',
                     label: (
                       <span>
-                        <Badge status="error" /> Đã hủy
+                        <Badge status="error" /> Cancelled
                       </span>
                     ),
                   },
@@ -725,14 +652,14 @@ const MyBookingsPage: React.FC = () => {
                 }}
                 style={{ borderRadius: 6 }}
               >
-                Đặt lại
+                Reset
               </Button>
             )}
           </Space>
 
           <div>
             <Text type="secondary" style={{ fontSize: 13 }}>
-              Tìm thấy <strong style={{ color: '#059669' }}>{totalCount}</strong> lịch đặt
+              Found <strong style={{ color: '#059669' }}>{totalCount}</strong> booking(s)
             </Text>
           </div>
         </div>
