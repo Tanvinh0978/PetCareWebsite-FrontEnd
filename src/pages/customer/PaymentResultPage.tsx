@@ -9,7 +9,7 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { bookingService } from '@/services/booking.service';
+import { bookingService, forgetVnpayBooking } from '@/services/booking.service';
 
 const { Title, Text } = Typography;
 
@@ -86,6 +86,7 @@ const PaymentResultPage: React.FC = () => {
         setVerifyMessage(res?.message || '');
 
         if (isSuccessFlag) {
+          forgetVnpayBooking(mergedData.bookingId);
           setVerifyStatus('success');
         } else {
           setVerifyStatus('error');

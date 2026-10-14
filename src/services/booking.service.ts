@@ -1,5 +1,43 @@
 import axiosClient from './axiosClient';
 
+const VNPAY_BOOKING_IDS_KEY = 'petcare.vnpay.pending-booking-ids';
+
+const readPendingVnpayBookingIds = (): string[] => {
+  try {
+    const ids = JSON.parse(localStorage.getItem(VNPAY_BOOKING_IDS_KEY) || '[]');
+    return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+};
+
+export const rememberVnpayBooking = (bookingId: string) => {
+  if (!bookingId || typeof localStorage === 'undefined') return;
+  try {
+    const ids = new Set(readPendingVnpayBookingIds());
+    ids.add(bookingId);
+    localStorage.setItem(VNPAY_BOOKING_IDS_KEY, JSON.stringify([...ids]));
+  } catch {
+    // Keep booking creation working even if browser storage is unavailable.
+  }
+};
+
+export const hasRememberedVnpayChoice = (bookingId: string) =>
+  readPendingVnpayBookingIds().includes(bookingId);
+
+export const forgetVnpayBooking = (bookingId?: string) => {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    if (!bookingId) {
+      localStorage.removeItem(VNPAY_BOOKING_IDS_KEY);
+      return;
+    }
+    localStorage.setItem(VNPAY_BOOKING_IDS_KEY, JSON.stringify(readPendingVnpayBookingIds().filter((id) => id !== bookingId)));
+  } catch {
+    // Best effort cleanup only.
+  }
+};
+
 export interface BookingItemPayload {
   petId: string;
   serviceId: string;
@@ -23,6 +61,7 @@ export interface BookingListItem {
   itemsCount: number;
   totalPrice: number;
   status: number | string; // 0: Pending, 1: Partially_Completed, 2: Completed, 3: Cancelled
+  paymentChoice?: string;
   createdAt: string;
 }
 
@@ -59,6 +98,7 @@ export interface BookingDetail {
   discountAmount: number;
   totalPrice: number;
   status: number | string;
+  paymentChoice?: string;
   cancellationReason?: string;
   createdAt: string;
   bookingItems: BookingDetailItem[];

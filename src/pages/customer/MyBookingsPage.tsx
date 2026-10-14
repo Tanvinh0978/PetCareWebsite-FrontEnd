@@ -34,6 +34,7 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {
   bookingService,
+  hasRememberedVnpayChoice,
   type BookingListItem,
   type BookingDetail,
   type BookingDetailItem,
@@ -66,9 +67,14 @@ export const isPending = (status: any) => {
   return s === '0' || s === 'pending';
 };
 
+const getPaymentChoice = (booking: { paymentChoice?: string }) => String(booking.paymentChoice ?? '').trim().toUpperCase();
+const isVnpayBooking = (booking: { id?: string; paymentChoice?: string }) =>
+  getPaymentChoice(booking) === 'VNPAY' || Boolean(booking.id && hasRememberedVnpayChoice(booking.id));
+const isCounterPaymentBooking = (booking: { paymentChoice?: string }) => getPaymentChoice(booking) === 'PAY_AT_COUNTER';
+const vnpayWarning = 'Vui lòng hoàn tất thanh toán để xác nhận lịch hẹn';
+
 export const isCancellable = (status: any) => {
-  const s = String(status ?? '').toLowerCase();
-  return s === '0' || s === 'pending' || s === '1' || s === 'confirmed' || s === 'partially_completed';
+  return isPending(status);
 };
 
 export const getItemStatusConfig = (status: any) => {
@@ -264,7 +270,30 @@ const MyBookingsPage: React.FC = () => {
         pageSize,
         status: statusFilter,
       });
-      setBookings(data.items);
+      // The current booking list/detail DTOs omit paymentChoice. Boarding bookings
+      // created by customers must use VNPay, so inspect pending items to restore
+      // the retry action for older bookings as well as locally remembered choices.
+      const pendingDetails = await Promise.all(data.items
+        .filter((booking) => isPending(booking.status))
+        .map(async (booking) => {
+          try {
+            return [booking.id, await bookingService.fetchById(booking.id)] as const;
+          } catch {
+            return [booking.id, null] as const;
+          }
+        }));
+      const detailsById = new Map(pendingDetails);
+      setBookings(data.items.map((booking) => {
+        const detail = detailsById.get(booking.id);
+        const hasBoardingItem = detail?.bookingItems?.some((item) =>
+          String(item.serviceType).trim().toLowerCase() === 'boarding' || String(item.serviceType) === '1'
+        );
+        return {
+          ...booking,
+          paymentChoice: booking.paymentChoice || detail?.paymentChoice ||
+            (hasBoardingItem || hasRememberedVnpayChoice(booking.id) ? 'VNPAY' : undefined),
+        };
+      }));
       setTotalCount(data.totalCount);
     } catch (error: any) {
       message.error(error?.response?.data?.message || 'Failed to load bookings');
@@ -395,22 +424,23 @@ const MyBookingsPage: React.FC = () => {
               Review
             </Button>
           )}
-          {isPending(record.status) && (
-            <Button
-              type="default"
-              size="small"
-              icon={<CreditCardOutlined />}
-              loading={payingBookingId === record.id}
-              style={{
-                borderColor: '#10b981',
-                color: '#059669',
-                borderRadius: 6,
-                fontWeight: 500,
-              }}
-              onClick={() => handlePayVnpay(record.id)}
-            >
-              Pay with VNPay
-            </Button>
+          {isPending(record.status) && isVnpayBooking(record) && (
+            <Space direction="vertical" size={4}>
+              <Button
+                type="default"
+                size="small"
+                icon={<CreditCardOutlined />}
+                loading={payingBookingId === record.id}
+                style={{ borderColor: '#10b981', color: '#059669', borderRadius: 6, fontWeight: 500 }}
+                onClick={() => handlePayVnpay(record.id)}
+              >
+                Pay with VNPay
+              </Button>
+              <Text type="warning" style={{ maxWidth: 220, fontSize: 11, lineHeight: 1.3 }}>{vnpayWarning}</Text>
+            </Space>
+          )}
+          {isPending(record.status) && isCounterPaymentBooking(record) && (
+            <Tag color="blue">Thanh toán tại quầy</Tag>
           )}
           {isCancellable(record.status) && (
             <Button
@@ -590,7 +620,7 @@ const MyBookingsPage: React.FC = () => {
         open={detailModalOpen}
         onCancel={() => setDetailModalOpen(false)}
         footer={[
-          selectedBooking && isPending(selectedBooking.status) && (
+          selectedBooking && isPending(selectedBooking.status) && isVnpayBooking(selectedBooking) && (
             <Button
               key="vnpay"
               type="primary"
@@ -624,6 +654,12 @@ const MyBookingsPage: React.FC = () => {
           </div>
         ) : selectedBooking ? (
           <div>
+            {isPending(selectedBooking.status) && isVnpayBooking(selectedBooking) && (
+              <Alert type="warning" showIcon message={vnpayWarning} style={{ marginBottom: 16 }} />
+            )}
+            {isPending(selectedBooking.status) && isCounterPaymentBooking(selectedBooking) && (
+              <div style={{ marginBottom: 16 }}><Tag color="blue">Thanh toán tại quầy</Tag></div>
+            )}
             <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }} style={{ marginBottom: 20 }}>
               <Descriptions.Item label="Booking Code">
                 <Text strong style={{ fontFamily: 'monospace', color: '#059669' }}>
