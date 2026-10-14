@@ -11,11 +11,12 @@ import {
   message,
   Spin,
   Empty,
-  Tabs,
   Badge,
   Input,
   Rate,
   Alert,
+  DatePicker,
+  Select,
 } from 'antd';
 import {
   CalendarOutlined,
@@ -29,9 +30,11 @@ import {
   ExclamationCircleOutlined,
   StarFilled,
   CreditCardOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import {
   bookingService,
   hasRememberedVnpayChoice,
@@ -95,6 +98,8 @@ const MyBookingsPage: React.FC = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined);
+  const [serviceDate, setServiceDate] = useState<string | undefined>(undefined);
+  const [serviceType, setServiceType] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
   // Detail Modal state
@@ -269,6 +274,8 @@ const MyBookingsPage: React.FC = () => {
         pageNumber,
         pageSize,
         status: statusFilter,
+        serviceDate: serviceDate || undefined,
+        serviceType: serviceType !== undefined ? serviceType : undefined,
       });
       // The current booking list/detail DTOs omit paymentChoice. Boarding bookings
       // created by customers must use VNPay, so inspect pending items to restore
@@ -300,7 +307,7 @@ const MyBookingsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [pageNumber, pageSize, statusFilter]);
+  }, [pageNumber, pageSize, statusFilter, serviceDate, serviceType]);
 
   useEffect(() => {
     fetchBookings();
@@ -347,35 +354,77 @@ const MyBookingsPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'Booking ID',
-      dataIndex: 'id',
-      key: 'id',
-      render: (id: string) => (
-        <Text strong style={{ fontFamily: 'monospace', color: '#059669' }}>
-          #{id.slice(0, 8).toUpperCase()}
+      title: 'No.',
+      key: 'index',
+      width: 65,
+      align: 'center' as const,
+      render: (_: any, __: any, index: number) => (
+        <Text strong style={{ color: '#475569' }}>
+          {(pageNumber - 1) * pageSize + index + 1}
         </Text>
       ),
     },
     {
-      title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (val: string) => (
-        <span>{val ? dayjs(val).format('DD/MM/YYYY HH:mm') : 'N/A'}</span>
+      title: 'Service Type',
+      dataIndex: 'bookingType',
+      key: 'bookingType',
+      render: (_: any, record: BookingListItem) => (
+        <Tag color="purple" style={{ borderRadius: 12, padding: '2px 10px', fontWeight: 500 }}>
+          {record.bookingType || 'Grooming'}
+        </Tag>
       ),
     },
     {
-      title: 'Items',
-      dataIndex: 'itemsCount',
-      key: 'itemsCount',
-      render: (count: number) => <span>{count} service(s)</span>,
+      title: 'Scheduled Time',
+      dataIndex: 'scheduledStartAt',
+      key: 'scheduledStartAt',
+      render: (_: any, record: BookingListItem) => {
+        if (!record.scheduledStartAt) {
+          return <Text type="secondary">—</Text>;
+        }
+        const startStr = dayjs(record.scheduledStartAt).format('DD/MM/YYYY HH:mm');
+        const endStr = record.scheduledEndAt ? dayjs(record.scheduledEndAt).format('DD/MM/YYYY HH:mm') : null;
+        return (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500, color: '#0f172a' }}>
+              <ClockCircleOutlined style={{ color: '#059669', fontSize: 13 }} />
+              <span>{startStr}</span>
+            </div>
+            {endStr && endStr !== startStr && record.bookingType === 'Boarding' && (
+              <div style={{ fontSize: 12, color: '#64748b', marginLeft: 19 }}>
+                To: {endStr}
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Services',
+      key: 'services',
+      render: (_: any, record: BookingListItem) => {
+        if (record.serviceNames && record.serviceNames.length > 0) {
+          return (
+            <div>
+              <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                {record.serviceNames.join(', ')}
+              </Text>
+              <div style={{ fontSize: 12, color: '#64748b' }}>
+                {record.itemsCount} service(s)
+              </div>
+            </div>
+          );
+        }
+        return <span>{record.itemsCount} service(s)</span>;
+      },
     },
     {
       title: 'Total Price',
       dataIndex: 'totalPrice',
       key: 'totalPrice',
+      width: 170,
       render: (price: number) => (
-        <Text strong style={{ color: '#059669' }}>
+        <Text strong style={{ color: '#059669', whiteSpace: 'nowrap' }}>
           {price ? `${price.toLocaleString()} VND` : '0 VND'}
         </Text>
       ),
@@ -429,12 +478,18 @@ const MyBookingsPage: React.FC = () => {
               <Button
                 type="default"
                 size="small"
-                icon={<CreditCardOutlined />}
+                icon={<CreditCardOutlined style={{ color: '#ca8a04' }} />}
                 loading={payingBookingId === record.id}
-                style={{ borderColor: '#10b981', color: '#059669', borderRadius: 6, fontWeight: 500 }}
+                style={{
+                  borderColor: '#f59e0b',
+                  color: '#b45309',
+                  backgroundColor: '#fffbeb',
+                  borderRadius: 6,
+                  fontWeight: 600,
+                }}
                 onClick={() => handlePayVnpay(record.id)}
               >
-                Pay with VNPay
+                Pay Again
               </Button>
               <Text type="warning" style={{ maxWidth: 220, fontSize: 11, lineHeight: 1.3 }}>{vnpayWarning}</Text>
             </Space>
@@ -489,9 +544,6 @@ const MyBookingsPage: React.FC = () => {
         </div>
 
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={fetchBookings} loading={loading}>
-            Refresh
-          </Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -503,7 +555,7 @@ const MyBookingsPage: React.FC = () => {
         </Space>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Filter Section */}
       <Card
         style={{
           borderRadius: 12,
@@ -511,50 +563,132 @@ const MyBookingsPage: React.FC = () => {
           border: '1px solid #e2e8f0',
           marginBottom: 20,
         }}
-        bodyStyle={{ padding: '8px 16px' }}
+        bodyStyle={{ padding: '16px 20px' }}
       >
-        <Tabs
-          activeKey={statusFilter === undefined ? 'all' : String(statusFilter)}
-          onChange={(key) => {
-            setPageNumber(1);
-            setStatusFilter(key === 'all' ? undefined : Number(key));
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 16,
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
-          items={[
-            { key: 'all', label: 'All Bookings' },
-            {
-              key: '0',
-              label: (
-                <span>
-                  <Badge status="warning" /> Pending
-                </span>
-              ),
-            },
-            {
-              key: '1',
-              label: (
-                <span>
-                  <Badge color="#1677ff" /> Confirmed
-                </span>
-              ),
-            },
-            {
-              key: '2',
-              label: (
-                <span>
-                  <Badge status="success" /> Completed
-                </span>
-              ),
-            },
-            {
-              key: '3',
-              label: (
-                <span>
-                  <Badge status="error" /> Cancelled
-                </span>
-              ),
-            },
-          ]}
-        />
+        >
+          <Space wrap size={16} align="center">
+            {/* Service Date Picker */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CalendarOutlined style={{ color: '#059669', fontSize: 15 }} />
+              <Text strong style={{ fontSize: 13, color: '#334155' }}>
+                Service Date:
+              </Text>
+              <DatePicker
+                value={serviceDate ? dayjs(serviceDate, 'YYYY-MM-DD') : null}
+                onChange={(date: Dayjs | null) => {
+                  setPageNumber(1);
+                  setServiceDate(date ? date.format('YYYY-MM-DD') : undefined);
+                }}
+                format="DD/MM/YYYY"
+                placeholder="Select service date"
+                allowClear
+                style={{ width: 170, borderRadius: 8 }}
+              />
+            </div>
+
+            {/* Service Type Dropdown */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text strong style={{ fontSize: 13, color: '#334155' }}>
+                Service Type:
+              </Text>
+              <Select
+                value={serviceType === undefined ? 'all' : String(serviceType)}
+                onChange={(val) => {
+                  setPageNumber(1);
+                  setServiceType(val === 'all' ? undefined : Number(val));
+                }}
+                style={{ width: 190 }}
+                options={[
+                  { value: 'all', label: 'All Services' },
+                  { value: '0', label: '✂️ Grooming & Spa' },
+                  { value: '1', label: '🏨 Boarding' },
+                ]}
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text strong style={{ fontSize: 13, color: '#334155' }}>
+                Status:
+              </Text>
+              <Select
+                value={statusFilter === undefined ? 'all' : String(statusFilter)}
+                onChange={(val) => {
+                  setPageNumber(1);
+                  setStatusFilter(val === 'all' ? undefined : Number(val));
+                }}
+                style={{ width: 170 }}
+                options={[
+                  { value: 'all', label: 'All Statuses' },
+                  {
+                    value: '0',
+                    label: (
+                      <span>
+                        <Badge status="warning" /> Pending
+                      </span>
+                    ),
+                  },
+                  {
+                    value: '1',
+                    label: (
+                      <span>
+                        <Badge color="#1677ff" /> Confirmed
+                      </span>
+                    ),
+                  },
+                  {
+                    value: '2',
+                    label: (
+                      <span>
+                        <Badge status="success" /> Completed
+                      </span>
+                    ),
+                  },
+                  {
+                    value: '3',
+                    label: (
+                      <span>
+                        <Badge status="error" /> Cancelled
+                      </span>
+                    ),
+                  },
+                ]}
+              />
+            </div>
+
+            {/* Reset Filter Button */}
+            {(serviceDate || serviceType !== undefined || statusFilter !== undefined) && (
+              <Button
+                size="small"
+                danger
+                icon={<ClearOutlined />}
+                onClick={() => {
+                  setServiceDate(undefined);
+                  setServiceType(undefined);
+                  setStatusFilter(undefined);
+                  setPageNumber(1);
+                }}
+                style={{ borderRadius: 6 }}
+              >
+                Reset
+              </Button>
+            )}
+          </Space>
+
+          <div>
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              Found <strong style={{ color: '#059669' }}>{totalCount}</strong> booking(s)
+            </Text>
+          </div>
+        </div>
       </Card>
 
       {/* Bookings Table / List */}
@@ -626,10 +760,10 @@ const MyBookingsPage: React.FC = () => {
               type="primary"
               icon={<CreditCardOutlined />}
               loading={payingBookingId === selectedBooking.id}
-              style={{ backgroundColor: '#059669', borderColor: '#059669' }}
+              style={{ backgroundColor: '#f59e0b', borderColor: '#f59e0b', color: '#ffffff', fontWeight: 600 }}
               onClick={() => handlePayVnpay(selectedBooking.id)}
             >
-              Pay with VNPay
+              Pay Again
             </Button>
           ),
           selectedBooking && isCancellable(selectedBooking.status) && (

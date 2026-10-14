@@ -57,6 +57,32 @@ export default function CreateCareRecordModal({ open, task, onClose, onSuccess }
       width={620}
     >
       <Text type="secondary">Record today’s health, meals, and care details for this boarding stay.</Text>
+
+      {task?.dietServiceName && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: '8px 12px',
+            backgroundColor: '#fff7ed',
+            borderRadius: 6,
+            border: '1px solid #fed7aa',
+            fontSize: 13,
+          }}
+        >
+          <Text strong style={{ color: '#c2410c' }}>
+            🍲 Diet add-on:{' '}
+          </Text>
+          <Text style={{ color: '#9a3412', fontWeight: 500 }}>
+            {task.dietServiceName}
+          </Text>
+          {task.dietPrice ? (
+            <Text type="secondary" style={{ fontSize: 12, marginLeft: 6 }}>
+              ({task.dietPrice.toLocaleString()} VND)
+            </Text>
+          ) : null}
+        </div>
+      )}
+
       <Form form={form} layout="vertical" onFinish={submit} style={{ marginTop: 20 }}>
         <Form.Item
           name="healthStatus"

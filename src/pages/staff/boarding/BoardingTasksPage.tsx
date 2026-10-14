@@ -191,6 +191,32 @@ export default function BoardingTasksPage() {
                     </Descriptions>
 
                     {task.petHealthNotes && <Alert type="warning" showIcon message="Health & care notes" description={task.petHealthNotes} style={{ margin: '12px 0' }} />}
+
+                    {task.dietServiceName && (
+                      <div
+                        style={{
+                          margin: '10px 0',
+                          padding: '6px 12px',
+                          backgroundColor: '#fff7ed',
+                          borderRadius: 6,
+                          border: '1px solid #fed7aa',
+                          fontSize: 13,
+                        }}
+                      >
+                        <Text strong style={{ color: '#c2410c' }}>
+                          🍲 Diet add-on:{' '}
+                        </Text>
+                        <Text style={{ color: '#9a3412', fontWeight: 500 }}>
+                          {task.dietServiceName}
+                        </Text>
+                        {task.dietPrice ? (
+                          <Text type="secondary" style={{ fontSize: 12, marginLeft: 6 }}>
+                            ({task.dietPrice.toLocaleString()} VND)
+                          </Text>
+                        ) : null}
+                      </div>
+                    )}
+
                     <div className="boarding-latest-health">
                       <Text strong>Latest update: </Text>
                       <Text>{task.latestHealthStatus || 'No daily care status recorded yet.'}</Text>
