@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { petService } from '@/services/pet.service';
 import { serviceService } from '@/services/service.service';
-import { bookingService } from '@/services/booking.service';
+import { bookingService, rememberVnpayBooking } from '@/services/booking.service';
 import { roomService } from '@/services/room.service';
 import type { ServiceDTO } from '@/types/service.types';
 
@@ -271,8 +271,10 @@ const CreateBookingPage: React.FC = () => {
       const res: any = await bookingService.create(payload);
 
       if (paymentChoice === 'VNPAY') {
-        let paymentUrl = res?.result?.paymentUrl || res?.data?.paymentUrl || res?.paymentUrl || (typeof res?.result === 'string' ? res.result : null);
-        const newBookingId = res?.result?.id || res?.data?.id || res?.id;
+        const createdBooking = res?.result ?? res?.data?.result ?? res?.data ?? res;
+        let paymentUrl = createdBooking?.paymentUrl || res?.paymentUrl || null;
+        const newBookingId = createdBooking?.bookingId || createdBooking?.id || res?.bookingId || res?.id;
+        if (newBookingId) rememberVnpayBooking(String(newBookingId));
         if (!paymentUrl && newBookingId) {
           try {
             const vnpayRes: any = await bookingService.createVnpayUrl(newBookingId);
@@ -284,6 +286,11 @@ const CreateBookingPage: React.FC = () => {
         if (paymentUrl) {
           message.loading({ content: 'Redirecting to VNPay...', key: 'vnpay-nav' });
           window.location.href = paymentUrl;
+          return;
+        }
+        if (newBookingId) {
+          message.warning('Your booking was created. You can restart VNPay payment from My Bookings.');
+          navigate('/customer/bookings');
           return;
         }
       }

@@ -25,7 +25,13 @@ const statusName = (status: number | string) => {
 };
 const statusColor = (status: number | string) => ({ Pending: 'gold', Confirmed: 'blue', 'In Progress': 'processing', Completed: 'green', Cancelled: 'red' }[statusName(status)] ?? 'default');
 const canCheckIn = (status: number | string) => ['Pending', 'Confirmed'].includes(statusName(status));
-const canCancel = (status: number | string) => ['Pending', 'Confirmed'].includes(statusName(status));
+const canCancelByStatus = (status: number | string) => ['Pending', 'Confirmed'].includes(statusName(status));
+const hasInProgressItem = (items: BookingDetailItem[] = []) => items.some((item) => {
+  const value = String(item.status ?? '').toLowerCase();
+  return value === '3' || value === 'in_progress' || value === 'inprogress';
+});
+const canCancelBooking = (booking: Pick<BookingDetail, 'status' | 'bookingItems'>) =>
+  canCancelByStatus(booking.status) && !hasInProgressItem(booking.bookingItems);
 const isBoardingType = (type: number | string) => String(type).toLowerCase() === 'boarding' || String(type) === '1';
 
 export default function StaffBookingListPage() {
@@ -105,11 +111,11 @@ export default function StaffBookingListPage() {
         roomService.fetchWithPagination({ pageNumber: 1, pageSize: 100 }),
       ]);
       const allStaff = staffRes.items ?? [];
-      const expectedRole = isBoardingType(item.serviceType) ? 'boarding' : 'grooming';
-      const matchingStaff = allStaff.filter((staff) => staff.roles?.some((role) => role.toLowerCase().includes(expectedRole)));
-      setStaffOptions(matchingStaff.length ? matchingStaff : allStaff);
+      const expectedRole = isBoardingType(item.serviceType) ? 'boarding staff' : 'grooming staff';
+      const matchingStaff = allStaff.filter((staff) => staff.roles?.some((role) => role.trim().toLowerCase() === expectedRole));
+      setStaffOptions(matchingStaff);
       const allRooms = roomRes.result?.items ?? [];
-      setRoomOptions(allRooms.filter((room) => String(room.status).toLowerCase() === 'available' || room.id === item.roomId));
+      setRoomOptions(allRooms.filter((room) => String(room.status).trim().toLowerCase() === 'available' || room.id === item.roomId));
     } catch (error) {
       message.error(getApiErrorMessage(error, 'Could not load staff and rooms.'));
       setStaffOptions([]);
@@ -133,9 +139,9 @@ export default function StaffBookingListPage() {
     try {
       await bookingService.assignItem(detail.id, assignItem.id, {
         staffId: selectedStaffId,
-        ...(selectedRoomId ? { roomId: selectedRoomId } : {}),
+        ...(isBoardingType(assignItem.serviceType) ? { roomId: selectedRoomId } : {}),
       });
-      message.success('Staff and room assignment saved.');
+      message.success(isBoardingType(assignItem.serviceType) ? 'Staff and room assignment saved.' : 'Staff assignment saved.');
       setAssignItem(null);
       setDetail(await bookingService.fetchById(detail.id));
       await loadBookings();
@@ -173,7 +179,7 @@ export default function StaffBookingListPage() {
     try {
       const summary = await bookingService.getCheckoutSummary(id);
       setCheckoutSummary(summary);
-      setAmount(summary.remainingAmount ?? 0);
+      setAmount((summary.remainingAmount ?? 0) > 0 ? summary.remainingAmount : null);
     } catch (error) {
       message.error(getApiErrorMessage(error, 'Failed to load checkout summary.'));
       setCheckoutOpen(false);
@@ -184,11 +190,17 @@ export default function StaffBookingListPage() {
 
   const submitCheckout = async () => {
     if (!checkoutSummary) return;
+    if ((checkoutSummary.remainingAmount ?? 0) > 0 && amount === 0) {
+      message.warning('Enter an amount greater than 0, or clear the field to collect the remaining balance.');
+      return;
+    }
     setCheckoutSaving(true);
     try {
       await bookingService.checkout(checkoutSummary.bookingId, {
         paymentMethod,
-        amount,
+        // The API rejects an explicit zero. Null means "collect remaining";
+        // when nothing remains, it lets the already-paid booking complete.
+        amount: (checkoutSummary.remainingAmount ?? 0) > 0 ? amount : null,
         note: note.trim() || undefined,
       });
       message.success('Payment received and booking completed.');
@@ -229,7 +241,7 @@ export default function StaffBookingListPage() {
         const items: MenuProps['items'] = [
           ...(canCheckIn(row.status) ? [{ key: 'check-in', label: 'Check in', icon: <CheckOutlined /> }] : []),
           ...(!['Completed', 'Cancelled'].includes(statusName(row.status)) ? [{ key: 'checkout', label: 'Checkout', icon: <CreditCardOutlined /> }] : []),
-          ...(canCancel(row.status) ? [{ key: 'cancel', label: <span style={{ color: '#dc2626' }}>Cancel booking</span>, icon: <CloseOutlined /> }] : []),
+          ...(statusName(row.status) === 'Pending' ? [{ key: 'cancel', label: <span style={{ color: '#dc2626' }}>Cancel booking</span>, icon: <CloseOutlined /> }] : []),
         ];
         return (
           <Space size="small">
@@ -309,7 +321,16 @@ export default function StaffBookingListPage() {
         scroll={{ x: 1100 }}
       />
 
-      <Modal title="Booking Details" open={detailOpen} onCancel={() => setDetailOpen(false)} footer={null} width={900}>
+      <Modal
+        title="Booking Details"
+        open={detailOpen}
+        onCancel={() => setDetailOpen(false)}
+        footer={detail ? <Space>
+          {canCancelBooking(detail) && <Button danger onClick={() => { setCancelId(detail.id); setCancelReason(''); }}>Cancel booking</Button>}
+          <Button onClick={() => setDetailOpen(false)}>Close</Button>
+        </Space> : null}
+        width={900}
+      >
         {detailLoading ? <Spin /> : detail && (
           <>
             <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }}>
@@ -367,18 +388,17 @@ export default function StaffBookingListPage() {
                 style={{ width: '100%', marginTop: 6 }}
               />
             </label>
-            <label>Room
+            {isBoardingType(assignItem.serviceType) && <label>Room
               <Select
                 showSearch
-                allowClear
                 optionFilterProp="label"
-                placeholder={isBoardingType(assignItem.serviceType) ? 'Select an available boarding room' : 'Select a room (optional)'}
+                placeholder="Select an available boarding room"
                 value={selectedRoomId}
                 onChange={setSelectedRoomId}
                 options={roomOptions.map((room) => ({ value: room.id, label: `${room.roomName} · ${room.roomTypeName}` }))}
                 style={{ width: '100%', marginTop: 6 }}
               />
-            </label>
+            </label>}
             {staffOptions.length === 0 && <Text type="warning">No active staff were returned by the staff API.</Text>}
             {roomOptions.length === 0 && isBoardingType(assignItem.serviceType) && <Text type="warning">No available rooms were returned by the rooms API.</Text>}
           </div>}
@@ -424,9 +444,13 @@ export default function StaffBookingListPage() {
               <label>Payment method
                 <Select value={paymentMethod} onChange={setPaymentMethod} style={{ width: '100%' }} options={[{ value: 'CASH', label: 'Cash' }, { value: 'BANK_TRANSFER', label: 'Bank transfer' }]} />
               </label>
-              <label>Amount to collect (leave empty to collect remaining balance)
-                <InputNumber min={0} max={checkoutSummary.remainingAmount} value={amount} onChange={setAmount} style={{ width: '100%' }} />
-              </label>
+              {(checkoutSummary.remainingAmount ?? 0) > 0 ? (
+                <label>Amount to collect (leave empty to collect remaining balance)
+                  <InputNumber min={1} max={checkoutSummary.remainingAmount} value={amount} onChange={setAmount} style={{ width: '100%' }} />
+                </label>
+              ) : (
+                <Text type="success">This booking is fully paid. Complete checkout without collecting additional payment.</Text>
+              )}
               <label>Note
                 <Input.TextArea value={note} onChange={(event) => setNote(event.target.value)} placeholder="e.g. Cash collected at pickup" rows={2} />
               </label>
