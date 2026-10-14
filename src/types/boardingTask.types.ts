@@ -13,6 +13,8 @@ export interface BoardingTaskResponseDTO {
   serviceId?: string
   serviceName?: string
   serviceType?: number | string
+  dietServiceName?: string | null
+  dietPrice?: number | null
   roomId?: string | null
   roomName?: string | null
   roomTypeName?: string | null

@@ -16,6 +16,8 @@ import {
   Input,
   Rate,
   Alert,
+  DatePicker,
+  Select,
 } from 'antd';
 import {
   CalendarOutlined,
@@ -32,6 +34,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import {
   bookingService,
   type BookingListItem,
@@ -89,6 +92,8 @@ const MyBookingsPage: React.FC = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined);
+  const [serviceDate, setServiceDate] = useState<string | undefined>(undefined);
+  const [serviceType, setServiceType] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
   // Detail Modal state
@@ -263,6 +268,8 @@ const MyBookingsPage: React.FC = () => {
         pageNumber,
         pageSize,
         status: statusFilter,
+        serviceDate: serviceDate || undefined,
+        serviceType: serviceType !== undefined ? serviceType : undefined,
       });
       setBookings(data.items);
       setTotalCount(data.totalCount);
@@ -271,7 +278,7 @@ const MyBookingsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [pageNumber, pageSize, statusFilter]);
+  }, [pageNumber, pageSize, statusFilter, serviceDate, serviceType]);
 
   useEffect(() => {
     fetchBookings();
@@ -328,18 +335,68 @@ const MyBookingsPage: React.FC = () => {
       ),
     },
     {
+      title: 'Loại dịch vụ',
+      dataIndex: 'bookingType',
+      key: 'bookingType',
+      render: (_: any, record: BookingListItem) => (
+        <Tag color="purple" style={{ borderRadius: 12, padding: '2px 10px', fontWeight: 500 }}>
+          {record.bookingType || 'Grooming'}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Thời gian hẹn',
+      dataIndex: 'scheduledStartAt',
+      key: 'scheduledStartAt',
+      render: (_: any, record: BookingListItem) => {
+        if (!record.scheduledStartAt) {
+          return <Text type="secondary">—</Text>;
+        }
+        const startStr = dayjs(record.scheduledStartAt).format('DD/MM/YYYY HH:mm');
+        const endStr = record.scheduledEndAt ? dayjs(record.scheduledEndAt).format('DD/MM/YYYY HH:mm') : null;
+        return (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500, color: '#0f172a' }}>
+              <ClockCircleOutlined style={{ color: '#059669', fontSize: 13 }} />
+              <span>{startStr}</span>
+            </div>
+            {endStr && endStr !== startStr && record.bookingType === 'Boarding' && (
+              <div style={{ fontSize: 12, color: '#64748b', marginLeft: 19 }}>
+                Đến: {endStr}
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Dịch vụ',
+      key: 'services',
+      render: (_: any, record: BookingListItem) => {
+        if (record.serviceNames && record.serviceNames.length > 0) {
+          return (
+            <div>
+              <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                {record.serviceNames.join(', ')}
+              </Text>
+              <div style={{ fontSize: 12, color: '#64748b' }}>
+                {record.itemsCount} dịch vụ
+              </div>
+            </div>
+          );
+        }
+        return <span>{record.itemsCount} service(s)</span>;
+      },
+    },
+    {
       title: 'Created At',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (val: string) => (
-        <span>{val ? dayjs(val).format('DD/MM/YYYY HH:mm') : 'N/A'}</span>
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          {val ? dayjs(val).format('DD/MM/YYYY HH:mm') : 'N/A'}
+        </Text>
       ),
-    },
-    {
-      title: 'Items',
-      dataIndex: 'itemsCount',
-      key: 'itemsCount',
-      render: (count: number) => <span>{count} service(s)</span>,
     },
     {
       title: 'Total Price',
@@ -473,7 +530,7 @@ const MyBookingsPage: React.FC = () => {
         </Space>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Filter Section: Service Type Tabs & Date / Status / Dropdown controls */}
       <Card
         style={{
           borderRadius: 12,
@@ -481,50 +538,204 @@ const MyBookingsPage: React.FC = () => {
           border: '1px solid #e2e8f0',
           marginBottom: 20,
         }}
-        bodyStyle={{ padding: '8px 16px' }}
+        bodyStyle={{ padding: '12px 20px' }}
       >
+        {/* Service Type Tabs */}
         <Tabs
-          activeKey={statusFilter === undefined ? 'all' : String(statusFilter)}
+          activeKey={serviceType === undefined ? 'all' : String(serviceType)}
           onChange={(key) => {
             setPageNumber(1);
-            setStatusFilter(key === 'all' ? undefined : Number(key));
+            setServiceType(key === 'all' ? undefined : Number(key));
           }}
+          style={{ marginBottom: 12 }}
           items={[
-            { key: 'all', label: 'All Bookings' },
+            {
+              key: 'all',
+              label: (
+                <span style={{ fontSize: 14, fontWeight: 500 }}>
+                  Tất cả
+                </span>
+              ),
+            },
             {
               key: '0',
               label: (
-                <span>
-                  <Badge status="warning" /> Pending
+                <span style={{ fontSize: 14, fontWeight: 500 }}>
+                  ✂️ Grooming &amp; Spa
                 </span>
               ),
             },
             {
               key: '1',
               label: (
-                <span>
-                  <Badge color="#1677ff" /> Confirmed
-                </span>
-              ),
-            },
-            {
-              key: '2',
-              label: (
-                <span>
-                  <Badge status="success" /> Completed
-                </span>
-              ),
-            },
-            {
-              key: '3',
-              label: (
-                <span>
-                  <Badge status="error" /> Cancelled
+                <span style={{ fontSize: 14, fontWeight: 500 }}>
+                  🏨 Khách sạn (Boarding)
                 </span>
               ),
             },
           ]}
         />
+
+        {/* Filter Controls Row: DatePicker, Dropdown, Status, Reset */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 16,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: 4,
+          }}
+        >
+          <Space wrap size={16} align="center">
+            {/* Service Date Picker */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CalendarOutlined style={{ color: '#059669', fontSize: 15 }} />
+              <Text strong style={{ fontSize: 13, color: '#334155' }}>
+                Ngày hẹn:
+              </Text>
+              <DatePicker
+                value={serviceDate ? dayjs(serviceDate, 'YYYY-MM-DD') : null}
+                onChange={(date: Dayjs | null) => {
+                  setPageNumber(1);
+                  setServiceDate(date ? date.format('YYYY-MM-DD') : undefined);
+                }}
+                format="DD/MM/YYYY"
+                placeholder="Chọn ngày hẹn"
+                allowClear
+                style={{ width: 160, borderRadius: 8 }}
+              />
+            </div>
+
+            {/* Quick date shortcuts */}
+            <Space size={6}>
+              <Button
+                size="small"
+                type={serviceDate === dayjs().format('YYYY-MM-DD') ? 'primary' : 'default'}
+                style={{
+                  borderRadius: 6,
+                  backgroundColor: serviceDate === dayjs().format('YYYY-MM-DD') ? '#059669' : undefined,
+                }}
+                onClick={() => {
+                  const today = dayjs().format('YYYY-MM-DD');
+                  setServiceDate(serviceDate === today ? undefined : today);
+                  setPageNumber(1);
+                }}
+              >
+                Hôm nay
+              </Button>
+              <Button
+                size="small"
+                type={serviceDate === dayjs().add(1, 'day').format('YYYY-MM-DD') ? 'primary' : 'default'}
+                style={{
+                  borderRadius: 6,
+                  backgroundColor: serviceDate === dayjs().add(1, 'day').format('YYYY-MM-DD') ? '#059669' : undefined,
+                }}
+                onClick={() => {
+                  const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
+                  setServiceDate(serviceDate === tomorrow ? undefined : tomorrow);
+                  setPageNumber(1);
+                }}
+              >
+                Ngày mai
+              </Button>
+            </Space>
+
+            {/* Service Type Dropdown */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text strong style={{ fontSize: 13, color: '#334155' }}>
+                Loại dịch vụ:
+              </Text>
+              <Select
+                value={serviceType === undefined ? 'all' : String(serviceType)}
+                onChange={(val) => {
+                  setPageNumber(1);
+                  setServiceType(val === 'all' ? undefined : Number(val));
+                }}
+                style={{ width: 190 }}
+                options={[
+                  { value: 'all', label: 'Tất cả' },
+                  { value: '0', label: '✂️ Grooming & Spa' },
+                  { value: '1', label: '🏨 Khách sạn (Boarding)' },
+                ]}
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text strong style={{ fontSize: 13, color: '#334155' }}>
+                Trạng thái:
+              </Text>
+              <Select
+                value={statusFilter === undefined ? 'all' : String(statusFilter)}
+                onChange={(val) => {
+                  setPageNumber(1);
+                  setStatusFilter(val === 'all' ? undefined : Number(val));
+                }}
+                style={{ width: 180 }}
+                options={[
+                  { value: 'all', label: 'Tất cả trạng thái' },
+                  {
+                    value: '0',
+                    label: (
+                      <span>
+                        <Badge status="warning" /> Chờ xác nhận
+                      </span>
+                    ),
+                  },
+                  {
+                    value: '1',
+                    label: (
+                      <span>
+                        <Badge color="#1677ff" /> Đã xác nhận
+                      </span>
+                    ),
+                  },
+                  {
+                    value: '2',
+                    label: (
+                      <span>
+                        <Badge status="success" /> Đã hoàn thành
+                      </span>
+                    ),
+                  },
+                  {
+                    value: '3',
+                    label: (
+                      <span>
+                        <Badge status="error" /> Đã hủy
+                      </span>
+                    ),
+                  },
+                ]}
+              />
+            </div>
+
+            {/* Reset Filter Button */}
+            {(serviceDate || serviceType !== undefined || statusFilter !== undefined) && (
+              <Button
+                size="small"
+                danger
+                icon={<ReloadOutlined />}
+                onClick={() => {
+                  setServiceDate(undefined);
+                  setServiceType(undefined);
+                  setStatusFilter(undefined);
+                  setPageNumber(1);
+                }}
+                style={{ borderRadius: 6 }}
+              >
+                Đặt lại
+              </Button>
+            )}
+          </Space>
+
+          <div>
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              Tìm thấy <strong style={{ color: '#059669' }}>{totalCount}</strong> lịch đặt
+            </Text>
+          </div>
+        </div>
       </Card>
 
       {/* Bookings Table / List */}
