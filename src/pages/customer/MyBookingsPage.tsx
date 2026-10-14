@@ -30,6 +30,7 @@ import {
   ExclamationCircleOutlined,
   StarFilled,
   CreditCardOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -324,12 +325,13 @@ const MyBookingsPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'Booking ID',
-      dataIndex: 'id',
-      key: 'id',
-      render: (id: string) => (
-        <Text strong style={{ fontFamily: 'monospace', color: '#059669' }}>
-          #{id.slice(0, 8).toUpperCase()}
+      title: 'No.',
+      key: 'index',
+      width: 65,
+      align: 'center' as const,
+      render: (_: any, __: any, index: number) => (
+        <Text strong style={{ color: '#475569' }}>
+          {(pageNumber - 1) * pageSize + index + 1}
         </Text>
       ),
     },
@@ -388,21 +390,12 @@ const MyBookingsPage: React.FC = () => {
       },
     },
     {
-      title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (val: string) => (
-        <Text type="secondary" style={{ fontSize: 13 }}>
-          {val ? dayjs(val).format('DD/MM/YYYY HH:mm') : 'N/A'}
-        </Text>
-      ),
-    },
-    {
       title: 'Total Price',
       dataIndex: 'totalPrice',
       key: 'totalPrice',
+      width: 170,
       render: (price: number) => (
-        <Text strong style={{ color: '#059669' }}>
+        <Text strong style={{ color: '#059669', whiteSpace: 'nowrap' }}>
           {price ? `${price.toLocaleString()} VND` : '0 VND'}
         </Text>
       ),
@@ -455,17 +448,18 @@ const MyBookingsPage: React.FC = () => {
             <Button
               type="default"
               size="small"
-              icon={<CreditCardOutlined />}
+              icon={<CreditCardOutlined style={{ color: '#ca8a04' }} />}
               loading={payingBookingId === record.id}
               style={{
-                borderColor: '#10b981',
-                color: '#059669',
+                borderColor: '#f59e0b',
+                color: '#b45309',
+                backgroundColor: '#fffbeb',
                 borderRadius: 6,
-                fontWeight: 500,
+                fontWeight: 600,
               }}
               onClick={() => handlePayVnpay(record.id)}
             >
-              Pay with VNPay
+              Pay Again
             </Button>
           )}
           {isCancellable(record.status) && (
@@ -515,9 +509,6 @@ const MyBookingsPage: React.FC = () => {
         </div>
 
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={fetchBookings} loading={loading}>
-            Refresh
-          </Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -643,7 +634,7 @@ const MyBookingsPage: React.FC = () => {
               <Button
                 size="small"
                 danger
-                icon={<ReloadOutlined />}
+                icon={<ClearOutlined />}
                 onClick={() => {
                   setServiceDate(undefined);
                   setServiceType(undefined);
@@ -734,10 +725,10 @@ const MyBookingsPage: React.FC = () => {
               type="primary"
               icon={<CreditCardOutlined />}
               loading={payingBookingId === selectedBooking.id}
-              style={{ backgroundColor: '#059669', borderColor: '#059669' }}
+              style={{ backgroundColor: '#f59e0b', borderColor: '#f59e0b', color: '#ffffff', fontWeight: 600 }}
               onClick={() => handlePayVnpay(selectedBooking.id)}
             >
-              Pay with VNPay
+              Pay Again
             </Button>
           ),
           selectedBooking && isCancellable(selectedBooking.status) && (
