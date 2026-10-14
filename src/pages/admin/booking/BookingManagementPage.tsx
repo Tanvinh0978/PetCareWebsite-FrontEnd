@@ -26,6 +26,7 @@ import {
   CheckOutlined,
   CloseOutlined,
   PlusOutlined,
+  SyncOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
@@ -108,33 +109,47 @@ export default function BookingManagementPage() {
     }
   }
 
+  const handleCheckInBooking = async (bookingId: string) => {
+    setActionLoadingId(bookingId)
+    try {
+      await bookingService.checkIn(bookingId)
+      message.success('Pet checked in successfully! Tasks are now active for staff.')
+      fetchBookings()
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to check in pet'
+      message.error(msg)
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
   const getStatusBadge = (status: number | string) => {
     const s = Number(status)
     if (s === 0 || status === 'Pending') {
       return (
-        <Tag color="warning" style={{ fontWeight: 600, padding: '3px 8px' }}>
-          ⏳ Pending Confirmation
+        <Tag color="warning" style={{ fontWeight: 600 }}>
+          Pending
         </Tag>
       )
     }
     if (s === 1 || status === 'Confirmed') {
       return (
-        <Tag color="processing" style={{ fontWeight: 600, padding: '3px 8px' }}>
-          🔵 Confirmed / In Salon
+        <Tag color="blue" style={{ fontWeight: 600 }}>
+          Confirmed
         </Tag>
       )
     }
     if (s === 2 || status === 'Completed') {
       return (
-        <Tag color="success" style={{ fontWeight: 600, padding: '3px 8px' }}>
-          ✓ Completed & Checked Out
+        <Tag color="success" style={{ fontWeight: 600 }}>
+          Completed
         </Tag>
       )
     }
     if (s === 3 || status === 'Cancelled') {
       return (
-        <Tag color="error" style={{ fontWeight: 600, padding: '3px 8px' }}>
-          ✕ Cancelled
+        <Tag color="error" style={{ fontWeight: 600 }}>
+          Cancelled
         </Tag>
       )
     }
@@ -211,7 +226,7 @@ export default function BookingManagementPage() {
     {
       title: 'Front Desk Actions',
       key: 'actions',
-      width: 240,
+      width: 270,
       render: (_: any, record: BookingListItem) => {
         const isPending = Number(record.status) === 0 || record.status === 'Pending'
         const isConfirmed = Number(record.status) === 1 || record.status === 'Confirmed'
@@ -266,35 +281,62 @@ export default function BookingManagementPage() {
               </>
             )}
 
-            {/* Confirmed action: Front desk check-out */}
+            {/* Confirmed actions: Check-in or Check-out */}
             {isConfirmed && (
-              <Button
-                type="primary"
-                size="small"
-                icon={<DollarCircleOutlined />}
-                onClick={() => setCheckoutBookingId(record.id)}
-                style={{
-                  backgroundColor: '#0284c7',
-                  borderColor: '#0284c7',
-                  fontWeight: 600,
-                  borderRadius: 6,
-                }}
-              >
-                Check-out at Counter
-              </Button>
+              <>
+                {record.canCheckIn && (
+                  <Popconfirm
+                    title="Check in pet at salon?"
+                    description="Customer has arrived with pet. Tasks will become available for staff."
+                    okText="Check-in"
+                    cancelText="Dismiss"
+                    onConfirm={() => handleCheckInBooking(record.id)}
+                  >
+                    <Button
+                      type="primary"
+                      size="small"
+                      loading={isLoading}
+                      icon={<CheckCircleOutlined />}
+                      style={{
+                        backgroundColor: '#f59e0b',
+                        borderColor: '#f59e0b',
+                        fontWeight: 600,
+                        borderRadius: 6,
+                      }}
+                    >
+                      Check-in Pet
+                    </Button>
+                  </Popconfirm>
+                )}
+
+                {record.canCheckout && (
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<DollarCircleOutlined />}
+                    onClick={() => setCheckoutBookingId(record.id)}
+                    style={{
+                      backgroundColor: '#0284c7',
+                      borderColor: '#0284c7',
+                      fontWeight: 600,
+                      borderRadius: 6,
+                    }}
+                  >
+                    Check-out at Counter
+                  </Button>
+                )}
+              </>
             )}
 
             {/* Detail modal button */}
-            <Tooltip title="View full booking breakdown">
-              <Button
-                size="small"
-                icon={<EyeOutlined />}
-                onClick={() => setDetailBookingId(record.id)}
-                style={{ borderRadius: 6 }}
-              >
-                Detail
-              </Button>
-            </Tooltip>
+            <Button
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => setDetailBookingId(record.id)}
+              style={{ borderRadius: 6 }}
+            >
+              Detail & Assign
+            </Button>
           </Space>
         )
       },
@@ -534,6 +576,7 @@ export default function BookingManagementPage() {
         bookingId={detailBookingId}
         onClose={() => setDetailBookingId(null)}
         onOpenCheckout={(id) => setCheckoutBookingId(id)}
+        onUpdated={fetchBookings}
       />
 
       {/* Front Desk Check-out Modal */}

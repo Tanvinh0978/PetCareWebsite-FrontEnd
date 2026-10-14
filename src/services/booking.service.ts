@@ -67,6 +67,10 @@ export interface BookingListItem {
   scheduledStartAt?: string | null;
   scheduledEndAt?: string | null;
   serviceNames?: string[];
+  canCheckIn?: boolean;
+  canCheckout?: boolean;
+  hasInServiceItems?: boolean;
+  isFullyAssigned?: boolean;
 }
 
 export interface BookingDetailItem {

@@ -384,6 +384,19 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               </div>
             )}
 
+            {summary.canCheckout === false && (
+              <Alert
+                type="warning"
+                showIcon
+                message="Cannot Check-out Yet"
+                description={
+                  summary.restrictionReason ||
+                  'All active service items in this booking must be completed by staff before front desk check-out.'
+                }
+                style={{ marginBottom: 16, borderRadius: 8 }}
+              />
+            )}
+
             {/* Actions */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
               <Button onClick={onClose} disabled={submitting} style={{ borderRadius: 8 }}>
@@ -392,11 +405,12 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               <Button
                 type="primary"
                 loading={submitting}
+                disabled={submitting || summary.canCheckout === false}
                 onClick={handleCheckout}
                 style={{
                   borderRadius: 8,
-                  backgroundColor: '#059669',
-                  borderColor: '#059669',
+                  backgroundColor: summary.canCheckout === false ? '#94a3b8' : '#059669',
+                  borderColor: summary.canCheckout === false ? '#94a3b8' : '#059669',
                   fontWeight: 600,
                   height: 38,
                   padding: '0 24px',
