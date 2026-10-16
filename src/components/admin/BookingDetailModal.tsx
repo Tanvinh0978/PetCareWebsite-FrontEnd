@@ -20,6 +20,7 @@ import {
   ShopOutlined,
   SaveOutlined,
   DollarCircleOutlined,
+  PrinterOutlined,
 } from '@ant-design/icons'
 import {
   bookingService,
@@ -29,6 +30,7 @@ import {
 import { staffService } from '@/services/staff.service'
 import type { StaffDTO } from '@/types/staff.types'
 import { roomService, type RoomDTO } from '@/services/room.service'
+import { ReceiptModal } from './ReceiptModal'
 
 const { Title, Text } = Typography
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
@@ -62,6 +64,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   >({})
   const [savingItemId, setSavingItemId] = useState<string | null>(null)
   const [checkInLoading, setCheckInLoading] = useState(false)
+  const [receiptOpen, setReceiptOpen] = useState(false)
 
   // Load booking details & staff/room options
   const loadData = async (id: string) => {
@@ -388,7 +391,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   ]
 
   return (
-    <Modal
+    <>
+      <Modal
       open={open}
       onCancel={onClose}
       footer={
@@ -449,6 +453,21 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   </Button>
                 </Tooltip>
               )
+            )}
+
+            {isCompleted && (
+              <Button
+                icon={<PrinterOutlined />}
+                onClick={() => setReceiptOpen(true)}
+                style={{
+                  borderRadius: 8,
+                  borderColor: '#059669',
+                  color: '#059669',
+                  fontWeight: 600,
+                }}
+              >
+                In Hóa đơn / Biên lai
+              </Button>
             )}
           </Space>
         </div>
@@ -575,6 +594,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         )}
       </Spin>
     </Modal>
+
+    <ReceiptModal
+      bookingId={bookingId}
+      open={receiptOpen}
+      onClose={() => setReceiptOpen(false)}
+    />
+    </>
   )
 }
 

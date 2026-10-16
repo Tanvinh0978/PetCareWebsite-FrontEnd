@@ -219,6 +219,11 @@ export const bookingService = {
     return res?.result ?? res?.data?.result ?? res?.data ?? res;
   },
 
+  getBookingReceipt: async (id: string): Promise<any> => {
+    const res: any = await axiosClient.get(`/api/bookings/${id}/receipt`);
+    return res?.result ?? res?.data?.result ?? res?.data ?? res;
+  },
+
   checkout: (id: string, payload: CheckoutPayload) =>
     axiosClient.post(`/api/bookings/${id}/checkout`, payload),
 
