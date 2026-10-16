@@ -71,6 +71,9 @@ export interface BookingListItem {
   canCheckout?: boolean;
   hasInServiceItems?: boolean;
   isFullyAssigned?: boolean;
+  cancellationReason?: string;
+  canMarkNoShow?: boolean;
+  isNoShow?: boolean;
 }
 
 export interface BookingDetailItem {
@@ -229,6 +232,10 @@ export const bookingService = {
 
   cancelBooking: async (id: string, cancellationReason = 'Customer requested cancellation'): Promise<any> => {
     return axiosClient.put(`/api/bookings/${id}/cancel`, { cancellationReason });
+  },
+
+  markNoShow: async (id: string, reason = 'Khách không đến theo lịch hẹn (No-Show)'): Promise<any> => {
+    return axiosClient.put(`/api/bookings/${id}/no-show`, { reason });
   },
 
   createVnpayUrl: async (bookingId: string): Promise<any> => {
