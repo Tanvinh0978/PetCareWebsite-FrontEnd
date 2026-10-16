@@ -12,6 +12,7 @@ import {
   Space,
   Tooltip,
   message,
+  Popconfirm,
 } from 'antd'
 import {
   CheckCircleOutlined,
@@ -21,6 +22,7 @@ import {
   SaveOutlined,
   DollarCircleOutlined,
   PrinterOutlined,
+  StopOutlined,
 } from '@ant-design/icons'
 import {
   bookingService,
@@ -64,6 +66,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   >({})
   const [savingItemId, setSavingItemId] = useState<string | null>(null)
   const [checkInLoading, setCheckInLoading] = useState(false)
+  const [noShowLoading, setNoShowLoading] = useState(false)
   const [receiptOpen, setReceiptOpen] = useState(false)
 
   // Load booking details & staff/room options
@@ -165,6 +168,22 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       message.error(msg)
     } finally {
       setCheckInLoading(false)
+    }
+  }
+
+  const handleNoShow = async () => {
+    if (!bookingId) return
+    setNoShowLoading(true)
+    try {
+      await bookingService.markNoShow(bookingId)
+      message.success('Đã đánh dấu khách không đến (No-Show). Lịch hẹn và phòng đã được giải phóng.')
+      if (onUpdated) onUpdated()
+      await loadData(bookingId)
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Không thể đánh dấu No-Show.'
+      message.error(msg)
+    } finally {
+      setNoShowLoading(false)
     }
   }
 
@@ -397,7 +416,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       onCancel={onClose}
       footer={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
+          <Space>
             {isConfirmed && hasEligibleCheckInItems && (
               canCheckIn ? (
                 <Button
@@ -422,7 +441,27 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </Tooltip>
               )
             )}
-          </div>
+
+            {isConfirmed && hasEligibleCheckInItems && (
+              <Popconfirm
+                title="Đánh dấu khách không đến (No-Show)?"
+                description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
+                okText="Xác nhận No-Show"
+                cancelText="Bỏ qua"
+                okButtonProps={{ danger: true }}
+                onConfirm={handleNoShow}
+              >
+                <Button
+                  danger
+                  icon={<StopOutlined />}
+                  loading={noShowLoading}
+                  style={{ borderRadius: 8 }}
+                >
+                  Đánh dấu No-Show
+                </Button>
+              </Popconfirm>
+            )}
+          </Space>
           <Space>
             <Button onClick={onClose} style={{ borderRadius: 8 }}>
               Close

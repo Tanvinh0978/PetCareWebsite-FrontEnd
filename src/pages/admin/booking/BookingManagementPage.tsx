@@ -27,6 +27,7 @@ import {
   CloseOutlined,
   PlusOutlined,
   SyncOutlined,
+  StopOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
@@ -109,6 +110,20 @@ export default function BookingManagementPage() {
     }
   }
 
+  const handleMarkNoShow = async (bookingId: string) => {
+    setActionLoadingId(bookingId)
+    try {
+      await bookingService.markNoShow(bookingId)
+      message.success('Đã đánh dấu khách không đến (No-Show). Lịch hẹn và phòng đã được giải phóng.')
+      fetchBookings()
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Không thể đánh dấu No-Show.'
+      message.error(msg)
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
   const handleCheckInBooking = async (bookingId: string) => {
     setActionLoadingId(bookingId)
     try {
@@ -123,8 +138,20 @@ export default function BookingManagementPage() {
     }
   }
 
-  const getStatusBadge = (status: number | string) => {
+  const getStatusBadge = (status: number | string, record?: BookingListItem) => {
     const s = Number(status)
+    const isNoShow = record?.isNoShow || (record?.cancellationReason && record.cancellationReason.toLowerCase().includes('no-show'))
+
+    if (isNoShow) {
+      return (
+        <Tooltip title={record?.cancellationReason || 'Khách không đến theo lịch hẹn (No-Show)'}>
+          <Tag color="purple" style={{ fontWeight: 600 }}>
+            No-Show
+          </Tag>
+        </Tooltip>
+      )
+    }
+
     if (s === 0 || status === 'Pending') {
       return (
         <Tag color="warning" style={{ fontWeight: 600 }}>
@@ -148,9 +175,11 @@ export default function BookingManagementPage() {
     }
     if (s === 3 || status === 'Cancelled') {
       return (
-        <Tag color="error" style={{ fontWeight: 600 }}>
-          Cancelled
-        </Tag>
+        <Tooltip title={record?.cancellationReason || undefined}>
+          <Tag color="error" style={{ fontWeight: 600 }}>
+            Cancelled
+          </Tag>
+        </Tooltip>
       )
     }
     return <Tag>{status}</Tag>
@@ -221,7 +250,7 @@ export default function BookingManagementPage() {
       title: 'Status',
       key: 'status',
       width: 190,
-      render: (_: any, record: BookingListItem) => getStatusBadge(record.status),
+      render: (_: any, record: BookingListItem) => getStatusBadge(record.status, record),
     },
     {
       title: 'Front Desk Actions',
@@ -281,7 +310,7 @@ export default function BookingManagementPage() {
               </>
             )}
 
-            {/* Confirmed actions: Check-in or Check-out */}
+            {/* Confirmed actions: Check-in, Check-out, or No-Show */}
             {isConfirmed && (
               <>
                 {record.canCheckIn && (
@@ -305,6 +334,27 @@ export default function BookingManagementPage() {
                       }}
                     >
                       Check-in Pet
+                    </Button>
+                  </Popconfirm>
+                )}
+
+                {(record.canMarkNoShow ?? true) && !record.hasInServiceItems && !record.canCheckout && (
+                  <Popconfirm
+                    title="Đánh dấu khách không đến (No-Show)?"
+                    description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
+                    okText="Xác nhận No-Show"
+                    cancelText="Bỏ qua"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => handleMarkNoShow(record.id)}
+                  >
+                    <Button
+                      danger
+                      size="small"
+                      loading={isLoading}
+                      icon={<StopOutlined />}
+                      style={{ borderRadius: 6 }}
+                    >
+                      No-Show
                     </Button>
                   </Popconfirm>
                 )}
