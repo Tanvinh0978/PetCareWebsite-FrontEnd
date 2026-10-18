@@ -17,6 +17,7 @@ import {
   Alert,
   DatePicker,
   Select,
+  Image,
 } from 'antd';
 import {
   CalendarOutlined,
@@ -31,6 +32,8 @@ import {
   StarFilled,
   CreditCardOutlined,
   ClearOutlined,
+  CameraOutlined,
+  ZoomInOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -62,6 +65,9 @@ export const getBookingStatusConfig = (status: any) => {
   if (s === '3' || s === 'cancelled' || s === 'canceled') {
     return { label: 'Cancelled', color: 'red', icon: <CloseCircleOutlined /> };
   }
+  if (s === '4' || s === 'no_show' || s === 'noshow') {
+    return { label: 'No Show', color: 'purple', icon: <CloseCircleOutlined style={{ color: '#7c3aed' }} /> };
+  }
   return { label: String(status || 'Unknown'), color: 'default', icon: null };
 };
 
@@ -88,7 +94,7 @@ export const getItemStatusConfig = (status: any) => {
   if (s === '3' || s === 'in_progress' || s === 'inprogress') return { label: 'In Progress', color: 'processing' };
   if (s === '4' || s === 'completed') return { label: 'Completed', color: 'green' };
   if (s === '5' || s === 'cancelled' || s === 'canceled') return { label: 'Cancelled', color: 'red' };
-  if (s === '6' || s === 'no_show' || s === 'noshow') return { label: 'No Show', color: 'default' };
+  if (s === '6' || s === 'no_show' || s === 'noshow') return { label: 'No Show', color: 'purple' };
   return { label: String(status || 'Unknown'), color: 'default' };
 };
 
@@ -107,6 +113,7 @@ const MyBookingsPage: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<BookingDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
+  const [beforeAfterItem, setBeforeAfterItem] = useState<BookingDetailItem | null>(null);
 
   // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -456,6 +463,23 @@ const MyBookingsPage: React.FC = () => {
           >
             Details
           </Button>
+          {record.hasPhotos && (
+            <Button
+              type="default"
+              size="small"
+              icon={<CameraOutlined style={{ color: '#0d9488' }} />}
+              style={{
+                borderColor: '#14b8a6',
+                color: '#0f766e',
+                borderRadius: 6,
+                fontWeight: 600,
+                backgroundColor: '#f0fdfa',
+              }}
+              onClick={() => handleOpenDetail(record.id)}
+            >
+              Before & After 📸
+            </Button>
+          )}
           {(String(record.status).toLowerCase() === '2' || String(record.status).toLowerCase() === 'completed') && (
             <Button
               type="default"
@@ -657,6 +681,14 @@ const MyBookingsPage: React.FC = () => {
                     label: (
                       <span>
                         <Badge status="error" /> Cancelled
+                      </span>
+                    ),
+                  },
+                  {
+                    value: '4',
+                    label: (
+                      <span>
+                        <Badge color="#7c3aed" /> No-Show
                       </span>
                     ),
                   },
@@ -959,6 +991,124 @@ const MyBookingsPage: React.FC = () => {
                         )}
                       </div>
                     </div>
+
+                    {/* Grooming Outcome & Before / After Photos Section */}
+                    {(item.beforeImageUrl || item.resultImageUrl || item.resultNote) && (
+                      <div
+                        style={{
+                          marginTop: 14,
+                          padding: '12px 14px',
+                          background: '#ffffff',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: 10,
+                            flexWrap: 'wrap',
+                            gap: 6,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <CameraOutlined style={{ color: '#0d9488', fontSize: 16 }} />
+                            <Text strong style={{ fontSize: 13, color: '#0f766e' }}>
+                              Hình ảnh & Kết quả chăm sóc (Before & After)
+                            </Text>
+                          </div>
+                          {(item.beforeImageUrl || item.resultImageUrl) && (
+                            <Button
+                              type="link"
+                              size="small"
+                              icon={<ZoomInOutlined />}
+                              style={{ color: '#0284c7', padding: 0, fontSize: 12, fontWeight: 600 }}
+                              onClick={() => setBeforeAfterItem(item)}
+                            >
+                              Xem so sánh chi tiết
+                            </Button>
+                          )}
+                        </div>
+
+                        {(item.beforeImageUrl || item.resultImageUrl) && (
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: 16,
+                              alignItems: 'center',
+                              flexWrap: 'wrap',
+                              marginBottom: item.resultNote ? 10 : 0,
+                            }}
+                          >
+                            <Image.PreviewGroup>
+                              {item.beforeImageUrl && (
+                                <div style={{ textAlign: 'center' }}>
+                                  <Image
+                                    src={item.beforeImageUrl}
+                                    alt="Trước khi làm (Before)"
+                                    width={100}
+                                    height={100}
+                                    style={{
+                                      objectFit: 'cover',
+                                      borderRadius: 8,
+                                      border: '2px solid #cbd5e1',
+                                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                    }}
+                                  />
+                                  <div style={{ marginTop: 4 }}>
+                                    <Tag color="default" style={{ fontSize: 11, fontWeight: 600, borderRadius: 6, margin: 0 }}>
+                                      📷 Trước (Before)
+                                    </Tag>
+                                  </div>
+                                </div>
+                              )}
+                              {item.resultImageUrl && (
+                                <div style={{ textAlign: 'center' }}>
+                                  <Image
+                                    src={item.resultImageUrl}
+                                    alt="Sau khi làm (After)"
+                                    width={100}
+                                    height={100}
+                                    style={{
+                                      objectFit: 'cover',
+                                      borderRadius: 8,
+                                      border: '2px solid #10b981',
+                                      boxShadow: '0 2px 8px rgba(16,185,129,0.25)',
+                                    }}
+                                  />
+                                  <div style={{ marginTop: 4 }}>
+                                    <Tag color="success" style={{ fontSize: 11, fontWeight: 600, borderRadius: 6, margin: 0 }}>
+                                      ✨ Sau (After)
+                                    </Tag>
+                                  </div>
+                                </div>
+                              )}
+                            </Image.PreviewGroup>
+                          </div>
+                        )}
+
+                        {item.resultNote && (
+                          <div
+                            style={{
+                              marginTop: (item.beforeImageUrl || item.resultImageUrl) ? 10 : 0,
+                              padding: '8px 12px',
+                              background: '#f8fafc',
+                              borderLeft: '3px solid #0d9488',
+                              borderRadius: '0 6px 6px 0',
+                              fontSize: 13,
+                              color: '#334155',
+                            }}
+                          >
+                            <span style={{ fontWeight: 600, color: '#0f766e' }}>
+                              💬 Ghi chú hoàn thành {item.staffName ? `(${item.staffName})` : ''}:
+                            </span>{' '}
+                            <span>{item.resultNote}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </Card>
                 );
               })}
@@ -973,6 +1123,144 @@ const MyBookingsPage: React.FC = () => {
         petName={careHistoryItem?.petName}
         onClose={() => setCareHistoryItem(null)}
       />
+
+      {/* Before & After Comparison Modal */}
+      <Modal
+        open={Boolean(beforeAfterItem)}
+        onCancel={() => setBeforeAfterItem(null)}
+        footer={[
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setBeforeAfterItem(null)}
+            style={{ borderRadius: 8, backgroundColor: '#059669', borderColor: '#059669', padding: '0 20px', fontWeight: 600 }}
+          >
+            Đóng
+          </Button>,
+        ]}
+        width={760}
+        centered
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: '#ccfbf1',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#0d9488',
+              }}
+            >
+              <CameraOutlined style={{ fontSize: 18 }} />
+            </div>
+            <div>
+              <Typography.Title level={4} style={{ margin: 0, color: '#0f172a' }}>
+                Ảnh So Sánh Trước & Sau Khi Chăm Sóc
+              </Typography.Title>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                {beforeAfterItem?.petName} • {beforeAfterItem?.serviceName}
+              </Text>
+            </div>
+          </div>
+        }
+      >
+        {beforeAfterItem && (
+          <div style={{ padding: '8px 0' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: beforeAfterItem.beforeImageUrl && beforeAfterItem.resultImageUrl ? '1fr 1fr' : '1fr',
+                gap: 16,
+                marginBottom: 20,
+              }}
+            >
+              {beforeAfterItem.beforeImageUrl && (
+                <div
+                  style={{
+                    border: '1px solid #cbd5e1',
+                    borderRadius: 12,
+                    padding: 12,
+                    background: '#f8fafc',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Tag color="default" style={{ marginBottom: 10, fontSize: 13, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+                    📷 TRƯỚC KHI LÀM (BEFORE)
+                  </Tag>
+                  <div style={{ overflow: 'hidden', borderRadius: 8 }}>
+                    <Image
+                      src={beforeAfterItem.beforeImageUrl}
+                      alt="Before Grooming"
+                      style={{
+                        width: '100%',
+                        maxHeight: 340,
+                        objectFit: 'contain',
+                        borderRadius: 8,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {beforeAfterItem.resultImageUrl && (
+                <div
+                  style={{
+                    border: '2px solid #10b981',
+                    borderRadius: 12,
+                    padding: 12,
+                    background: '#f0fdf4',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Tag color="success" style={{ marginBottom: 10, fontSize: 13, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+                    ✨ SAU KHI LÀM ĐẸP (AFTER)
+                  </Tag>
+                  <div style={{ overflow: 'hidden', borderRadius: 8 }}>
+                    <Image
+                      src={beforeAfterItem.resultImageUrl}
+                      alt="After Grooming"
+                      style={{
+                        width: '100%',
+                        maxHeight: 340,
+                        objectFit: 'contain',
+                        borderRadius: 8,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {beforeAfterItem.resultNote && (
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderLeft: '4px solid #0d9488',
+                  borderRadius: 8,
+                  padding: '14px 16px',
+                  marginBottom: 12,
+                }}
+              >
+                <Text strong style={{ fontSize: 13, color: '#0f766e', display: 'block', marginBottom: 4 }}>
+                  💬 Ghi chú hoàn tất dịch vụ từ thợ {beforeAfterItem.staffName ? `(${beforeAfterItem.staffName})` : ''}:
+                </Text>
+                <Text style={{ fontSize: 14, color: '#334155' }}>
+                  {beforeAfterItem.resultNote}
+                </Text>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#94a3b8', padding: '0 4px' }}>
+              <span>Thú cưng: <strong style={{ color: '#475569' }}>{beforeAfterItem.petName}</strong> ({beforeAfterItem.petWeight}kg)</span>
+              <span>Kỹ thuật viên: <strong style={{ color: '#475569' }}>{beforeAfterItem.staffName || 'Chuyên viên Salon'}</strong></span>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Cancel Confirmation Modal */}
       <Modal

@@ -13,6 +13,8 @@ import {
   Tooltip,
   message,
   Popconfirm,
+  Input,
+  Image,
 } from 'antd'
 import {
   CheckCircleOutlined,
@@ -23,6 +25,8 @@ import {
   DollarCircleOutlined,
   PrinterOutlined,
   StopOutlined,
+  CloseOutlined,
+  CameraOutlined,
 } from '@ant-design/icons'
 import {
   bookingService,
@@ -67,7 +71,11 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [savingItemId, setSavingItemId] = useState<string | null>(null)
   const [checkInLoading, setCheckInLoading] = useState(false)
   const [noShowLoading, setNoShowLoading] = useState(false)
+  const [confirmLoading, setConfirmLoading] = useState(false)
   const [receiptOpen, setReceiptOpen] = useState(false)
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [cancellationReason, setCancellationReason] = useState('')
+  const [cancelLoading, setCancelLoading] = useState(false)
 
   // Load booking details & staff/room options
   const loadData = async (id: string) => {
@@ -155,6 +163,22 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   }
 
+  const handleConfirmBooking = async () => {
+    if (!bookingId) return
+    setConfirmLoading(true)
+    try {
+      await bookingService.updateBookingStatus(bookingId, { status: 1 })
+      message.success('Đã xác nhận đơn đặt lịch thành công! Bây giờ bạn có thể phân công nhân viên.')
+      if (onUpdated) onUpdated()
+      await loadData(bookingId)
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Không thể xác nhận đơn đặt lịch.'
+      message.error(msg)
+    } finally {
+      setConfirmLoading(false)
+    }
+  }
+
   const handleCheckIn = async () => {
     if (!bookingId) return
     setCheckInLoading(true)
@@ -187,11 +211,71 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   }
 
+  const handleCancelBooking = async () => {
+    if (!bookingId) return
+    setCancelLoading(true)
+    try {
+      await bookingService.cancelBooking(bookingId, cancellationReason.trim() || 'Khách liên hệ xin hủy hẹn')
+      message.success('Đơn đặt lịch đã được hủy thành công.')
+      setCancelModalOpen(false)
+      setCancellationReason('')
+      if (onUpdated) onUpdated()
+      await loadData(bookingId)
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Không thể hủy đơn đặt lịch.'
+      message.error(msg)
+    } finally {
+      setCancelLoading(false)
+    }
+  }
+
+  // Filter staff: Exclude Admin, must match service department (Boarding vs Grooming)
+  const getFilteredStaffOptions = (item: BookingDetailItem) => {
+    const isBoarding =
+      item.serviceType === 1 ||
+      String(item.serviceType).toLowerCase() === 'boarding' ||
+      (item.serviceName && item.serviceName.toLowerCase().includes('boarding'))
+
+    const targetRoleKeyword = isBoarding ? 'boarding' : 'grooming'
+
+    const eligibleStaffs = staffList.filter((s) => {
+      const roles = s.roles || []
+      const isAdmin = roles.some((r) => r.toLowerCase() === 'admin')
+      if (isAdmin) return false
+
+      const hasMatchingRole = roles.some((r) => r.toLowerCase().includes(targetRoleKeyword))
+      const isActive = s.status === 'Active' || (s.status as any) === 0
+
+      return isActive && hasMatchingRole
+    })
+
+    const currentStaffId =
+      assignments[item.id]?.staffId !== undefined ? assignments[item.id].staffId : item.staffId || undefined
+
+    if (currentStaffId && !eligibleStaffs.some((s) => s.id === currentStaffId)) {
+      const existingStaff = staffList.find((s) => s.id === currentStaffId)
+      if (existingStaff) {
+        eligibleStaffs.unshift(existingStaff)
+      }
+    }
+
+    return eligibleStaffs.map((s) => ({
+      value: s.id,
+      label: `${s.fullName} (${s.roles?.join(', ') || (isBoarding ? 'Boarding Staff' : 'Grooming Staff')})`,
+    }))
+  }
+
   const isConfirmed = detail?.status === 1 || String(detail?.status).toLowerCase() === 'confirmed'
   const isCompleted = detail?.status === 2 || String(detail?.status).toLowerCase() === 'completed'
   const isCancelled = detail?.status === 3 || String(detail?.status).toLowerCase() === 'cancelled'
+  const isNoShow = Boolean(
+    detail?.status === 4 ||
+    String(detail?.status).toLowerCase() === 'no_show' ||
+    String(detail?.status).toLowerCase() === 'no-show' ||
+    (detail?.cancellationReason && detail.cancellationReason.toLowerCase().includes('no-show'))
+  )
   const isPending = detail?.status === 0 || String(detail?.status).toLowerCase() === 'pending'
-  const isReadOnly = isCompleted || isCancelled
+  const isReadOnly = Boolean(isCompleted || isCancelled || isNoShow)
 
   // Check if all active items are completed
   const allItemsCompleted =
@@ -240,7 +324,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     if (s === '3' || s === 'in_progress' || s === 'inprogress') return <Tag color="processing">In Progress</Tag>
     if (s === '4' || s === 'completed') return <Tag color="success">Completed</Tag>
     if (s === '5' || s === 'cancelled') return <Tag color="error">Cancelled</Tag>
-    if (s === '6' || s === 'no_show' || s === 'noshow') return <Tag color="default">No Show</Tag>
+    if (s === '6' || s === 'no_show' || s === 'noshow') return <Tag color="purple">No Show</Tag>
     return <Tag>{status}</Tag>
   }
 
@@ -335,20 +419,28 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         const currentStaffId =
           assignments[r.id]?.staffId !== undefined ? assignments[r.id].staffId : r.staffId || undefined
 
+        const isBoarding =
+          r.serviceType === 1 ||
+          String(r.serviceType).toLowerCase() === 'boarding' ||
+          (r.serviceName && r.serviceName.toLowerCase().includes('boarding'))
+
+        const isStaffDisabled = isReadOnly || !isConfirmed
+        const filteredOptions = getFilteredStaffOptions(r)
+        const placeholder = !isConfirmed
+          ? 'Chỉ phân công khi đã Xác nhận'
+          : (isBoarding ? 'Chọn nhân viên Boarding' : 'Chọn nhân viên Grooming')
+
         return (
           <div>
             <Select
               size="small"
-              placeholder="Select staff"
+              placeholder={placeholder}
               style={{ width: '100%' }}
-              disabled={isReadOnly}
+              disabled={isStaffDisabled}
               value={currentStaffId}
               onChange={(val) => handleAssignmentChange(r.id, 'staffId', val)}
               allowClear
-              options={staffList.map((s) => ({
-                value: s.id,
-                label: `${s.fullName} (${s.roles?.join(', ') || 'Staff'})`,
-              }))}
+              options={filteredOptions}
             />
           </div>
         )
@@ -387,18 +479,20 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           current &&
           (current.staffId !== (r.staffId || undefined) || current.roomId !== (r.roomId || undefined))
 
+        const canSave = hasChanged && isConfirmed
+
         return (
           <Button
             type="primary"
             size="small"
             icon={<SaveOutlined />}
             loading={savingItemId === r.id}
-            disabled={!hasChanged}
+            disabled={!canSave}
             onClick={() => handleSaveAssignment(r)}
             style={{
               borderRadius: 6,
-              backgroundColor: hasChanged ? '#059669' : undefined,
-              borderColor: hasChanged ? '#059669' : undefined,
+              backgroundColor: canSave ? '#059669' : undefined,
+              borderColor: canSave ? '#059669' : undefined,
               fontSize: 12,
             }}
           >
@@ -417,49 +511,96 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       footer={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Space>
-            {isConfirmed && hasEligibleCheckInItems && (
-              canCheckIn ? (
+            {isPending && (
+              <>
                 <Button
                   type="primary"
                   icon={<CheckCircleOutlined />}
-                  loading={checkInLoading}
-                  onClick={handleCheckIn}
+                  loading={confirmLoading}
+                  onClick={handleConfirmBooking}
                   style={{
                     borderRadius: 8,
-                    backgroundColor: '#f59e0b',
-                    borderColor: '#f59e0b',
+                    backgroundColor: '#2563eb',
+                    borderColor: '#2563eb',
                     fontWeight: 600,
                   }}
                 >
-                  Check-in Pet at Front Desk
+                  Xác nhận đơn (Confirm Booking)
                 </Button>
-              ) : (
-                <Tooltip title="Vui lòng phân công nhân viên và xếp phòng đầy đủ trước khi Check-in.">
-                  <Button disabled style={{ borderRadius: 8 }}>
-                    Check-in Pet at Front Desk
-                  </Button>
-                </Tooltip>
-              )
+                <Button
+                  danger
+                  icon={<CloseOutlined />}
+                  onClick={() => {
+                    setCancellationReason('Khách liên hệ xin hủy hẹn')
+                    setCancelModalOpen(true)
+                  }}
+                  style={{ borderRadius: 8 }}
+                >
+                  Hủy đơn (Cancel)
+                </Button>
+              </>
             )}
 
             {isConfirmed && hasEligibleCheckInItems && (
-              <Popconfirm
-                title="Đánh dấu khách không đến (No-Show)?"
-                description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
-                okText="Xác nhận No-Show"
-                cancelText="Bỏ qua"
-                okButtonProps={{ danger: true }}
-                onConfirm={handleNoShow}
-              >
+              <>
+                {canCheckIn ? (
+                  <Button
+                    type="primary"
+                    icon={<CheckCircleOutlined />}
+                    loading={checkInLoading}
+                    onClick={handleCheckIn}
+                    style={{
+                      borderRadius: 8,
+                      backgroundColor: '#f59e0b',
+                      borderColor: '#f59e0b',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Check-in Pet at Front Desk
+                  </Button>
+                ) : (
+                  <Tooltip title="Vui lòng phân công nhân viên và xếp phòng đầy đủ trước khi Check-in.">
+                    <Button disabled style={{ borderRadius: 8 }}>
+                      Check-in Pet at Front Desk
+                    </Button>
+                  </Tooltip>
+                )}
+
                 <Button
                   danger
-                  icon={<StopOutlined />}
-                  loading={noShowLoading}
+                  icon={<CloseOutlined />}
+                  onClick={() => {
+                    setCancellationReason('Khách liên hệ xin hủy hẹn')
+                    setCancelModalOpen(true)
+                  }}
                   style={{ borderRadius: 8 }}
                 >
-                  Đánh dấu No-Show
+                  Hủy đơn (Cancel)
                 </Button>
-              </Popconfirm>
+
+                <Popconfirm
+                  title="Đánh dấu khách không đến (No-Show)?"
+                  description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
+                  okText="Xác nhận No-Show"
+                  cancelText="Bỏ qua"
+                  okButtonProps={{ danger: true }}
+                  onConfirm={handleNoShow}
+                >
+                  <Button
+                    icon={<StopOutlined />}
+                    loading={noShowLoading}
+                    style={{
+                      borderRadius: 8,
+                      color: '#7c3aed',
+                      borderColor: '#c4b5fd',
+                      backgroundColor: '#f5f3ff',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Đánh dấu No-Show
+                  </Button>
+                </Popconfirm>
+              </>
             )}
           </Space>
           <Space>
@@ -548,6 +689,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   color={
                     isCompleted
                       ? 'success'
+                      : isNoShow
+                      ? 'purple'
                       : isConfirmed
                       ? 'blue'
                       : isCancelled
@@ -556,9 +699,14 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   }
                   style={{ fontWeight: 600 }}
                 >
-                  {isCompleted ? 'Completed' : isConfirmed ? 'Confirmed' : isCancelled ? 'Cancelled' : 'Pending'}
+                  {isCompleted ? 'Completed' : isNoShow ? 'No-Show' : isConfirmed ? 'Confirmed' : isCancelled ? 'Cancelled' : 'Pending'}
                 </Tag>
               </Descriptions.Item>
+              {detail.cancellationReason && (
+                <Descriptions.Item label={isNoShow ? 'Ghi chú No-Show' : 'Lý do hủy'}>
+                  <Text type="danger">{detail.cancellationReason}</Text>
+                </Descriptions.Item>
+              )}
               {detail.voucherCode && (
                 <Descriptions.Item label="Voucher Applied">
                   <Tag color="purple">{detail.voucherCode}</Tag>
@@ -573,6 +721,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </Text>
               </Descriptions.Item>
             </Descriptions>
+
+            {/* Pending Alert */}
+            {isPending && (
+              <Alert
+                type="warning"
+                showIcon
+                message="Đơn đặt lịch đang chờ xác nhận (Pending)"
+                description="Hệ thống chỉ cho phép phân công nhân viên sau khi đơn đã được Xác nhận (Confirmed). Vui lòng nhấn nút 'Xác nhận đơn (Confirm Booking)' ở phía dưới góc trái để duyệt đơn."
+                style={{ marginBottom: 16, borderRadius: 8 }}
+              />
+            )}
 
             {/* Read-only Alert when completed or cancelled */}
             {isCompleted && (
@@ -627,6 +786,49 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 pagination={false}
                 size="small"
                 style={{ border: '1px solid #f1f5f9', borderRadius: 8 }}
+                expandable={{
+                  rowExpandable: (record) => Boolean(record.beforeImageUrl || record.resultImageUrl || record.resultNote),
+                  expandedRowRender: (record) => (
+                    <div style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <Text strong style={{ fontSize: 13, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        <CameraOutlined /> Hình ảnh Trước & Sau (Before & After) & Kết quả dịch vụ:
+                      </Text>
+                      <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Image.PreviewGroup>
+                          {record.beforeImageUrl && (
+                            <div style={{ textAlign: 'center' }}>
+                              <Image
+                                src={record.beforeImageUrl}
+                                alt="Before"
+                                width={80}
+                                height={80}
+                                style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                              />
+                              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Before</div>
+                            </div>
+                          )}
+                          {record.resultImageUrl && (
+                            <div style={{ textAlign: 'center' }}>
+                              <Image
+                                src={record.resultImageUrl}
+                                alt="After"
+                                width={80}
+                                height={80}
+                                style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #10b981' }}
+                              />
+                              <div style={{ fontSize: 11, color: '#059669', fontWeight: 600, marginTop: 2 }}>After ⭐</div>
+                            </div>
+                          )}
+                        </Image.PreviewGroup>
+                        {record.resultNote && (
+                          <div style={{ fontSize: 13, color: '#334155', background: '#ffffff', padding: '8px 12px', borderRadius: 6, border: '1px solid #e2e8f0', flex: 1, minWidth: 200 }}>
+                            <span style={{ fontWeight: 600, color: '#0f766e' }}>Ghi chú kỹ thuật viên:</span> "{record.resultNote}"
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ),
+                }}
               />
             </div>
           </div>
@@ -639,6 +841,32 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       open={receiptOpen}
       onClose={() => setReceiptOpen(false)}
     />
+
+    {/* Cancel Booking Reason Modal */}
+    <Modal
+      title="Hủy đơn đặt lịch"
+      open={cancelModalOpen}
+      onCancel={() => {
+        setCancelModalOpen(false)
+        setCancellationReason('')
+      }}
+      onOk={handleCancelBooking}
+      confirmLoading={cancelLoading}
+      okText="Xác nhận hủy đơn"
+      okButtonProps={{ danger: true }}
+      cancelText="Bỏ qua"
+      centered
+    >
+      <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
+        Lễ tân thực hiện hủy đơn theo yêu cầu của khách hàng (hoặc lý do bất khả kháng). Vui lòng nhập lý do hủy:
+      </p>
+      <Input.TextArea
+        rows={3}
+        value={cancellationReason}
+        onChange={(e) => setCancellationReason(e.target.value)}
+        placeholder="Ví dụ: Khách gọi điện xin hủy vì bận đột xuất / Thú cưng đang ốm..."
+      />
+    </Modal>
     </>
   )
 }

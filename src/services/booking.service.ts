@@ -74,6 +74,7 @@ export interface BookingListItem {
   cancellationReason?: string;
   canMarkNoShow?: boolean;
   isNoShow?: boolean;
+  hasPhotos?: boolean;
 }
 
 export interface BookingDetailItem {
@@ -96,6 +97,7 @@ export interface BookingDetailItem {
   staffId?: string;
   staffName?: string;
   resultNote?: string;
+  beforeImageUrl?: string;
   resultImageUrl?: string;
 }
 
