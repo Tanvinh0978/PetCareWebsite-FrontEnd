@@ -13,6 +13,7 @@ import {
   message,
   Tooltip,
   Typography,
+  Modal,
 } from 'antd'
 import {
   SearchOutlined,
@@ -58,6 +59,12 @@ export default function BookingManagementPage() {
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
 
+  // Cancel Modal state
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null)
+  const [cancellationReason, setCancellationReason] = useState('')
+  const [cancelLoading, setCancelLoading] = useState(false)
+
   const fetchBookings = useCallback(async () => {
     setLoading(true)
     try {
@@ -96,17 +103,27 @@ export default function BookingManagementPage() {
     }
   }
 
-  const handleCancelBooking = async (bookingId: string) => {
-    setActionLoadingId(bookingId)
+  const openCancelModal = (bookingId: string) => {
+    setCancellingBookingId(bookingId)
+    setCancellationReason('Khách liên hệ xin hủy hẹn')
+    setCancelModalOpen(true)
+  }
+
+  const handleConfirmCancel = async () => {
+    if (!cancellingBookingId) return
+    setCancelLoading(true)
     try {
-      await bookingService.updateBookingStatus(bookingId, { status: 3 }) // 3: Cancelled
-      message.success('Booking cancelled.')
+      await bookingService.cancelBooking(cancellingBookingId, cancellationReason.trim() || 'Khách liên hệ xin hủy hẹn')
+      message.success('Đơn đặt lịch đã được hủy thành công.')
+      setCancelModalOpen(false)
+      setCancellingBookingId(null)
+      setCancellationReason('')
       fetchBookings()
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to cancel booking'
+      const msg = err?.response?.data?.message || err?.message || 'Không thể hủy đơn đặt lịch.'
       message.error(msg)
     } finally {
-      setActionLoadingId(null)
+      setCancelLoading(false)
     }
   }
 
@@ -140,7 +157,12 @@ export default function BookingManagementPage() {
 
   const getStatusBadge = (status: number | string, record?: BookingListItem) => {
     const s = Number(status)
-    const isNoShow = record?.isNoShow || (record?.cancellationReason && record.cancellationReason.toLowerCase().includes('no-show'))
+    const isNoShow =
+      s === 4 ||
+      status === 'No_Show' ||
+      status === 'No-Show' ||
+      record?.isNoShow ||
+      (record?.cancellationReason && record.cancellationReason.toLowerCase().includes('no-show'))
 
     if (isNoShow) {
       return (
@@ -289,28 +311,20 @@ export default function BookingManagementPage() {
                   </Button>
                 </Popconfirm>
 
-                <Popconfirm
-                  title="Cancel this booking?"
-                  description="Are you sure you want to cancel this booking?"
-                  okText="Yes, Cancel"
-                  cancelText="No"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={() => handleCancelBooking(record.id)}
+                <Button
+                  danger
+                  size="small"
+                  loading={isLoading}
+                  icon={<CloseOutlined />}
+                  onClick={() => openCancelModal(record.id)}
+                  style={{ borderRadius: 6 }}
                 >
-                  <Button
-                    danger
-                    size="small"
-                    loading={isLoading}
-                    icon={<CloseOutlined />}
-                    style={{ borderRadius: 6 }}
-                  >
-                    Cancel
-                  </Button>
-                </Popconfirm>
+                  Cancel
+                </Button>
               </>
             )}
 
-            {/* Confirmed actions: Check-in, Check-out, or No-Show */}
+            {/* Confirmed actions: Check-in, Check-out, Cancel, or No-Show */}
             {isConfirmed && (
               <>
                 {record.canCheckIn && (
@@ -338,25 +352,45 @@ export default function BookingManagementPage() {
                   </Popconfirm>
                 )}
 
-                {(record.canMarkNoShow ?? true) && !record.hasInServiceItems && !record.canCheckout && (
-                  <Popconfirm
-                    title="Đánh dấu khách không đến (No-Show)?"
-                    description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
-                    okText="Xác nhận No-Show"
-                    cancelText="Bỏ qua"
-                    okButtonProps={{ danger: true }}
-                    onConfirm={() => handleMarkNoShow(record.id)}
-                  >
+                {!record.hasInServiceItems && !record.canCheckout && (
+                  <>
                     <Button
                       danger
                       size="small"
                       loading={isLoading}
-                      icon={<StopOutlined />}
+                      icon={<CloseOutlined />}
+                      onClick={() => openCancelModal(record.id)}
                       style={{ borderRadius: 6 }}
                     >
-                      No-Show
+                      Cancel
                     </Button>
-                  </Popconfirm>
+
+                    {(record.canMarkNoShow ?? true) && (
+                      <Popconfirm
+                        title="Đánh dấu khách không đến (No-Show)?"
+                        description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
+                        okText="Xác nhận No-Show"
+                        cancelText="Bỏ qua"
+                        okButtonProps={{ danger: true }}
+                        onConfirm={() => handleMarkNoShow(record.id)}
+                      >
+                        <Button
+                          size="small"
+                          loading={isLoading}
+                          icon={<StopOutlined />}
+                          style={{
+                            borderRadius: 6,
+                            color: '#7c3aed',
+                            borderColor: '#c4b5fd',
+                            backgroundColor: '#f5f3ff',
+                            fontWeight: 600,
+                          }}
+                        >
+                          No-Show
+                        </Button>
+                      </Popconfirm>
+                    )}
+                  </>
                 )}
 
                 {record.canCheckout && (
@@ -579,6 +613,7 @@ export default function BookingManagementPage() {
               <Radio.Button value={1}>🔵 Confirmed</Radio.Button>
               <Radio.Button value={2}>✓ Completed</Radio.Button>
               <Radio.Button value={3}>✕ Cancelled</Radio.Button>
+              <Radio.Button value={4}>🚫 No-Show</Radio.Button>
             </Radio.Group>
 
             {serviceDate && (
@@ -638,6 +673,33 @@ export default function BookingManagementPage() {
           fetchBookings()
         }}
       />
+
+      {/* Cancel Booking Reason Modal */}
+      <Modal
+        title="Hủy đơn đặt lịch"
+        open={cancelModalOpen}
+        onCancel={() => {
+          setCancelModalOpen(false)
+          setCancellingBookingId(null)
+          setCancellationReason('')
+        }}
+        onOk={handleConfirmCancel}
+        confirmLoading={cancelLoading}
+        okText="Xác nhận hủy đơn"
+        okButtonProps={{ danger: true }}
+        cancelText="Bỏ qua"
+        centered
+      >
+        <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
+          Lễ tân thực hiện hủy đơn theo yêu cầu của khách hàng (hoặc trường hợp bất khả kháng). Vui lòng nhập lý do hủy:
+        </p>
+        <Input.TextArea
+          rows={3}
+          value={cancellationReason}
+          onChange={(e) => setCancellationReason(e.target.value)}
+          placeholder="Ví dụ: Khách gọi điện xin hủy vì bận đột xuất / Thú cưng đang ốm..."
+        />
+      </Modal>
     </section>
   )
 }

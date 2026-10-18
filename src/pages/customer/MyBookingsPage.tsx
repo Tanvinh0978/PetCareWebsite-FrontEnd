@@ -62,6 +62,9 @@ export const getBookingStatusConfig = (status: any) => {
   if (s === '3' || s === 'cancelled' || s === 'canceled') {
     return { label: 'Cancelled', color: 'red', icon: <CloseCircleOutlined /> };
   }
+  if (s === '4' || s === 'no_show' || s === 'noshow') {
+    return { label: 'No Show', color: 'purple', icon: <CloseCircleOutlined style={{ color: '#7c3aed' }} /> };
+  }
   return { label: String(status || 'Unknown'), color: 'default', icon: null };
 };
 
@@ -88,7 +91,7 @@ export const getItemStatusConfig = (status: any) => {
   if (s === '3' || s === 'in_progress' || s === 'inprogress') return { label: 'In Progress', color: 'processing' };
   if (s === '4' || s === 'completed') return { label: 'Completed', color: 'green' };
   if (s === '5' || s === 'cancelled' || s === 'canceled') return { label: 'Cancelled', color: 'red' };
-  if (s === '6' || s === 'no_show' || s === 'noshow') return { label: 'No Show', color: 'default' };
+  if (s === '6' || s === 'no_show' || s === 'noshow') return { label: 'No Show', color: 'purple' };
   return { label: String(status || 'Unknown'), color: 'default' };
 };
 
@@ -657,6 +660,14 @@ const MyBookingsPage: React.FC = () => {
                     label: (
                       <span>
                         <Badge status="error" /> Cancelled
+                      </span>
+                    ),
+                  },
+                  {
+                    value: '4',
+                    label: (
+                      <span>
+                        <Badge color="#7c3aed" /> No-Show
                       </span>
                     ),
                   },

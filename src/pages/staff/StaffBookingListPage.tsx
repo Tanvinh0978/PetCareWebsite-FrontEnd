@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Button, DatePicker, Descriptions, Dropdown, Empty, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd';
+import { Alert, Button, DatePicker, Descriptions, Dropdown, Empty, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Tooltip, Typography, message } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { MenuProps } from 'antd';
-import { CalendarOutlined, CheckOutlined, CloseOutlined, CreditCardOutlined, EyeOutlined, MoreOutlined, ReloadOutlined, UserSwitchOutlined } from '@ant-design/icons';
+import { CalendarOutlined, CheckOutlined, CloseOutlined, CreditCardOutlined, EyeOutlined, MoreOutlined, ReloadOutlined, UserSwitchOutlined, StopOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { bookingService, type BookingDetail, type BookingDetailItem, type BookingListItem, type CheckoutSummary } from '@/services/booking.service';
@@ -13,18 +13,26 @@ import { getApiErrorMessage } from '@/utils/apiError';
 
 const { Title, Text } = Typography;
 const money = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value ?? 0);
-const statusName = (status: number | string) => {
+const statusName = (status?: number | string) => {
   const value = String(status ?? '').toLowerCase();
   if (value === '0' || value === 'pending') return 'Pending';
   if (value === '1' || value === 'confirmed') return 'Confirmed';
   if (value === '2' || value === 'completed') return 'Completed';
   if (value === '3' || value === 'cancelled' || value === 'canceled') return 'Cancelled';
+  if (value === '4' || value === 'no_show' || value === 'noshow') return 'No Show';
   if (value === 'checked_in' || value === 'checkedin') return 'Checked In';
   if (value === 'in_progress' || value === 'inprogress' || value === 'partially_completed') return 'In Progress';
   return String(status ?? 'Unknown');
 };
-const statusColor = (status: number | string) => ({ Pending: 'gold', Confirmed: 'blue', 'In Progress': 'processing', Completed: 'green', Cancelled: 'red' }[statusName(status)] ?? 'default');
-const canCheckIn = (status: number | string) => ['Pending', 'Confirmed'].includes(statusName(status));
+const statusColor = (status: number | string) => ({
+  Pending: 'gold',
+  Confirmed: 'blue',
+  'In Progress': 'processing',
+  Completed: 'green',
+  Cancelled: 'red',
+  'No Show': 'purple',
+}[statusName(status)] ?? 'default');
+const canCheckIn = (status: number | string) => statusName(status) === 'Confirmed';
 const canCancelByStatus = (status: number | string) => ['Pending', 'Confirmed'].includes(statusName(status));
 const hasInProgressItem = (items: BookingDetailItem[] = []) => items.some((item) => {
   const value = String(item.status ?? '').toLowerCase();
@@ -118,6 +126,10 @@ export default function StaffBookingListPage() {
   };
 
   const openAssignment = async (item: BookingDetailItem) => {
+    if (statusName(detail?.status) !== 'Confirmed') {
+      message.warning('Chỉ có thể phân công nhân viên sau khi đơn đặt lịch đã được Xác nhận (Confirmed).');
+      return;
+    }
     setAssignItem(item);
     setSelectedStaffId(item.staffId || undefined);
     setSelectedRoomId(item.roomId || undefined);
@@ -129,7 +141,12 @@ export default function StaffBookingListPage() {
       ]);
       const allStaff = staffRes.items ?? [];
       const expectedRole = isBoardingType(item.serviceType) ? 'boarding staff' : 'grooming staff';
-      const matchingStaff = allStaff.filter((staff) => staff.roles?.some((role) => role.trim().toLowerCase() === expectedRole));
+      const matchingStaff = allStaff.filter((staff) => {
+        const roles = staff.roles || [];
+        const isAdmin = roles.some((r) => r.trim().toLowerCase() === 'admin');
+        if (isAdmin) return false;
+        return roles.some((role) => role.trim().toLowerCase() === expectedRole);
+      });
       setStaffOptions(matchingStaff);
       const allRooms = roomRes.result?.items ?? [];
       setRoomOptions(allRooms.filter((room) => String(room.status).trim().toLowerCase() === 'available' || room.id === item.roomId));
@@ -144,6 +161,10 @@ export default function StaffBookingListPage() {
 
   const saveAssignment = async () => {
     if (!detail || !assignItem) return;
+    if (statusName(detail.status) !== 'Confirmed') {
+      message.warning('Chỉ có thể phân công nhân viên sau khi đơn đặt lịch đã được Xác nhận (Confirmed).');
+      return;
+    }
     if (!selectedStaffId) {
       message.warning('Select a staff member to assign this service.');
       return;
@@ -252,6 +273,16 @@ export default function StaffBookingListPage() {
     }
   };
 
+  const handleMarkNoShow = async (id: string) => {
+    try {
+      await bookingService.markNoShow(id);
+      message.success('Đã đánh dấu khách không đến (No-Show). Lịch hẹn và phòng đã được giải phóng.');
+      await loadBookings();
+    } catch (error) {
+      message.error(getApiErrorMessage(error, 'Không thể đánh dấu No-Show.'));
+    }
+  };
+
   const columns: ColumnsType<BookingListItem> = [
     { title: 'No.', key: 'number', width: 75, render: (_: unknown, __: BookingListItem, index: number) => (pageNumber - 1) * pageSize + index + 1 },
     { title: 'Customer', dataIndex: 'customerName', key: 'customer', render: (_: string, row) => <div><div>{row.customerName}</div><Text type="secondary">{row.customerPhone || '—'}</Text></div> },
@@ -263,8 +294,9 @@ export default function StaffBookingListPage() {
       title: 'Actions', key: 'actions', render: (_: unknown, row) => {
         const items: MenuProps['items'] = [
           ...(canCheckIn(row.status) ? [{ key: 'check-in', label: 'Check in', icon: <CheckOutlined /> }] : []),
-          ...(!['Completed', 'Cancelled'].includes(statusName(row.status)) ? [{ key: 'checkout', label: 'Checkout', icon: <CreditCardOutlined /> }] : []),
-          ...(statusName(row.status) === 'Pending' ? [{ key: 'cancel', label: <span style={{ color: '#dc2626' }}>Cancel booking</span>, icon: <CloseOutlined /> }] : []),
+          ...(!['Completed', 'Cancelled', 'No Show'].includes(statusName(row.status)) ? [{ key: 'checkout', label: 'Checkout', icon: <CreditCardOutlined /> }] : []),
+          ...(canCancelByStatus(row.status) ? [{ key: 'cancel', label: <span style={{ color: '#dc2626' }}>Cancel booking</span>, icon: <CloseOutlined /> }] : []),
+          ...(statusName(row.status) === 'Confirmed' ? [{ key: 'no-show', label: <span style={{ color: '#7c3aed' }}>Mark No-Show</span>, icon: <StopOutlined /> }] : []),
         ];
         return (
           <Space size="small">
@@ -275,6 +307,7 @@ export default function StaffBookingListPage() {
                 if (key === 'check-in') handleCheckIn(row);
                 if (key === 'checkout') void openCheckout(row.id);
                 if (key === 'cancel') { setCancelId(row.id); setCancelReason(''); }
+                if (key === 'no-show') void handleMarkNoShow(row.id);
               } }}
             >
               <Button icon={<MoreOutlined />}>More</Button>
@@ -328,6 +361,7 @@ export default function StaffBookingListPage() {
             { value: 1, label: 'Confirmed' },
             { value: 2, label: 'Completed' },
             { value: 3, label: 'Cancelled' },
+            { value: 4, label: 'No Show' },
           ]}
           style={{ width: 180 }}
         />
@@ -350,6 +384,14 @@ export default function StaffBookingListPage() {
         onCancel={() => setDetailOpen(false)}
         footer={detail ? <Space>
           {canCancelBooking(detail) && <Button danger onClick={() => { setCancelId(detail.id); setCancelReason(''); }}>Cancel booking</Button>}
+          {statusName(detail.status) === 'Confirmed' && !hasInProgressItem(detail.bookingItems) && (
+            <Button
+              onClick={() => { setDetailOpen(false); void handleMarkNoShow(detail.id); }}
+              style={{ color: '#7c3aed', borderColor: '#c4b5fd', backgroundColor: '#f5f3ff' }}
+            >
+              Mark No-Show
+            </Button>
+          )}
           <Button onClick={() => setDetailOpen(false)}>Close</Button>
         </Space> : null}
         width={900}
@@ -376,9 +418,20 @@ export default function StaffBookingListPage() {
                 { title: 'Service', dataIndex: 'serviceName', key: 'service' },
                 { title: 'Schedule', dataIndex: 'scheduledStartAt', key: 'schedule', render: (date: string, item) => <>{dayjs(date).format('MMM D, YYYY HH:mm')}{item.scheduledEndAt && <><br />to {dayjs(item.scheduledEndAt).format('MMM D, YYYY HH:mm')}</>}</> },
                 { title: 'Room', dataIndex: 'roomName', key: 'room', render: (value: string) => value || '—' },
-                { title: 'Staff', dataIndex: 'staffName', key: 'staff', render: (value: string) => value || '—' },
-                { title: 'Assignment', key: 'assignment', render: (_: unknown, item: BookingDetailItem) => <Button size="small" icon={<UserSwitchOutlined />} onClick={() => void openAssignment(item)}>Assign</Button> },
-                { title: 'Status', dataIndex: 'status', key: 'status', render: (value: number | string) => <Tag>{statusName(value)}</Tag> },
+                {
+                  title: 'Assignment',
+                  key: 'assignment',
+                  render: (_: unknown, item: BookingDetailItem) => {
+                    const isConfirmed = statusName(detail.status) === 'Confirmed';
+                    return isConfirmed ? (
+                      <Button size="small" icon={<UserSwitchOutlined />} onClick={() => void openAssignment(item)}>Assign</Button>
+                    ) : (
+                      <Tooltip title="Chỉ phân công sau khi đơn đã Xác nhận (Confirmed)">
+                        <Button size="small" icon={<UserSwitchOutlined />} disabled>Assign</Button>
+                      </Tooltip>
+                    );
+                  },
+                },
                 { title: 'Price', dataIndex: 'assignedPrice', key: 'price', render: (value: number) => money(value) },
               ]}
               scroll={{ x: 750 }}
