@@ -14,6 +14,7 @@ import {
   message,
   Popconfirm,
   Input,
+  Image,
 } from 'antd'
 import {
   CheckCircleOutlined,
@@ -25,6 +26,7 @@ import {
   PrinterOutlined,
   StopOutlined,
   CloseOutlined,
+  CameraOutlined,
 } from '@ant-design/icons'
 import {
   bookingService,
@@ -784,6 +786,49 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 pagination={false}
                 size="small"
                 style={{ border: '1px solid #f1f5f9', borderRadius: 8 }}
+                expandable={{
+                  rowExpandable: (record) => Boolean(record.beforeImageUrl || record.resultImageUrl || record.resultNote),
+                  expandedRowRender: (record) => (
+                    <div style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <Text strong style={{ fontSize: 13, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        <CameraOutlined /> Hình ảnh Trước & Sau (Before & After) & Kết quả dịch vụ:
+                      </Text>
+                      <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Image.PreviewGroup>
+                          {record.beforeImageUrl && (
+                            <div style={{ textAlign: 'center' }}>
+                              <Image
+                                src={record.beforeImageUrl}
+                                alt="Before"
+                                width={80}
+                                height={80}
+                                style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                              />
+                              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Before</div>
+                            </div>
+                          )}
+                          {record.resultImageUrl && (
+                            <div style={{ textAlign: 'center' }}>
+                              <Image
+                                src={record.resultImageUrl}
+                                alt="After"
+                                width={80}
+                                height={80}
+                                style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #10b981' }}
+                              />
+                              <div style={{ fontSize: 11, color: '#059669', fontWeight: 600, marginTop: 2 }}>After ⭐</div>
+                            </div>
+                          )}
+                        </Image.PreviewGroup>
+                        {record.resultNote && (
+                          <div style={{ fontSize: 13, color: '#334155', background: '#ffffff', padding: '8px 12px', borderRadius: 6, border: '1px solid #e2e8f0', flex: 1, minWidth: 200 }}>
+                            <span style={{ fontWeight: 600, color: '#0f766e' }}>Ghi chú kỹ thuật viên:</span> "{record.resultNote}"
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ),
+                }}
               />
             </div>
           </div>
