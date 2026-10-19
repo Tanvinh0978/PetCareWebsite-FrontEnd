@@ -51,27 +51,27 @@ export default function Layout({ role }: { role: Role }) {
       disabled: true,
       label: (
         <div style={{ padding: "4px 0" }}>
-          <div style={{ fontWeight: 600, color: "#0f172a" }}>{displayName}</div>
-          {user?.email && <div style={{ fontSize: "12px", color: "#64748b" }}>{user.email}</div>}
+          <div style={{ fontWeight: 600, color: "#26180f" }}>{displayName}</div>
+          {user?.email && <div style={{ fontSize: "12px", color: "#8c7b6f" }}>{user.email}</div>}
         </div>
       ),
     },
     { type: "divider" },
     {
       key: "my-pets",
-      icon: <HeartOutlined style={{ color: "#059669" }} />,
+      icon: <HeartOutlined style={{ color: "#785839" }} />,
       label: "My Pets",
       onClick: () => navigate("/customer/pets"),
     },
     {
       key: "my-bookings",
-      icon: <CalendarOutlined style={{ color: "#059669" }} />,
+      icon: <CalendarOutlined style={{ color: "#785839" }} />,
       label: "My Bookings",
       onClick: () => navigate("/customer/bookings"),
     },
     {
       key: "profile",
-      icon: <UserOutlined style={{ color: "#059669" }} />,
+      icon: <UserOutlined style={{ color: "#785839" }} />,
       label: "My Profile",
       onClick: () => navigate("/customer/profile"),
     },
@@ -88,7 +88,7 @@ export default function Layout({ role }: { role: Role }) {
   const staffAccountItems: MenuProps["items"] = [
     {
       key: "staff-profile",
-      icon: <UserOutlined style={{ color: "#059669" }} />,
+      icon: <UserOutlined style={{ color: "#785839" }} />,
       label: "My Profile",
       onClick: () => navigate("/staff/profile"),
     },
@@ -164,6 +164,21 @@ export default function Layout({ role }: { role: Role }) {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                ) : n.to === 'bookings' ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <line x1="8" y1="14" x2="10" y2="14"></line>
+                    <line x1="8" y1="18" x2="12" y2="18"></line>
+                  </svg>
+                ) : n.to === 'manage-boarding' || n.to === 'boarding-tasks' ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    <circle cx="17" cy="7" r="2"></circle>
                   </svg>
                 ) : n.to === 'grooming-tasks' ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -248,10 +263,19 @@ export default function Layout({ role }: { role: Role }) {
   // Customer & Guest: Top Header navigation bar layout with Footer
   return (
     <div className="customer-shell">
+      {/* Top Luxury Announcement Bar */}
+      <div className="customer-top-announcement">
+        <span>🐾 <strong>Haven &amp; Hound · PetCare</strong> — Professional Pet Sanctuary &amp; Hotel</span>
+        <span>📞 Hotline: <a href="tel:02839397387">(028) 3939-PETS</a></span>
+      </div>
+
       <header className="customer-header">
         <div className="customer-header-inner">
           <Link to={base || "/"} className="brand-logo">
-            🐾 <span>PetCare</span>
+            🐾 <span>Haven &amp; Hound</span>
+            <small style={{ fontSize: '0.72rem', fontWeight: 600, color: '#8c7b6f', textTransform: 'uppercase', letterSpacing: '0.08em', marginLeft: '4px' }}>
+              PetCare
+            </small>
           </Link>
 
           <nav className="customer-nav" aria-label="Customer main menu">
@@ -277,7 +301,7 @@ export default function Layout({ role }: { role: Role }) {
             </button>
             {role === "guest" ? (
               <div style={{ display: 'flex', gap: '8px' }}>
-                <Link to="/login" className="btn btn-sm" style={{ background: 'transparent', color: '#059669', border: '1px solid #059669' }}>
+                <Link to="/login" className="btn-outline btn-sm" style={{ padding: '0.45rem 1.1rem' }}>
                   Sign in
                 </Link>
                 <Link to="/register" className="btn btn-sm">
@@ -306,12 +330,12 @@ export default function Layout({ role }: { role: Role }) {
                         style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }}
                       />
                     ) : (
-                      <UserOutlined style={{ color: '#059669' }} />
+                      <UserOutlined style={{ color: '#785839' }} />
                     )}
                     <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {displayName}
                     </span>
-                    <DownOutlined style={{ fontSize: '10px', color: '#059669' }} />
+                    <DownOutlined style={{ fontSize: '10px', color: '#785839' }} />
                   </div>
                 </Dropdown>
 
@@ -336,42 +360,48 @@ export default function Layout({ role }: { role: Role }) {
       <footer className="customer-footer">
         <div className="customer-footer-inner">
           <div className="footer-col">
-            <div className="footer-brand">🐾 PetCare</div>
+            <div className="footer-brand">🐾 Haven &amp; Hound</div>
+            <p style={{ color: '#c69f7b', fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.5rem' }}>
+              Boutique Pet Sanctuary &amp; Care
+            </p>
             <p>
-              Your trusted partner in professional pet grooming, 24/7 supervised boarding, personalized nutritional diets, and dedicated veterinary wellness.
+              Where tailored hospitality meets loving care. Thoughtfully designed suites, certified caregivers, and bespoke wellness routines for dogs and cats.
             </p>
           </div>
           <div className="footer-col">
-            <h4>Quick Links</h4>
+            <h4>Sanctuary</h4>
             <ul>
               <li>
                 <Link to={base || "/"}>Home</Link>
               </li>
               <li>
-                <Link to={(base ? base : "") + "/services"}>Services Catalog</Link>
+                <Link to={(base ? base : "") + "/services"}>Curated Services</Link>
+              </li>
+              <li>
+                <Link to={(base ? base : "") + "/room-types"}>Suites &amp; Chambers</Link>
               </li>
               {role === "guest" && (
                 <li>
-                  <Link to="/login">Sign in</Link>
+                  <Link to="/login">Client Sign in</Link>
                 </li>
               )}
             </ul>
           </div>
           <div className="footer-col">
-            <h4>Opening Hours</h4>
-            <p>Mon - Fri: 7:30 AM - 8:00 PM</p>
+            <h4>Hours &amp; Rhythms</h4>
+            <p>Mon - Fri: 7:30 AM - 8:30 PM</p>
             <p>Sat - Sun: 8:00 AM - 9:00 PM</p>
             <p>Emergency Boarding: 24/7 on call</p>
           </div>
           <div className="footer-col">
-            <h4>Contact Info</h4>
-            <p>📍 123 Pet Paradise Way, Suite 100</p>
+            <h4>Concierge</h4>
+            <p>📍 123 Cotswolds Way, Pet Sanctuary</p>
             <p>📞 Hotline: (028) 3939-PETS</p>
-            <p>✉️ hello@petcare.com</p>
+            <p>✉️ concierge@havenandhound.com</p>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} PetCare Center. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Haven &amp; Hound · PetCare Sanctuary. All rights reserved.</p>
         </div>
       </footer>
     </div>
