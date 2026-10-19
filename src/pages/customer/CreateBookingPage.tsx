@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space } from 'antd';
-import { CalendarOutlined, CheckCircleFilled, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
+import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space, Alert } from 'antd';
+import { CalendarOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { petService } from '@/services/pet.service';
@@ -19,6 +19,12 @@ const CreateBookingPage: React.FC = () => {
   const [pets, setPets] = useState<any[]>([]);
   const [services, setServices] = useState<ServiceDTO[]>([]);
   const [roomUnavailableMap, setRoomUnavailableMap] = useState<Record<string, string[]>>({});
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [rangeAvailability, setRangeAvailability] = useState<{
+    isAvailable: boolean;
+    message?: string;
+    fullyBookedDates?: string[];
+  } | null>(null);
   
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -93,38 +99,152 @@ const CreateBookingPage: React.FC = () => {
     return { hasGrooming: groomingSelected, hasBoarding: boardingIds.size > 0, boardingServiceIds: boardingIds };
   }, [petServices]);
 
+  const boardingServiceCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    selectedPetIds.forEach(petId => {
+      const bId = petServices[petId]?.boardingId;
+      if (bId) {
+        counts[bId] = (counts[bId] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [selectedPetIds, petServices]);
+
   useEffect(() => {
-    if (bookingType === 'Boarding') {
+    if (bookingType === 'Boarding' && boardingServiceIds.size > 0) {
+      let isMounted = true;
       const fetchAvailability = async () => {
+        const newMap: Record<string, string[]> = {};
         for (const bId of Array.from(boardingServiceIds)) {
           const boardingService = services.find((service) => service.id === bId);
-          if (boardingService?.roomTypeId && !roomUnavailableMap[bId]) {
+          if (boardingService?.roomTypeId) {
             try {
-              const roomRes = await roomService.checkAvailability({
+              const requiredCount = boardingServiceCounts[bId] || 1;
+              const roomRes: any = await roomService.checkAvailability({
                 serviceId: bId,
-                month: dayjs().month() + 1,
-                year: dayjs().year()
+                startDate: dayjs().startOf('day').format('YYYY-MM-DD'),
+                endDate: dayjs().add(90, 'day').format('YYYY-MM-DD')
               });
-              if (roomRes.result?.unavailableDates) {
-                setRoomUnavailableMap(prev => ({ ...prev, [bId]: roomRes.result.unavailableDates }));
+              const resData = roomRes?.result || roomRes?.data || roomRes;
+              if (resData?.dailyAvailabilities && Array.isArray(resData.dailyAvailabilities)) {
+                const unavail = resData.dailyAvailabilities
+                  .filter((d: any) => (d.availableRooms ?? 0) < requiredCount || !d.isAvailable)
+                  .map((d: any) => dayjs(d.date).format('YYYY-MM-DD'));
+                newMap[bId] = unavail;
               }
-            } catch (e) {}
+            } catch (e) {
+              console.error('Failed to load room calendar availability', e);
+            }
           }
+        }
+        if (isMounted) {
+          setRoomUnavailableMap(newMap);
         }
       };
       fetchAvailability();
+      return () => { isMounted = false; };
     }
-  }, [boardingServiceIds, roomUnavailableMap, bookingType, services]);
+  }, [boardingServiceIds, boardingServiceCounts, bookingType, services]);
 
-  const mergedUnavailableDates = Array.from(boardingServiceIds).reduce((acc: string[], id: string) => {
-    const dates = roomUnavailableMap[id] || [];
-    return [...acc, ...dates];
-  }, []);
+  const mergedUnavailableDates = useMemo(() => {
+    return Array.from(boardingServiceIds).reduce((acc: string[], id: string) => {
+      const dates = roomUnavailableMap[id] || [];
+      return [...acc, ...dates];
+    }, []);
+  }, [boardingServiceIds, roomUnavailableMap]);
 
   const disabledDate = (current: Dayjs) => {
-    if (current && current < dayjs().startOf('day')) return true;
+    if (!current) return false;
+    if (current < dayjs().startOf('day')) return true;
     return mergedUnavailableDates.includes(current.format('YYYY-MM-DD'));
   };
+
+  useEffect(() => {
+    if (bookingType !== 'Boarding' || !boardingDateRange || boardingDateRange.length < 2 || !boardingDateRange[0] || !boardingDateRange[1]) {
+      setRangeAvailability(null);
+      setCheckingAvailability(false);
+      return;
+    }
+
+    if (boardingServiceIds.size === 0) {
+      setRangeAvailability(null);
+      setCheckingAvailability(false);
+      return;
+    }
+
+    let isMounted = true;
+    const checkRange = async () => {
+      setCheckingAvailability(true);
+      try {
+        const startDateStr = boardingDateRange[0].format('YYYY-MM-DD');
+        const endDateStr = boardingDateRange[1].format('YYYY-MM-DD');
+
+        let allAvailable = true;
+        const fullyBookedSet = new Set<string>();
+
+        for (const bId of Array.from(boardingServiceIds)) {
+          const boardingService = services.find(s => s.id === bId);
+          if (!boardingService?.roomTypeId) continue;
+
+          const requiredCount = boardingServiceCounts[bId] || 1;
+          const roomRes: any = await roomService.checkAvailability({
+            serviceId: bId,
+            startDate: startDateStr,
+            endDate: endDateStr
+          });
+
+          const resData = roomRes?.result || roomRes?.data || roomRes;
+          if (resData?.dailyAvailabilities && Array.isArray(resData.dailyAvailabilities)) {
+            for (const daily of resData.dailyAvailabilities) {
+              const available = daily.availableRooms ?? 0;
+              if (available < requiredCount || !daily.isAvailable) {
+                allAvailable = false;
+                fullyBookedSet.add(dayjs(daily.date).format('DD/MM/YYYY'));
+              }
+            }
+          } else if (resData?.isFullRangeAvailable === false) {
+            allAvailable = false;
+          }
+        }
+
+        if (!isMounted) return;
+
+        if (allAvailable) {
+          setRangeAvailability({
+            isAvailable: true,
+            message: 'Rooms are available for your selected dates! You can proceed with your booking.'
+          });
+        } else {
+          const bookedDatesList = Array.from(fullyBookedSet);
+          setRangeAvailability({
+            isAvailable: false,
+            fullyBookedDates: bookedDatesList,
+            message: bookedDatesList.length > 0
+              ? `No rooms available on: ${bookedDatesList.slice(0, 5).join(', ')}${bookedDatesList.length > 5 ? '...' : ''}. Please choose different dates.`
+              : 'No rooms available for your selected dates. Please choose different dates or select another room type.'
+          });
+        }
+      } catch (err) {
+        console.error('Failed to verify date range availability', err);
+        if (isMounted) {
+          setRangeAvailability({
+            isAvailable: false,
+            message: 'Unable to verify room availability for the selected dates. Please try again.'
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setCheckingAvailability(false);
+        }
+      }
+    };
+
+    checkRange();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [boardingDateRange, boardingServiceIds, boardingServiceCounts, bookingType, services]);
 
   const next = () => {
     if (currentStep === 0 && selectedPetIds.length === 0) return message.warning('Please select at least 1 pet.');
@@ -141,7 +261,17 @@ const CreateBookingPage: React.FC = () => {
       }
     }
     if (currentStep === 2) {
-      if (bookingType === 'Boarding' && (!boardingDateRange || boardingDateRange.length < 2)) return message.warning('Please select a boarding period (Check-in and Check-out).');
+      if (bookingType === 'Boarding') {
+        if (!boardingDateRange || boardingDateRange.length < 2) {
+          return message.warning('Please select a boarding period (Check-in and Check-out).');
+        }
+        if (checkingAvailability) {
+          return message.loading('Checking room availability, please wait...');
+        }
+        if (rangeAvailability && !rangeAvailability.isAvailable) {
+          return message.error(rangeAvailability.message || 'No rooms available for the selected dates. Please choose another date range.');
+        }
+      }
       if (bookingType === 'Grooming' && !groomingDate) return message.warning('Please select a date and time for Grooming.');
     }
     setCurrentStep(currentStep + 1);
@@ -678,6 +808,45 @@ const CreateBookingPage: React.FC = () => {
                     placeholder={['Check-in', 'Check-out']}
                   />
                 </Form.Item>
+
+                {checkingAvailability && (
+                  <div style={{ marginBottom: '16px', padding: '12px 16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Spin size="small" />
+                    <Text type="secondary" style={{ fontSize: '14px' }}>Checking room availability in real-time...</Text>
+                  </div>
+                )}
+
+                {!checkingAvailability && rangeAvailability && (
+                  <div style={{ marginBottom: '16px' }}>
+                    {rangeAvailability.isAvailable ? (
+                      <Alert
+                        type="success"
+                        showIcon
+                        icon={<CheckCircleOutlined />}
+                        style={{ borderRadius: '8px', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4' }}
+                        message={<Text strong style={{ color: '#166534', fontSize: '14px' }}>Rooms Available</Text>}
+                        description={
+                          <div style={{ color: '#15803d', fontSize: '13px', marginTop: '2px' }}>
+                            {rangeAvailability.message}
+                          </div>
+                        }
+                      />
+                    ) : (
+                      <Alert
+                        type="error"
+                        showIcon
+                        icon={<CloseCircleOutlined />}
+                        style={{ borderRadius: '8px', border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}
+                        message={<Text strong style={{ color: '#991b1b', fontSize: '14px' }}>Rooms Fully Booked</Text>}
+                        description={
+                          <div style={{ color: '#b91c1c', fontSize: '13px', marginTop: '2px' }}>
+                            {rangeAvailability.message}
+                          </div>
+                        }
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -921,7 +1090,18 @@ const CreateBookingPage: React.FC = () => {
             </Button>
             
             {currentStep < steps.length - 1 && (
-              <Button type="primary" onClick={next} size="large" style={{ backgroundColor: '#059669', borderRadius: '8px', padding: '0 32px' }}>
+              <Button 
+                type="primary" 
+                onClick={next} 
+                size="large" 
+                disabled={currentStep === 2 && bookingType === 'Boarding' && (checkingAvailability || (rangeAvailability !== null && !rangeAvailability.isAvailable))}
+                loading={currentStep === 2 && bookingType === 'Boarding' && checkingAvailability}
+                style={{ 
+                  backgroundColor: (currentStep === 2 && bookingType === 'Boarding' && (checkingAvailability || (rangeAvailability !== null && !rangeAvailability.isAvailable))) ? undefined : '#059669', 
+                  borderRadius: '8px', 
+                  padding: '0 32px' 
+                }}
+              >
                 Continue <RightOutlined style={{ fontSize: '12px' }}/>
               </Button>
             )}
