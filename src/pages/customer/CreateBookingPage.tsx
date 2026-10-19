@@ -319,50 +319,66 @@ const CreateBookingPage: React.FC = () => {
   // Flow Selection Screen
   if (bookingType === null) {
     return (
-      <div style={{ padding: '40px 16px', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-        <Title level={2} style={{ marginBottom: '40px', color: '#1e293b' }}>What would you like to book today?</Title>
-        <Row gutter={[24, 24]} justify="center">
-          <Col xs={24} md={11}>
-            <Card 
-              hoverable 
+      <div className="booking-page-wrap">
+        <div className="booking-hero-header">
+          <div className="hero-pill-badge" style={{ margin: '0 auto 1rem' }}>
+            <span>🐾</span> Haven &amp; Hound · Sanctuary Concierge
+          </div>
+          <h1 className="booking-page-title">Reserve a Sanctuary Experience</h1>
+          <p className="booking-page-subtitle">
+            Choose between our tailored botanical spa treatments and luxury climate-controlled hotel suites.
+          </p>
+        </div>
+        <Row gutter={[28, 28]} justify="center">
+          <Col xs={24} md={12}>
+            <div 
+              className="booking-flow-card"
               onClick={() => {
                 setBookingType('Grooming');
                 setCurrentStep(0);
               }}
-              style={{ borderRadius: '16px', border: '2px solid #e2e8f0', height: '100%', transition: 'all 0.3s' }}
-              bodyStyle={{ padding: '32px', display: 'flex', flexDirection: 'column', height: '100%' }}
+              style={{ padding: '36px 30px', display: 'flex', flexDirection: 'column' }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>✂️</div>
-              <Title level={3} style={{ color: '#059669' }}>Grooming & Spa</Title>
-              <Text type="secondary" style={{ fontSize: '16px', display: 'block', marginBottom: '24px' }}>Pet beauty care</Text>
-              <ul style={{ textAlign: 'left', color: '#475569', marginBottom: '32px', listStyleType: 'none', padding: 0, flex: 1 }}>
-                <li style={{ marginBottom: '12px' }}>✓ Haircut & styling</li>
-                <li style={{ marginBottom: '12px' }}>✓ Bath & dry</li>
-                <li style={{ marginBottom: '12px' }}>✓ Ear & nail cleaning</li>
+              <div className="booking-flow-icon">✂️</div>
+              <h2 className="booking-flow-title" style={{ textAlign: 'center' }}>Botanical Grooming &amp; Spa</h2>
+              <Text type="secondary" style={{ fontSize: '15px', display: 'block', textAlign: 'center', color: 'var(--secondary)', fontWeight: 600, marginBottom: '20px' }}>
+                Bespoke styling and therapeutic bathing
+              </Text>
+              <ul className="booking-flow-list" style={{ flex: 1 }}>
+                <li><span className="check">✓</span> Gentle botanical bath &amp; warm blow-dry</li>
+                <li><span className="check">✓</span> Breed-specific trimming &amp; luxury coat styling</li>
+                <li><span className="check">✓</span> Ear cleansing, nail filing &amp; paw nourishment</li>
+                <li><span className="check">✓</span> Calming aromatics &amp; low-stress handling</li>
               </ul>
-              <Button type="primary" size="large" block style={{ backgroundColor: '#059669', borderRadius: '8px' }}>Book Now</Button>
-            </Card>
+              <button type="button" className="btn" style={{ width: '100%', padding: '0.8rem 1.5rem', fontSize: '1rem', marginTop: 'auto' }}>
+                Book Spa Service →
+              </button>
+            </div>
           </Col>
-          <Col xs={24} md={11}>
-            <Card 
-              hoverable 
+          <Col xs={24} md={12}>
+            <div 
+              className="booking-flow-card"
               onClick={() => {
                 setBookingType('Boarding');
                 setCurrentStep(0);
               }}
-              style={{ borderRadius: '16px', border: '2px solid #e2e8f0', height: '100%', transition: 'all 0.3s' }}
-              bodyStyle={{ padding: '32px', display: 'flex', flexDirection: 'column', height: '100%' }}
+              style={{ padding: '36px 30px', display: 'flex', flexDirection: 'column' }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏨</div>
-              <Title level={3} style={{ color: '#059669' }}>Pet Hotel</Title>
-              <Text type="secondary" style={{ fontSize: '16px', display: 'block', marginBottom: '24px' }}>Pet boarding & care</Text>
-              <ul style={{ textAlign: 'left', color: '#475569', marginBottom: '32px', listStyleType: 'none', padding: 0, flex: 1 }}>
-                <li style={{ marginBottom: '12px' }}>✓ Day/night boarding</li>
-                <li style={{ marginBottom: '12px' }}>✓ Air-conditioned rooms</li>
-                <li style={{ marginBottom: '12px' }}>✓ 24/7 care & nutrition</li>
+              <div className="booking-flow-icon">🏨</div>
+              <h2 className="booking-flow-title" style={{ textAlign: 'center' }}>Sanctuary Hotel Suites</h2>
+              <Text type="secondary" style={{ fontSize: '15px', display: 'block', textAlign: 'center', color: 'var(--secondary)', fontWeight: 600, marginBottom: '20px' }}>
+                Overnight boarding with attentive hospitality
+              </Text>
+              <ul className="booking-flow-list" style={{ flex: 1 }}>
+                <li><span className="check">✓</span> Private climate-controlled suites &amp; soft orthopedic bedding</li>
+                <li><span className="check">✓</span> 24/7 dedicated caregiver attention &amp; health checks</li>
+                <li><span className="check">✓</span> Tailored nutrition, dining plans &amp; fresh treats</li>
+                <li><span className="check">✓</span> Daily play sessions &amp; regular photo updates</li>
               </ul>
-              <Button type="primary" size="large" block style={{ backgroundColor: '#059669', borderRadius: '8px' }}>Book Now</Button>
-            </Card>
+              <button type="button" className="btn" style={{ width: '100%', padding: '0.8rem 1.5rem', fontSize: '1rem', marginTop: 'auto' }}>
+                Book a Suite →
+              </button>
+            </div>
           </Col>
         </Row>
       </div>
@@ -381,16 +397,18 @@ const CreateBookingPage: React.FC = () => {
       title: 'Choose Pets',
       content: (
         <div className="step-container fade-in">
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>
-              Choose Pets for {bookingType === 'Grooming' ? 'Spa' : 'Hotel'}
+          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+            <Title level={3} style={{ fontFamily: 'var(--font-heading)', color: 'var(--slate-900)', margin: '0 0 6px 0' }}>
+              Select Your Companions
             </Title>
-            <Text type="secondary" style={{ fontSize: '16px' }}>You can select one or multiple pets</Text>
+            <Text type="secondary" style={{ fontSize: '15px', color: 'var(--slate-600)' }}>
+              Choose one or multiple pets for this {bookingType === 'Grooming' ? 'spa visit' : 'hotel stay'}
+            </Text>
           </div>
           
           <Form.Item name="petIds" rules={[{ required: true, message: 'Please select at least 1 pet' }]}>
              <Row gutter={[20, 20]} justify="center">
-                {pets.length === 0 && <Empty description="No pets found. Please add a pet first." />}
+                {pets.length === 0 && <Empty description="No pets found. Please add a pet in My Pets first." />}
                 {pets.map(pet => {
                   const isSelected = selectedPetIds.includes(pet.id);
                   const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
@@ -398,41 +416,63 @@ const CreateBookingPage: React.FC = () => {
                     <Col xs={12} sm={8} md={6} key={pet.id}>
                       <div 
                         onClick={() => handleTogglePet(pet.id)}
-                        style={{
-                          background: isSelected ? '#ecfdf5' : '#fff',
-                          border: `2px solid ${isSelected ? '#10b981' : '#e2e8f0'}`,
-                          borderRadius: '16px',
-                          padding: '12px',
-                          cursor: 'pointer',
-                          transition: 'all 0.3s ease',
-                          textAlign: 'center',
-                          position: 'relative',
-                          boxShadow: isSelected ? '0 10px 15px -3px rgba(16, 185, 129, 0.2)' : '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-                        }}
+                        className={`pet-select-card ${isSelected ? 'selected' : ''}`}
                       >
-                        {isSelected && <CheckCircleFilled style={{ position: 'absolute', top: 12, right: 12, fontSize: '20px', color: '#10b981' }} />}
+                        {isSelected && (
+                          <CheckCircleFilled 
+                            style={{ 
+                              position: 'absolute', 
+                              top: 12, 
+                              right: 12, 
+                              fontSize: '20px', 
+                              color: 'var(--secondary)' 
+                            }} 
+                          />
+                        )}
                         <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                           {pet.imageUrl ? (
                             <img
                               src={pet.imageUrl}
                               alt={pet.name}
                               style={{
-                                width: 64,
-                                height: 64,
+                                width: 68,
+                                height: 68,
                                 borderRadius: '50%',
                                 objectFit: 'cover',
-                                border: `2px solid ${isSelected ? '#10b981' : '#e2e8f0'}`,
+                                border: `2.5px solid ${isSelected ? 'var(--secondary)' : 'var(--slate-200)'}`,
                                 display: 'block',
+                                transition: 'border-color 0.2s ease',
                               }}
                             />
                           ) : (
-                            <div style={{ fontSize: '36px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ 
+                              fontSize: '34px', 
+                              width: 68,
+                              height: 68, 
+                              borderRadius: '50%',
+                              backgroundColor: 'var(--primary-light)',
+                              border: `1.5px solid ${isSelected ? 'var(--secondary)' : 'var(--slate-200)'}`,
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center' 
+                            }}>
                               {isCat ? '🐱' : '🐶'}
                             </div>
                           )}
                         </div>
-                        <Title level={5} style={{ margin: 0, color: isSelected ? '#065f46' : '#1e293b' }}>{pet.name}</Title>
-                        <Tag color={isCat ? 'purple' : 'blue'} style={{ marginTop: '8px', borderRadius: '12px' }}>
+                        <Title level={5} style={{ margin: 0, color: 'var(--slate-900)', fontFamily: 'var(--font-sans)', fontWeight: 700 }}>
+                          {pet.name}
+                        </Title>
+                        <Tag style={{ 
+                          marginTop: '8px', 
+                          borderRadius: '999px',
+                          background: isSelected ? 'var(--accent-light)' : 'var(--slate-100)',
+                          color: isSelected ? 'var(--secondary)' : 'var(--slate-700)',
+                          border: '1px solid var(--slate-200)',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          padding: '2px 10px',
+                        }}>
                           {pet.weight} kg
                         </Tag>
                       </div>
@@ -445,18 +485,21 @@ const CreateBookingPage: React.FC = () => {
       )
     },
     {
-      title: bookingType === 'Grooming' ? 'Select Services' : 'Select Room & Diet',
+      title: bookingType === 'Grooming' ? 'Select Services' : 'Select Suite & Diet',
       content: (
         <div className="step-container fade-in">
-           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <Title level={3} style={{ color: '#1e293b' }}>
-              {bookingType === 'Grooming' ? 'Select Spa Services' : 'Select Room & Diet'}
+           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+            <Title level={3} style={{ fontFamily: 'var(--font-heading)', color: 'var(--slate-900)', margin: '0 0 6px 0' }}>
+              {bookingType === 'Grooming' ? 'Select Spa & Grooming Treatments' : 'Select Suite & Nutrition Plan'}
             </Title>
-            <Text type="secondary" style={{ fontSize: '16px' }}>Select for each pet, price is automatically calculated based on weight</Text>
+            <Text type="secondary" style={{ fontSize: '15px', color: 'var(--slate-600)' }}>
+              Select options for each pet; pricing is tailored automatically based on your pet's weight
+            </Text>
           </div>
 
           <Tabs 
             type="card"
+            className="booking-tabs"
             items={selectedPetIds.map(petId => {
               const pet = pets.find(p => p.id === petId);
               if (!pet) return { key: petId, label: 'Unknown' };
@@ -465,16 +508,18 @@ const CreateBookingPage: React.FC = () => {
 
               return {
                 key: petId,
-                label: `[ ${isCat ? '🐱' : '🐶'} Tab ${pet.name} (${pet.weight}kg) ]`,
+                label: `${isCat ? '🐱' : '🐶'} ${pet.name} (${pet.weight} kg)`,
                 children: (
-                  <div style={{ padding: '16px', background: '#fff', borderRadius: '0 0 8px 8px', border: '1px solid #f0f0f0', borderTop: 'none' }}>
+                  <div style={{ padding: '22px 20px', background: 'var(--paper-card)', borderRadius: '0 0 14px 14px', border: '1px solid var(--slate-200)', borderTop: 'none' }}>
                     
                     {bookingType === 'Grooming' && (
                       <div style={{ marginBottom: '24px' }}>
-                        <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>✂️ Grooming & Spa Services</Title>
+                        <Title level={4} style={{ color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>✂️</span> Botanical Grooming &amp; Spa Treatments
+                        </Title>
                         {groomingOptions.length === 0 ? (
-                          <div style={{ padding: '24px', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
-                            <p style={{ margin: 0, color: '#64748b' }}>No grooming services are currently available.</p>
+                          <div style={{ padding: '28px', textAlign: 'center', background: 'var(--slate-50)', borderRadius: '12px', border: '1px dashed var(--slate-300)' }}>
+                            <p style={{ margin: 0, color: 'var(--slate-600)' }}>No grooming services are currently available.</p>
                           </div>
                         ) : (
                           <Checkbox.Group 
@@ -485,25 +530,46 @@ const CreateBookingPage: React.FC = () => {
                             <Row gutter={[16, 16]}>
                               {groomingOptions.map(srv => {
                                 const price = getPriceForPet(srv, pet.weight);
+                                const isItemChecked = pServices.groomingIds?.includes(srv.id);
                                 return (
                                   <Col span={24} key={srv.id}>
-                                    <Checkbox value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.groomingIds?.includes(srv.id) ? '#f0fdf4' : '#fff' }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <Checkbox 
+                                      value={srv.id} 
+                                      style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        padding: '14px 16px', 
+                                        border: `1.5px solid ${isItemChecked ? 'var(--secondary)' : 'var(--slate-200)'}`, 
+                                        borderRadius: '12px', 
+                                        background: isItemChecked ? 'var(--primary-light)' : 'var(--paper-card)',
+                                        transition: 'all 0.2s ease',
+                                        width: '100%',
+                                        boxShadow: isItemChecked ? 'var(--shadow-xs)' : 'none',
+                                      }}
+                                    >
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '10px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                                           {srv.imageUrl ? (
                                             <img
                                               src={srv.imageUrl}
                                               alt={srv.name}
-                                              style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                                              style={{ width: 48, height: 48, borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--slate-200)', flexShrink: 0 }}
                                             />
                                           ) : (
-                                            <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                                            <div style={{ width: 48, height: 48, borderRadius: '10px', backgroundColor: 'var(--primary-light)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
                                               ✂️
                                             </div>
                                           )}
-                                          <Text strong>{srv.name}</Text>
+                                          <div>
+                                            <Text strong style={{ fontSize: '1rem', color: 'var(--slate-900)' }}>{srv.name}</Text>
+                                            {srv.description && (
+                                              <div style={{ fontSize: '13px', color: 'var(--slate-600)', marginTop: 2 }}>{srv.description}</div>
+                                            )}
+                                          </div>
                                         </div>
-                                        <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND</Text>
+                                        <Text strong style={{ color: 'var(--secondary)', fontSize: '1.05rem', fontWeight: 700, whiteSpace: 'nowrap', marginLeft: '12px' }}>
+                                          {price.toLocaleString()} VND
+                                        </Text>
                                       </div>
                                     </Checkbox>
                                   </Col>
@@ -517,11 +583,13 @@ const CreateBookingPage: React.FC = () => {
 
                     {bookingType === 'Boarding' && (
                       <div>
-                        <Title level={5} style={{ color: '#059669', marginBottom: '16px' }}>🏨 Pet Hotel (Boarding Room)</Title>
+                        <Title level={4} style={{ color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>🏨</span> Sanctuary Suites &amp; Rooms
+                        </Title>
                         {boardingOptions.length === 0 ? (
-                          <div style={{ padding: '24px', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
-                            <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '8px' }}>🏨</span>
-                            <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
+                          <div style={{ padding: '28px', textAlign: 'center', background: 'var(--slate-50)', borderRadius: '12px', border: '1px dashed var(--slate-300)' }}>
+                            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '8px' }}>🏨</span>
+                            <p style={{ margin: 0, color: 'var(--slate-600)', fontSize: '0.95rem' }}>
                               No boarding services are currently available.<br />
                               Ask an administrator to add a <strong>Boarding</strong> service with pricing to display it here.
                             </p>
@@ -546,25 +614,46 @@ const CreateBookingPage: React.FC = () => {
                               <Row gutter={[16, 16]}>
                               {boardingOptions.map(srv => {
                                 const price = getPriceForPet(srv, pet.weight);
+                                const isItemChecked = pServices.boardingId === srv.id;
                                 return (
                                   <Col span={24} key={srv.id}>
-                                    <Radio value={srv.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: pServices.boardingId === srv.id ? '#f0fdf4' : '#fff' }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '8px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <Radio 
+                                      value={srv.id} 
+                                      style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        padding: '14px 16px', 
+                                        border: `1.5px solid ${isItemChecked ? 'var(--secondary)' : 'var(--slate-200)'}`, 
+                                        borderRadius: '12px', 
+                                        background: isItemChecked ? 'var(--primary-light)' : 'var(--paper-card)',
+                                        transition: 'all 0.2s ease',
+                                        width: '100%',
+                                        boxShadow: isItemChecked ? 'var(--shadow-xs)' : 'none',
+                                      }}
+                                    >
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '10px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                                           {srv.imageUrl ? (
                                             <img
                                               src={srv.imageUrl}
                                               alt={srv.name}
-                                              style={{ width: 44, height: 44, borderRadius: '8px', objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                                              style={{ width: 48, height: 48, borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--slate-200)', flexShrink: 0 }}
                                             />
                                           ) : (
-                                            <div style={{ width: 44, height: 44, borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                                            <div style={{ width: 48, height: 48, borderRadius: '10px', backgroundColor: 'var(--primary-light)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
                                               🏨
                                             </div>
                                           )}
-                                          <Text strong>{srv.name}</Text>
+                                          <div>
+                                            <Text strong style={{ fontSize: '1rem', color: 'var(--slate-900)' }}>{srv.name}</Text>
+                                            {srv.description && (
+                                              <div style={{ fontSize: '13px', color: 'var(--slate-600)', marginTop: 2 }}>{srv.description}</div>
+                                            )}
+                                          </div>
                                         </div>
-                                        <Text strong style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text>
+                                        <Text strong style={{ color: 'var(--secondary)', fontSize: '1.05rem', fontWeight: 700, whiteSpace: 'nowrap', marginLeft: '12px' }}>
+                                          {price.toLocaleString()} VND / day
+                                        </Text>
                                       </div>
                                     </Radio>
                                   </Col>
@@ -574,24 +663,31 @@ const CreateBookingPage: React.FC = () => {
                           </Radio.Group>
                           
                           {pServices.boardingId && (
-                            <div style={{ marginTop: '12px' }}>
-                               <Button type="link" danger onClick={() => {
-                                  setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
-                               }}>
-                                  Clear room selection
+                            <div style={{ marginTop: '14px' }}>
+                               <Button 
+                                 type="link" 
+                                 danger 
+                                 onClick={() => {
+                                    setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
+                                 }}
+                                 style={{ padding: 0, fontWeight: 600, color: 'var(--danger)' }}
+                               >
+                                  ✕ Clear room selection
                                </Button>
                             </div>
                           )}
 
                           {pServices.boardingId && dietOptions.length > 0 && (
-                            <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
-                              <Text strong style={{ display: 'block', marginBottom: '12px' }}>Additional diet service (Optional):</Text>
+                            <div style={{ marginTop: '20px', padding: '16px 20px', background: 'var(--slate-50)', borderRadius: '12px', border: '1px solid var(--slate-200)' }}>
+                              <Text strong style={{ display: 'block', marginBottom: '12px', color: 'var(--slate-800)', fontSize: '14px' }}>
+                                🥗 Additional Nutrition &amp; Diet Plan (Optional):
+                              </Text>
                               <Radio.Group 
                                 style={{ width: '100%' }}
                                 value={pServices.dietId}
                                 onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
                               >
-                                <Row gutter={[16, 16]}>
+                                <Row gutter={[16, 12]}>
                                   {dietOptions.map(srv => {
                                     const price = getPriceForPet(srv, pet.weight);
                                     return (
@@ -602,10 +698,12 @@ const CreateBookingPage: React.FC = () => {
                                               <img
                                                 src={srv.imageUrl}
                                                 alt={srv.name}
-                                                style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                                style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--slate-200)' }}
                                               />
                                             )}
-                                            <span>{srv.name} - <Text style={{ color: '#059669' }}>{price.toLocaleString()} VND / day</Text></span>
+                                            <span style={{ color: 'var(--slate-800)', fontWeight: 500 }}>
+                                              {srv.name} — <Text strong style={{ color: 'var(--secondary)' }}>{price.toLocaleString()} VND / day</Text>
+                                            </span>
                                           </span>
                                         </Radio>
                                       </Col>
@@ -613,8 +711,13 @@ const CreateBookingPage: React.FC = () => {
                                   })}
                                 </Row>
                               </Radio.Group>
-                              <div style={{ marginTop: '8px' }}>
-                                <Button type="link" size="small" onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}>
+                              <div style={{ marginTop: '10px' }}>
+                                <Button 
+                                  type="link" 
+                                  size="small" 
+                                  onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}
+                                  style={{ padding: 0, fontSize: '13px', color: 'var(--slate-600)' }}
+                                >
                                    Clear diet selection
                                 </Button>
                               </div>
@@ -637,53 +740,73 @@ const CreateBookingPage: React.FC = () => {
       title: 'Schedule',
       content: (
         <div className="step-container fade-in">
-          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-            <Title level={3} style={{ color: '#1e293b', margin: '0 0 8px 0' }}>Select Schedule</Title>
-            <Text type="secondary" style={{ fontSize: '15px' }}>
-              Please select the date and time for the {bookingType === 'Grooming' ? 'spa visit' : 'hotel stay'}
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <Title level={3} style={{ fontFamily: 'var(--font-heading)', color: 'var(--slate-900)', margin: '0 0 6px 0' }}>
+              Select Schedule &amp; Timing
+            </Title>
+            <Text type="secondary" style={{ fontSize: '15px', color: 'var(--slate-600)' }}>
+              Please select the date and time for your companion's {bookingType === 'Grooming' ? 'spa appointment' : 'hotel stay'}
             </Text>
           </div>
 
-          <div style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-            <div style={{ textAlign: 'center', marginBottom: '12px', fontSize: '36px', color: '#10b981' }}>
-              <CalendarOutlined />
+          <div style={{ maxWidth: '520px', margin: '0 auto', background: 'var(--paper-card)', padding: '28px', borderRadius: '16px', border: '1px solid var(--slate-200)', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{
+                width: 64,
+                height: 64,
+                borderRadius: '50%',
+                background: 'var(--primary-light)',
+                color: 'var(--secondary)',
+                fontSize: 28,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1.5px solid var(--primary-border)',
+                boxShadow: 'var(--shadow-xs)'
+              }}>
+                <CalendarOutlined />
+              </div>
             </div>
             
             {bookingType === 'Grooming' && (
-              <div style={{ marginBottom: '0' }}>
-                <Title level={5} style={{ margin: '0 0 8px 0' }}>Grooming Appointment:</Title>
-                <Form.Item name="groomingDate" rules={[{ required: true, message: 'Please select a date and time' }]} style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '16px' }}>
+                <Title level={5} style={{ margin: '0 0 8px 0', color: 'var(--slate-900)', fontFamily: 'var(--font-heading)' }}>
+                  Grooming Drop-off Date &amp; Time:
+                </Title>
+                <Form.Item name="groomingDate" rules={[{ required: true, message: 'Please select an appointment date and time' }]} style={{ marginBottom: '16px' }}>
                   <DatePicker 
-                    style={{ width: '100%', padding: '10px', fontSize: '15px', borderRadius: '8px' }} 
+                    style={{ width: '100%', padding: '10px 14px', fontSize: '15px', borderRadius: '10px', borderColor: 'var(--slate-300)' }} 
                     showTime={{ format: 'HH:mm', minuteStep: 15 }} 
                     format="MMM DD, YYYY - HH:mm" 
                     disabledDate={(current) => current && current < dayjs().startOf('day')}
                     size="large"
-                    placeholder="Select a date and time for drop-off"
+                    placeholder="Select arrival date & time"
                   />
                 </Form.Item>
               </div>
             )}
 
             {bookingType === 'Boarding' && (
-              <div style={{ marginBottom: '0' }}>
-                <Title level={5} style={{ margin: '0 0 8px 0' }}>Boarding Appointment:</Title>
+              <div style={{ marginBottom: '16px' }}>
+                <Title level={5} style={{ margin: '0 0 8px 0', color: 'var(--slate-900)', fontFamily: 'var(--font-heading)' }}>
+                  Boarding Check-in &amp; Check-out:
+                </Title>
                 <Form.Item name="boardingDateRange" rules={[{ required: true, message: 'Please select check-in and check-out dates' }]} style={{ marginBottom: '16px' }}>
                   <RangePicker 
                     disabledDate={disabledDate} 
-                    style={{ width: '100%', padding: '10px', fontSize: '15px', borderRadius: '8px' }} 
+                    style={{ width: '100%', padding: '10px 14px', fontSize: '15px', borderRadius: '10px', borderColor: 'var(--slate-300)' }} 
                     showTime={{ format: 'HH:mm' }} 
                     format="MMM DD, YYYY HH:mm"
                     size="large"
-                    placeholder={['Check-in', 'Check-out']}
+                    placeholder={['Check-in date & time', 'Check-out date & time']}
                   />
                 </Form.Item>
               </div>
             )}
 
-            <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', display: 'flex', gap: '8px', color: '#64748b', fontSize: '13px' }}>
-              <InfoCircleOutlined style={{ marginTop: '3px' }} />
-              <span>Please arrive 10 minutes before your appointment.</span>
+            <div style={{ background: 'var(--primary-light)', padding: '12px 16px', borderRadius: '10px', display: 'flex', gap: '10px', color: 'var(--slate-700)', fontSize: '13.5px', border: '1px solid var(--primary-border)', alignItems: 'center' }}>
+              <InfoCircleOutlined style={{ color: 'var(--secondary)', fontSize: 16, flexShrink: 0 }} />
+              <span>Please arrive 10-15 minutes prior to your scheduled check-in time for an attentive concierge welcome.</span>
             </div>
           </div>
         </div>
@@ -693,16 +816,20 @@ const CreateBookingPage: React.FC = () => {
       title: 'Confirm',
       content: (
         <div className="step-container fade-in">
-          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-            <Title level={5} style={{ color: '#1e293b', margin: 0 }}>Confirm & Summary</Title>
-            <Text type="secondary" style={{ fontSize: '14px' }}>Double check your booking details</Text>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <Title level={3} style={{ fontFamily: 'var(--font-heading)', color: 'var(--slate-900)', margin: '0 0 6px 0' }}>
+              Confirm &amp; Summary
+            </Title>
+            <Text type="secondary" style={{ fontSize: '15px', color: 'var(--slate-600)' }}>
+              Double-check your sanctuary booking details and select payment method
+            </Text>
           </div>
 
-          <Row gutter={16}>
+          <Row gutter={20}>
             <Col xs={24} md={14}>
-              <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)', marginBottom: '16px' }}>
-                <Title level={5} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: '#0f172a' }}>
-                  <ShopOutlined /> Order Summary
+              <div style={{ background: 'var(--paper-card)', borderRadius: '16px', padding: '24px', border: '1px solid var(--slate-200)', boxShadow: 'var(--shadow-xs)', marginBottom: '16px' }}>
+                <Title level={4} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', fontFamily: 'var(--font-heading)', color: 'var(--slate-900)' }}>
+                  <ShopOutlined style={{ color: 'var(--secondary)' }} /> Booking Summary
                 </Title>
                 
                 {selectedPetIds.map(petId => {
@@ -717,13 +844,13 @@ const CreateBookingPage: React.FC = () => {
                   }
 
                   return (
-                    <div key={petId} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed #cbd5e1' }}>
-                      <Text strong style={{ fontSize: '16px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <div key={petId} style={{ marginBottom: '18px', paddingBottom: '16px', borderBottom: '1px dashed var(--slate-300)' }}>
+                      <Text strong style={{ fontSize: '16px', color: 'var(--slate-900)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                         {pet.imageUrl ? (
                           <img
                             src={pet.imageUrl}
                             alt={pet.name}
-                            style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }}
+                            style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--slate-200)' }}
                           />
                         ) : (
                           <span>{isCat ? '🐱' : '🐶'}</span>
@@ -731,24 +858,26 @@ const CreateBookingPage: React.FC = () => {
                         <span>{pet.name} ({pet.weight}kg):</span>
                       </Text>
                       
-                      <div style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ paddingLeft: '28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {bookingType === 'Grooming' && srvs.groomingIds?.map((gId: string) => {
                           const s = services.find(x => x.id === gId);
                           if (!s) return null;
                           const price = getPriceForPet(s, pet.weight);
                           return (
                             <div key={gId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 {s.imageUrl && (
                                   <img
                                     src={s.imageUrl}
                                     alt={s.name}
-                                    style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                    style={{ width: 26, height: 26, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--slate-200)' }}
                                   />
                                 )}
-                                <Text>{s.name} <Text type="secondary">({groomingDate?.format('DD/MM HH:mm')})</Text></Text>
+                                <Text style={{ color: 'var(--slate-800)' }}>
+                                  {s.name} <Text type="secondary">({groomingDate?.format('DD/MM HH:mm')})</Text>
+                                </Text>
                               </div>
-                              <Text strong>{price.toLocaleString()} VND</Text>
+                              <Text strong style={{ color: 'var(--secondary)', fontSize: '0.98rem' }}>{price.toLocaleString()} VND</Text>
                             </div>
                           );
                         })}
@@ -760,17 +889,19 @@ const CreateBookingPage: React.FC = () => {
                                const price = s ? getPriceForPet(s, pet.weight) * boardingDays : 0;
                                return (
                                  <>
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                      {s?.imageUrl && (
                                        <img
                                          src={s.imageUrl}
                                          alt={s.name}
-                                         style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                         style={{ width: 26, height: 26, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--slate-200)' }}
                                        />
                                      )}
-                                     <Text>{s?.name} <Text type="secondary">({boardingDateRange?.[0]?.format('DD/MM')} - {boardingDateRange?.[1]?.format('DD/MM')})</Text></Text>
+                                     <Text style={{ color: 'var(--slate-800)' }}>
+                                       {s?.name} <Text type="secondary">({boardingDateRange?.[0]?.format('DD/MM')} - {boardingDateRange?.[1]?.format('DD/MM')} · {boardingDays} day{boardingDays > 1 ? 's' : ''})</Text>
+                                     </Text>
                                    </div>
-                                   <Text strong>{price.toLocaleString()} VND</Text>
+                                   <Text strong style={{ color: 'var(--secondary)', fontSize: '0.98rem' }}>{price.toLocaleString()} VND</Text>
                                  </>
                                )
                             })()}
@@ -784,17 +915,19 @@ const CreateBookingPage: React.FC = () => {
                                const price = s ? getPriceForPet(s, pet.weight) * boardingDays : 0;
                                return (
                                  <>
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                      {s?.imageUrl && (
                                        <img
                                          src={s.imageUrl}
                                          alt={s.name}
-                                         style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                         style={{ width: 26, height: 26, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--slate-200)' }}
                                        />
                                      )}
-                                     <Text>{s?.name}</Text>
+                                     <Text style={{ color: 'var(--slate-800)' }}>
+                                       {s?.name} <Text type="secondary">(Diet plan · {boardingDays} day{boardingDays > 1 ? 's' : ''})</Text>
+                                     </Text>
                                    </div>
-                                   <Text strong>{price.toLocaleString()} VND</Text>
+                                   <Text strong style={{ color: 'var(--secondary)', fontSize: '0.98rem' }}>{price.toLocaleString()} VND</Text>
                                  </>
                                )
                             })()}
@@ -809,23 +942,23 @@ const CreateBookingPage: React.FC = () => {
             </Col>
 
             <Col xs={24} md={10}>
-              <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '24px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <Title level={5} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-                  <GiftOutlined /> Voucher & Payment
+              <div style={{ background: 'var(--slate-50)', borderRadius: '16px', padding: '24px', border: '1px solid var(--slate-200)', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Title level={4} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', fontFamily: 'var(--font-heading)', color: 'var(--slate-900)' }}>
+                  <GiftOutlined style={{ color: 'var(--secondary)' }} /> Privileges &amp; Payment
                 </Title>
                 
-                <Form.Item name="voucherCode" label={<Text strong>Discount code</Text>} style={{ marginBottom: '16px' }}>
+                <Form.Item name="voucherCode" label={<Text strong style={{ color: 'var(--slate-800)' }}>Promo / Privilege Voucher</Text>} style={{ marginBottom: '20px' }}>
                   <Input 
-                    prefix={<GiftOutlined style={{ color: '#94a3b8' }} />} 
-                    placeholder="Enter discount code" 
+                    prefix={<GiftOutlined style={{ color: 'var(--secondary)' }} />} 
+                    placeholder="Enter privilege code" 
                     size="large" 
-                    style={{ borderRadius: '8px' }}
+                    style={{ borderRadius: '10px', borderColor: 'var(--slate-300)' }}
                   />
                 </Form.Item>
 
-                <div style={{ marginBottom: '20px' }}>
-                  <Text strong style={{ display: 'block', marginBottom: '8px', color: '#1e293b' }}>
-                    Payment method
+                <div style={{ marginBottom: '24px' }}>
+                  <Text strong style={{ display: 'block', marginBottom: '10px', color: 'var(--slate-900)', fontSize: '15px' }}>
+                    Payment Method
                   </Text>
                   <Form.Item name="paymentChoice" style={{ marginBottom: 0 }}>
                     <Radio.Group style={{ width: '100%' }}>
@@ -834,34 +967,36 @@ const CreateBookingPage: React.FC = () => {
                           <Radio 
                             value="PAY_AT_COUNTER" 
                             style={{ 
-                              padding: '12px', 
-                              border: '1px solid #e2e8f0', 
-                              borderRadius: '8px', 
+                              padding: '12px 14px', 
+                              border: '1.5px solid var(--slate-200)', 
+                              borderRadius: '12px', 
                               width: '100%', 
                               background: '#fff',
-                              margin: 0
+                              margin: 0,
+                              transition: 'all 0.2s ease',
                             }}
                           >
-                            <div>
-                              <Text strong>Pay at the counter</Text>
-                              <div style={{ fontSize: '12px', color: '#64748b' }}>Pay at the front desk when the service is complete</div>
+                            <div style={{ marginLeft: 6 }}>
+                              <Text strong style={{ color: 'var(--slate-900)' }}>Pay at Counter</Text>
+                              <div style={{ fontSize: '12.5px', color: 'var(--slate-600)' }}>Pay at the concierge desk when picking up your pet</div>
                             </div>
                           </Radio>
                         )}
                         <Radio 
                           value="VNPAY" 
                           style={{ 
-                            padding: '12px', 
-                            border: '1px solid #e2e8f0', 
-                            borderRadius: '8px', 
+                            padding: '12px 14px', 
+                            border: '1.5px solid var(--slate-200)', 
+                            borderRadius: '12px', 
                             width: '100%', 
                             background: '#fff',
-                            margin: 0
+                            margin: 0,
+                            transition: 'all 0.2s ease',
                           }}
                         >
-                          <div>
-                            <Text strong>Pay online with VNPay</Text>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>ATM card, online banking, or VNPay QR code</div>
+                          <div style={{ marginLeft: 6 }}>
+                            <Text strong style={{ color: 'var(--slate-900)' }}>Online Payment via VNPay</Text>
+                            <div style={{ fontSize: '12.5px', color: 'var(--slate-600)' }}>ATM card, mobile banking, or VNPay QR code</div>
                           </div>
                         </Radio>
                       </Space>
@@ -869,10 +1004,10 @@ const CreateBookingPage: React.FC = () => {
                   </Form.Item>
                 </div>
 
-                <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ marginTop: 'auto', paddingTop: '18px', borderTop: '1px solid var(--slate-300)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text strong style={{ fontSize: '16px' }}>Total amount</Text>
-                    <Title level={3} style={{ margin: 0, color: '#059669' }}>
+                    <Text strong style={{ fontSize: '16px', color: 'var(--slate-800)' }}>Total Amount</Text>
+                    <Title level={2} style={{ margin: 0, color: 'var(--secondary)', fontFamily: 'var(--font-heading)', fontWeight: 700 }}>
                       {totalAmount > 0 ? `${totalAmount.toLocaleString()} VND` : '0 VND'}
                     </Title>
                   </div>
@@ -886,24 +1021,46 @@ const CreateBookingPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: '16px', maxWidth: '100%', backgroundColor: '#f8fafc', minHeight: 'calc(100vh - 64px)' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <Title level={3} style={{ margin: 0, color: '#0f172a' }}>Book Appointment</Title>
-          <Tag color="cyan" style={{ fontSize: '14px', padding: '4px 12px', marginTop: '8px', borderRadius: '12px' }}>
-             {bookingType === 'Grooming' ? '✂️ Grooming & Spa' : '🏨 Pet Hotel'}
-          </Tag>
+    <div className="booking-page-wrap">
+      {/* Top Bar Switch & Brand */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+        <button
+          type="button"
+          onClick={() => {
+            setBookingType(null);
+            setCurrentStep(0);
+            setPetServices({});
+            form.resetFields();
+          }}
+          className="link"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.92rem', color: 'var(--secondary)', fontWeight: 600 }}
+        >
+          <LeftOutlined style={{ fontSize: '11px' }} /> Switch between Spa / Hotel
+        </button>
+        <div className="customer-role-badge">
+          {bookingType === 'Grooming' ? '✂️ Botanical Grooming & Spa' : '🏨 Sanctuary Hotel Suites'}
         </div>
+      </div>
+
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <h1 className="booking-page-title">
+          Book Your {bookingType === 'Grooming' ? 'Spa Appointment' : 'Hotel Suite'}
+        </h1>
+        <p className="booking-page-subtitle">
+          Complete the steps below to reserve tailored sanctuary care for your companion.
+        </p>
+      </div>
       
       <Steps 
         current={currentStep} 
+        className="booking-steps"
         items={steps.map(s => ({ title: s.title }))} 
-        style={{ marginBottom: '24px' }} 
+        style={{ marginBottom: '28px' }} 
         size="small"
       />
 
-      <div className="paw-bg-card" style={{ borderRadius: '16px', padding: '24px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
-        <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ paymentChoice: 'PAY_AT_COUNTER' }}>
+      <div className="booking-container-card">
+        <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ paymentChoice: bookingType === 'Boarding' ? 'VNPAY' : 'PAY_AT_COUNTER' }}>
           
           <div style={{ minHeight: 'auto', marginBottom: '16px' }}>
             {steps.map((step, index) => (
@@ -913,34 +1070,50 @@ const CreateBookingPage: React.FC = () => {
             ))}
           </div>
 
-          <Divider style={{ margin: '32px 0 24px' }} />
+          <Divider style={{ margin: '32px 0 24px', borderColor: 'var(--slate-200)' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Button onClick={prev} size="large" style={{ borderRadius: '8px', padding: '0 24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <button 
+              type="button"
+              onClick={prev} 
+              className="btn-secondary" 
+              style={{ borderRadius: 999, padding: '0.65rem 1.8rem' }}
+            >
               <LeftOutlined style={{ fontSize: '12px' }}/> Back
-            </Button>
+            </button>
             
             {currentStep < steps.length - 1 && (
-              <Button type="primary" onClick={next} size="large" style={{ backgroundColor: '#059669', borderRadius: '8px', padding: '0 32px' }}>
+              <button 
+                type="button" 
+                onClick={next} 
+                className="btn" 
+                style={{ borderRadius: 999, padding: '0.65rem 2.25rem' }}
+              >
                 Continue <RightOutlined style={{ fontSize: '12px' }}/>
-              </Button>
+              </button>
             )}
             
             {currentStep === steps.length - 1 && (
-              <Button type="primary" htmlType="submit" size="large" loading={submitting} style={{ backgroundColor: '#059669', borderRadius: '8px', padding: '0 40px', height: '48px', fontSize: '16px' }}>
-                Confirm Booking
-              </Button>
+              <button 
+                type="submit" 
+                disabled={submitting} 
+                className="btn" 
+                style={{ 
+                  borderRadius: 999, 
+                  background: 'linear-gradient(135deg, #785839 0%, #3d2d23 100%)', 
+                  padding: '0.75rem 2.5rem', 
+                  fontSize: '1rem',
+                  boxShadow: '0 4px 16px rgba(38, 24, 15, 0.25)',
+                }}
+              >
+                {submitting ? 'Confirming Booking...' : 'Confirm Booking'}
+              </button>
             )}
           </div>
         </Form>
       </div>
 
-      </div>
       <style>{`
-        .paw-bg-card {
-          background-color: #ffffff;
-          background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23f1f5f9' fill-opacity='0.6' d='M25 45c-8 0-15-10-10-20 4-8 17-9 22 0 4 9-4 20-12 20zm25-15c-9 0-14-14-6-20 8-7 19 0 14 11-4 6-4 9-8 9zm25 15c-8 0-16-11-12-20 5-9 18-8 22 0 5 10-2 20-10 20zM50 85c-27 0-30-28-12-35 9-4 15-4 24 0 18 7 15 35-12 35z'/%3E%3C/svg%3E");
-        }
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>

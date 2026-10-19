@@ -96,21 +96,21 @@ export default function RoomTypeDetail({ backTo, guest }: RoomTypeDetailProps) {
             <span style={{ fontSize: '1.3rem' }}>🛡️</span>
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Sanitized & Safe</div>
-              <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Daily UV & disinfection</div>
+              <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Clean and hygienic suites</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ fontSize: '1.3rem' }}>❄️</span>
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Climate Controlled</div>
-              <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Optimal temperature 24/7</div>
+              <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Ventilated and comfortable</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span style={{ fontSize: '1.3rem' }}>📷</span>
+            <span style={{ fontSize: '1.3rem' }}>📋</span>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>CCTV Monitoring</div>
-              <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Daily photo/video updates</div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Daily Care Logs</div>
+              <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Care notes & status updates</div>
             </div>
           </div>
         </div>
@@ -119,21 +119,24 @@ export default function RoomTypeDetail({ backTo, guest }: RoomTypeDetailProps) {
       {/* CTA Box */}
       <div
         style={{
-          background: 'linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%)',
-          border: '1.5px solid #a7f3d0',
-          borderRadius: '14px',
-          padding: '1.75rem',
+          background: 'linear-gradient(135deg, var(--accent-light) 0%, var(--primary-light) 100%)',
+          border: '1.5px solid var(--accent)',
+          borderRadius: '16px',
+          padding: '1.75rem 2rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '1.25rem',
           marginBottom: '2rem',
+          boxShadow: 'var(--shadow-xs)',
         }}
       >
         <div>
-          <h3 style={{ margin: '0 0 0.35rem', color: '#065f46' }}>Reserve a suite for your furry friend</h3>
-          <p style={{ margin: 0, color: '#047857', fontSize: '0.93rem' }}>
+          <h3 style={{ margin: '0 0 0.35rem', color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', fontSize: '1.35rem' }}>
+            Reserve a suite for your furry friend
+          </h3>
+          <p style={{ margin: 0, color: 'var(--slate-700)', fontSize: '0.95rem' }}>
             Select dates, check-in time, and nutrition diets easily via our online booking system.
           </p>
         </div>

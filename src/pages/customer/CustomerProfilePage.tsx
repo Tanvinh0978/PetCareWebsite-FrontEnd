@@ -202,7 +202,7 @@ const CustomerProfilePage: React.FC = () => {
                       <Avatar
                         size={80}
                         src={Form.useWatch('avatarUrl', profileForm) || profileData?.avatarUrl || user?.avatarUrl}
-                        style={{ backgroundColor: '#059669', fontSize: 32, border: '2px solid #10b981', flexShrink: 0 }}
+                        style={{ backgroundColor: '#3d2d23', fontSize: 32, border: '2px solid #c69f7b', flexShrink: 0 }}
                         icon={<UserOutlined />}
                       >
                         {(profileData?.fullName || user?.name || 'C').charAt(0)?.toUpperCase()}
@@ -289,7 +289,7 @@ const CustomerProfilePage: React.FC = () => {
                                 disabled
                                 size="large"
                                 style={{ borderRadius: 8, backgroundColor: '#f1f5f9' }}
-                                suffix={<SafetyCertificateOutlined style={{ color: '#059669' }} />}
+                                suffix={<SafetyCertificateOutlined style={{ color: '#c69f7b' }} />}
                               />
                             </Form.Item>
                           </Col>
@@ -315,7 +315,7 @@ const CustomerProfilePage: React.FC = () => {
                         size="large"
                         loading={savingProfile}
                         icon={<SaveOutlined />}
-                        style={{ backgroundColor: '#059669', borderRadius: 8, padding: '0 28px' }}
+                        style={{ backgroundColor: '#3d2d23', borderColor: '#3d2d23', borderRadius: 8, padding: '0 28px' }}
                       >
                         Save Changes
                       </Button>
@@ -403,7 +403,7 @@ const CustomerProfilePage: React.FC = () => {
                         size="large"
                         loading={savingPassword}
                         icon={<SaveOutlined />}
-                        style={{ backgroundColor: '#059669', borderRadius: 8, padding: '0 28px' }}
+                        style={{ backgroundColor: '#3d2d23', borderColor: '#3d2d23', borderRadius: 8, padding: '0 28px' }}
                       >
                         Update Password
                       </Button>
