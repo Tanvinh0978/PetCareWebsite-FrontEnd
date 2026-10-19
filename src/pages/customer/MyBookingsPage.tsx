@@ -404,7 +404,7 @@ const MyBookingsPage: React.FC = () => {
         return (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500, color: '#0f172a' }}>
-              <ClockCircleOutlined style={{ color: '#059669', fontSize: 13 }} />
+              <ClockCircleOutlined style={{ color: '#785839', fontSize: 13 }} />
               <span>{startStr}</span>
             </div>
             {endStr && endStr !== startStr && record.bookingType === 'Boarding' && (
@@ -441,7 +441,7 @@ const MyBookingsPage: React.FC = () => {
       key: 'totalPrice',
       width: 170,
       render: (price: number) => (
-        <Text strong style={{ color: '#059669', whiteSpace: 'nowrap' }}>
+        <Text strong style={{ color: '#785839', whiteSpace: 'nowrap' }}>
           {price ? `${price.toLocaleString()} VND` : '0 VND'}
         </Text>
       ),
@@ -468,7 +468,7 @@ const MyBookingsPage: React.FC = () => {
             type="primary"
             size="small"
             icon={<EyeOutlined />}
-            style={{ backgroundColor: '#059669', borderRadius: 6 }}
+            style={{ backgroundColor: '#3d2d23', borderRadius: 6 }}
             onClick={() => handleOpenDetail(record.id)}
           >
             Details
@@ -569,7 +569,7 @@ const MyBookingsPage: React.FC = () => {
       >
         <div>
           <Title level={2} style={{ margin: 0, color: '#0f172a' }}>
-            <CalendarOutlined style={{ marginRight: 10, color: '#059669' }} />
+            <CalendarOutlined style={{ marginRight: 10, color: '#785839' }} />
             My Bookings
           </Title>
           <Text type="secondary" style={{ fontSize: 15 }}>
@@ -581,7 +581,7 @@ const MyBookingsPage: React.FC = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            style={{ backgroundColor: '#059669', borderRadius: 8 }}
+            style={{ backgroundColor: '#3d2d23', borderRadius: 8 }}
             onClick={() => navigate('/customer/booking')}
           >
             New Booking
@@ -611,7 +611,7 @@ const MyBookingsPage: React.FC = () => {
           <Space wrap size={16} align="center">
             {/* Service Date Picker */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CalendarOutlined style={{ color: '#059669', fontSize: 15 }} />
+              <CalendarOutlined style={{ color: '#785839', fontSize: 15 }} />
               <Text strong style={{ fontSize: 13, color: '#334155' }}>
                 Service Date:
               </Text>
@@ -727,7 +727,7 @@ const MyBookingsPage: React.FC = () => {
 
           <div>
             <Text type="secondary" style={{ fontSize: 13 }}>
-              Found <strong style={{ color: '#059669' }}>{totalCount}</strong> booking(s)
+              Found <strong style={{ color: '#785839' }}>{totalCount}</strong> booking(s)
             </Text>
           </div>
         </div>
@@ -766,7 +766,7 @@ const MyBookingsPage: React.FC = () => {
               >
                 <Button
                   type="primary"
-                  style={{ backgroundColor: '#059669' }}
+                  style={{ backgroundColor: '#3d2d23' }}
                   onClick={() => navigate('/customer/booking')}
                 >
                   Book an Appointment Now
@@ -781,7 +781,7 @@ const MyBookingsPage: React.FC = () => {
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CalendarOutlined style={{ color: '#059669' }} />
+            <CalendarOutlined style={{ color: '#785839' }} />
             <span>Booking Details</span>
             {selectedBooking && (() => {
               const cfg = getBookingStatusConfig(selectedBooking.status);
@@ -838,7 +838,7 @@ const MyBookingsPage: React.FC = () => {
             )}
             <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }} style={{ marginBottom: 20 }}>
               <Descriptions.Item label="Booking Code">
-                <Text strong style={{ fontFamily: 'monospace', color: '#059669' }}>
+                <Text strong style={{ fontFamily: 'monospace', color: '#785839' }}>
                   #{selectedBooking.id.slice(0, 8).toUpperCase()}
                 </Text>
               </Descriptions.Item>
@@ -862,7 +862,7 @@ const MyBookingsPage: React.FC = () => {
                 </>
               )}
               <Descriptions.Item label="Total Amount" span={2}>
-                <Text strong style={{ fontSize: 17, color: '#059669' }}>
+                <Text strong style={{ fontSize: 17, color: '#785839' }}>
                   {selectedBooking.totalPrice.toLocaleString()} VND
                 </Text>
               </Descriptions.Item>
@@ -938,7 +938,7 @@ const MyBookingsPage: React.FC = () => {
                             Care history
                           </Button>
                         )}
-                        <div style={{ fontSize: 15, fontWeight: 600, color: '#059669' }}>
+                        <div style={{ fontSize: 15, fontWeight: 600, color: '#785839' }}>
                           {item.assignedPrice?.toLocaleString()} VND
                         </div>
                         {item.quantity > 1 && (
@@ -959,14 +959,14 @@ const MyBookingsPage: React.FC = () => {
                             <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
                               <Tag
                                 color="success"
-                                icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
+                                icon={<CheckCircleFilled style={{ color: '#785839' }} />}
                                 style={{
                                   borderRadius: 6,
                                   padding: '3px 8px',
                                   fontWeight: 600,
-                                  background: '#ecfdf5',
-                                  borderColor: '#a7f3d0',
-                                  color: '#065f46',
+                                  background: '#fdf6ee',
+                                  borderColor: '#e8ded6',
+                                  color: '#785839',
                                   fontSize: 12,
                                   marginRight: 0,
                                 }}
@@ -1095,8 +1095,8 @@ const MyBookingsPage: React.FC = () => {
                                     style={{
                                       objectFit: 'cover',
                                       borderRadius: 8,
-                                      border: '2px solid #10b981',
-                                      boxShadow: '0 2px 8px rgba(16,185,129,0.25)',
+                                      border: '2px solid #c69f7b',
+                                      boxShadow: '0 2px 8px rgba(198,159,123,0.25)',
                                     }}
                                   />
                                   <div style={{ marginTop: 4 }}>
@@ -1154,7 +1154,7 @@ const MyBookingsPage: React.FC = () => {
             key="close"
             type="primary"
             onClick={() => setBeforeAfterItem(null)}
-            style={{ borderRadius: 8, backgroundColor: '#059669', borderColor: '#059669', padding: '0 20px', fontWeight: 600 }}
+            style={{ borderRadius: 8, backgroundColor: '#3d2d23', borderColor: '#3d2d23', padding: '0 20px', fontWeight: 600 }}
           >
             Đóng
           </Button>,
@@ -1229,7 +1229,7 @@ const MyBookingsPage: React.FC = () => {
               {beforeAfterItem.resultImageUrl && (
                 <div
                   style={{
-                    border: '2px solid #10b981',
+                    border: '2px solid #c69f7b',
                     borderRadius: 12,
                     padding: 12,
                     background: '#f0fdf4',
@@ -1353,7 +1353,7 @@ const MyBookingsPage: React.FC = () => {
             key="close"
             type="primary"
             onClick={() => setViewingReview(null)}
-            style={{ borderRadius: 8, backgroundColor: '#059669', borderColor: '#059669', padding: '0 20px', fontWeight: 600 }}
+            style={{ borderRadius: 8, backgroundColor: '#3d2d23', borderColor: '#3d2d23', padding: '0 20px', fontWeight: 600 }}
           >
             Close
           </Button>,
@@ -1411,14 +1411,14 @@ const MyBookingsPage: React.FC = () => {
                 {viewingReview.petName && (
                   <div style={{ marginTop: 2 }}>
                     <Text type="secondary" style={{ fontSize: 13 }}>
-                      Pet: <strong style={{ color: '#059669' }}>{viewingReview.petName}</strong>
+                      Pet: <strong style={{ color: '#785839' }}>{viewingReview.petName}</strong>
                     </Text>
                   </div>
                 )}
               </div>
               <Tag
                 color="success"
-                icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
+                icon={<CheckCircleFilled style={{ color: '#785839' }} />}
                 style={{
                   padding: '4px 10px',
                   borderRadius: 8,
