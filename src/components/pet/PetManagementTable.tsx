@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { petService } from '@/services/pet.service'
 import type { PetDTO } from '@/types/pet.types'
 import {
@@ -7,7 +7,6 @@ import {
   isCat,
 } from '@/types/pet.types'
 import { getApiErrorMessage } from '@/utils/apiError'
-import PetDetailModal from './PetDetailModal'
 
 interface PetManagementTableProps {
   basePath: string // e.g. '/admin/pets' or '/staff/pets'
@@ -35,7 +34,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
   const [error, setError] = useState('')
   const [toast, setToast] = useState('')
 
-  const [selectedPet, setSelectedPet] = useState<PetDTO | null>(null)
   const [petToDelete, setPetToDelete] = useState<PetDTO | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -353,7 +351,11 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
                     >
                       <td className="col-idx">{rowNumber}</td>
                       <td>
-                        <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <Link
+                          to={`${basePath}/${pet.id}`}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: 700, color: 'inherit', textDecoration: 'none' }}
+                          title="View pet details"
+                        >
                           {pet.imageUrl ? (
                             <img
                               src={pet.imageUrl}
@@ -370,7 +372,7 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
                             <span>{speciesIcon}</span>
                           )}
                           <span>{pet.name}</span>
-                        </strong>
+                        </Link>
                       </td>
                       <td>
                         <span
@@ -401,10 +403,9 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
                       </td>
                       <td className="col-actions">
                         <div className="action-group">
-                          <button
-                            type="button"
+                          <Link
+                            to={`${basePath}/${pet.id}`}
                             className="btn-action view"
-                            onClick={() => setSelectedPet(pet)}
                             title="View pet details"
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -412,7 +413,7 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                             View
-                          </button>
+                          </Link>
                           <button
                             type="button"
                             className="btn-action edit"
@@ -489,13 +490,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
           </div>
         )}
       </div>
-
-      {/* Pet Detail Modal */}
-      <PetDetailModal
-        pet={selectedPet}
-        open={Boolean(selectedPet)}
-        onClose={() => setSelectedPet(null)}
-      />
 
       {/* Delete Confirmation Dialog */}
       {petToDelete && (

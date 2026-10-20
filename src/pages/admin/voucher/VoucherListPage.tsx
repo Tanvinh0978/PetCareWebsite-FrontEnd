@@ -1,6 +1,6 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
 import { App } from 'antd'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { voucherService } from '@/services/voucher.service'
 import type { VoucherDTO } from '@/types/voucher.types'
 import { DiscountType, DISCOUNT_TYPE_LABEL, DISCOUNT_TYPE_SHORT } from '@/types/voucher.types'
@@ -43,9 +43,6 @@ const VoucherListPage: React.FC = () => {
   const [data, setData] = useState<IPagedResult<VoucherDTO> | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-
-  // Detail modal
-  const [selectedVoucher, setSelectedVoucher] = useState<VoucherDTO | null>(null)
 
   // Delete confirmation modal
   const [voucherToDelete, setVoucherToDelete] = useState<VoucherDTO | null>(null)
@@ -316,7 +313,13 @@ const VoucherListPage: React.FC = () => {
                     <tr key={v.id}>
                       <td className="col-idx">{rowNumber}</td>
                       <td>
-                        <strong style={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}>{v.code}</strong>
+                        <Link
+                          to={`${baseVoucherPath}/${v.id}`}
+                          style={{ fontFamily: 'monospace', letterSpacing: '0.05em', fontWeight: 700, color: '#785839', textDecoration: 'none' }}
+                          title="View voucher details"
+                        >
+                          {v.code}
+                        </Link>
                       </td>
                       <td>
                         <span style={{
@@ -345,30 +348,28 @@ const VoucherListPage: React.FC = () => {
                       </td>
                       <td className="col-actions">
                         <div className="action-group">
-                          <button
-                            type="button"
+                          <Link
+                            to={`${baseVoucherPath}/${v.id}`}
                             className="btn-action view"
                             title="View details"
-                            onClick={() => setSelectedVoucher(v)}
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                             View
-                          </button>
-                          <button
-                            type="button"
+                          </Link>
+                          <Link
+                            to={`${baseVoucherPath}/${v.id}/edit`}
                             className="btn-action edit"
                             title="Edit voucher"
-                            onClick={() => navigate(`${baseVoucherPath}/${v.id}/edit`)}
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
                               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                             Edit
-                          </button>
+                          </Link>
                           <button
                             type="button"
                             className="btn-action danger"
@@ -412,51 +413,6 @@ const VoucherListPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Detail modal */}
-      {selectedVoucher && (
-        <div className="modal-overlay" onClick={() => setSelectedVoucher(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" style={{ maxWidth: 500 }}>
-            <div className="modal-header">
-              <h2>🎟️ Voucher Details</h2>
-              <button type="button" className="modal-close-btn" onClick={() => setSelectedVoucher(null)}>✕</button>
-            </div>
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {[
-                { label: 'Code', value: <code style={{ fontFamily: 'monospace', fontSize: '1rem', letterSpacing: '0.08em', fontWeight: 700 }}>{selectedVoucher.code}</code> },
-                { label: 'Discount Type', value: DISCOUNT_TYPE_LABEL[selectedVoucher.discountType as DiscountType] ?? selectedVoucher.discountType },
-                { label: 'Discount Value', value: formatValue(selectedVoucher) },
-                { label: 'Start Date', value: formatDate(selectedVoucher.startDate) },
-                { label: 'End Date', value: formatDate(selectedVoucher.endDate) },
-                {
-                  label: 'Usage',
-                  value: selectedVoucher.maxUsage !== null
-                    ? `${selectedVoucher.currentUsage} used / ${selectedVoucher.maxUsage} max`
-                    : `${selectedVoucher.currentUsage} used / Unlimited`
-                },
-                {
-                  label: 'Status',
-                  value: (() => {
-                    const b = getValidityBadge(selectedVoucher)
-                    return <span className={`status-pill ${b.cls}`}><span className="status-dot"></span>{b.label}</span>
-                  })()
-                },
-              ].map(({ label, value }) => (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
-                  <span style={{ color: '#64748b', fontSize: '0.88rem', fontWeight: 500 }}>{label}</span>
-                  <span style={{ fontWeight: 600 }}>{value}</span>
-                </div>
-              ))}
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="chip" onClick={() => setSelectedVoucher(null)}>Close</button>
-              <button type="button" className="btn-action edit" style={{ padding: '0.5rem 1rem' }} onClick={() => { setSelectedVoucher(null); navigate(`${baseVoucherPath}/${selectedVoucher.id}/edit`) }}>
-                Edit voucher
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete confirmation modal */}
       {voucherToDelete && (
