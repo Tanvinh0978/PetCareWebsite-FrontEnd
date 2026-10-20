@@ -18,6 +18,8 @@ export interface BoardingTaskResponseDTO {
   roomId?: string | null
   roomName?: string | null
   roomTypeName?: string | null
+  staffId?: string | null
+  staffName?: string | null
   scheduledStartAt: string
   scheduledEndAt?: string | null
   totalStayDays?: number | null

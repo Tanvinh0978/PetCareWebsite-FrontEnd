@@ -1265,7 +1265,7 @@ const CreateBookingPage: React.FC = () => {
                 }}
               >
                 Continue <RightOutlined style={{ fontSize: '12px' }}/>
-              </button>
+              </Button>
             )}
             
             {currentStep === steps.length - 1 && (
