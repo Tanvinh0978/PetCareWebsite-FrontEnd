@@ -5,6 +5,10 @@ import ServiceCatalog from "@/components/service/ServiceCatalog";
 import ServiceDetail from "@/components/service/ServiceDetail";
 import RoomTypeCatalog from "@/components/roomType/RoomTypeCatalog";
 import RoomTypeDetail from "@/components/roomType/RoomTypeDetail";
+import CustomerDetail from "@/components/customer/CustomerDetail";
+import PetDetail from "@/components/pet/PetDetail";
+import StaffDetail from "@/components/staff/StaffDetail";
+import VoucherDetail from "@/components/voucher/VoucherDetail";
 import PawstayAuthPage from "@/pages/auth/PawstayAuthPage";
 import NotFoundPage from "@/pages/errors/NotFoundPage";
 import HomePage from "@/pages/customer/HomePage";
@@ -76,6 +80,7 @@ export default function AppRoutes() {
         { path: "services/:id/edit", element: <AdminServiceFormPage /> }, // Edit: màn riêng
         { path: "customers", element: <AdminCustomerListPage /> },
         { path: "customers/new", element: <AdminCustomerFormPage /> },
+        { path: "customers/:id", element: <CustomerDetail backTo="/admin/customers" editTo={(id) => `/admin/customers/${id}/edit`} /> },
         { path: "customers/:id/edit", element: <AdminCustomerFormPage /> },
         { path: "room-types", element: <AdminRoomTypeListPage /> },
         { path: "room-types/new", element: <AdminRoomTypeFormPage /> },
@@ -85,13 +90,16 @@ export default function AppRoutes() {
         { path: "rooms/:id/edit", element: <AdminRoomFormPage /> },
         { path: "pets", element: <AdminPetListPage /> },
         { path: "pets/new", element: <AdminPetFormPage /> },
+        { path: "pets/:id", element: <PetDetail backTo="/admin/pets" editTo={(id) => `/admin/pets/${id}/edit`} /> },
         { path: "pets/:id/edit", element: <AdminPetFormPage /> },
         { path: "staff", element: <AdminStaffListPage /> },
         { path: "staff/new", element: <AdminStaffFormPage /> },
+        { path: "staff/:id", element: <StaffDetail backTo="/admin/staff" editTo={(id) => `/admin/staff/${id}/edit`} /> },
         { path: "staff/:id/edit", element: <AdminStaffFormPage /> },
         { path: "roles", element: <RolePermissionPage /> },
         { path: "vouchers", element: <AdminVoucherListPage /> },
         { path: "vouchers/new", element: <AdminVoucherFormPage /> },
+        { path: "vouchers/:id", element: <VoucherDetail backTo="/admin/vouchers" editTo={(id) => `/admin/vouchers/${id}/edit`} /> },
         { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
         { path: "reviews", element: <ReviewManagementPage /> },
         { path: "bookings", element: <BookingManagementPage /> },
@@ -120,6 +128,7 @@ export default function AppRoutes() {
         { path: "services/:id/edit", element: <AdminServiceFormPage /> },
         { path: "customers", element: <AdminCustomerListPage /> },
         { path: "customers/new", element: <AdminCustomerFormPage /> },
+        { path: "customers/:id", element: <CustomerDetail backTo="/staff/customers" editTo={(id) => `/staff/customers/${id}/edit`} /> },
         { path: "customers/:id/edit", element: <AdminCustomerFormPage /> },
         { path: "room-types", element: <AdminRoomTypeListPage /> },
         { path: "room-types/new", element: <AdminRoomTypeFormPage /> },
@@ -129,14 +138,17 @@ export default function AppRoutes() {
         { path: "rooms/:id/edit", element: <AdminRoomFormPage /> },
         { path: "pets", element: <StaffPetListPage /> },
         { path: "pets/new", element: <StaffPetFormPage /> },
+        { path: "pets/:id", element: <PetDetail backTo="/staff/pets" editTo={(id) => `/staff/pets/${id}/edit`} /> },
         { path: "pets/:id/edit", element: <StaffPetFormPage /> },
         { path: "reviews", element: <ReviewManagementPage /> },
         { path: "staff", element: <AdminStaffListPage /> },
         { path: "staff/new", element: <AdminStaffFormPage /> },
+        { path: "staff/:id", element: <StaffDetail backTo="/staff/staff" editTo={(id) => `/staff/staff/${id}/edit`} /> },
         { path: "staff/:id/edit", element: <AdminStaffFormPage /> },
         { path: "roles", element: <RolePermissionPage /> },
         { path: "vouchers", element: <AdminVoucherListPage /> },
         { path: "vouchers/new", element: <AdminVoucherFormPage /> },
+        { path: "vouchers/:id", element: <VoucherDetail backTo="/staff/vouchers" editTo={(id) => `/staff/vouchers/${id}/edit`} /> },
         { path: "vouchers/:id/edit", element: <AdminVoucherFormPage /> },
         { path: "profile", element: <StaffProfilePage /> },
         // [new-page:staff]
@@ -152,6 +164,7 @@ export default function AppRoutes() {
         ...publicRoomTypeRoutes("/customer"),
         { path: "pets", element: <MyPetsPage /> },
         { path: "pets/new", element: <PetFormPage /> },
+        { path: "pets/:id", element: <PetDetail backTo="/customer/pets" editTo={(id) => `/customer/pets/${id}/edit`} /> },
         { path: "pets/:id/edit", element: <PetFormPage /> },
         { path: "booking", element: <CreateBookingPage /> },
         { path: "bookings", element: <MyBookingsPage /> },
