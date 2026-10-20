@@ -1,11 +1,13 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { customerService } from '@/services/customer.service'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 const AdminCustomerFormPage: React.FC = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const baseCustomerPath = location.pathname.startsWith('/staff') ? '/staff/customers' : '/admin/customers'
   const editing = Boolean(id)
 
   const [loading, setLoading] = useState(editing)
@@ -69,7 +71,7 @@ const AdminCustomerFormPage: React.FC = () => {
           address: address.trim() || undefined,
         } as any)
       }
-      navigate('/admin/customers')
+      navigate(baseCustomerPath)
     } catch (err) {
       setError(getApiErrorMessage(err))
     } finally {
@@ -88,7 +90,7 @@ const AdminCustomerFormPage: React.FC = () => {
               : 'Fill out the form below to create a new customer.'}
           </p>
         </div>
-        <Link to="/admin/customers" className="btn btn-secondary">
+        <Link to={baseCustomerPath} className="btn btn-secondary">
           ← Back to customers
         </Link>
       </div>
@@ -159,7 +161,7 @@ const AdminCustomerFormPage: React.FC = () => {
           <button type="submit" className="btn" disabled={saving}>
             {saving ? 'Saving changes...' : editing ? 'Save changes' : 'Create customer'}
           </button>
-          <Link to="/admin/customers" className="btn btn-secondary">
+          <Link to={baseCustomerPath} className="btn btn-secondary">
             Cancel
           </Link>
         </div>

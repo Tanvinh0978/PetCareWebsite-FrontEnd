@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { petService } from '@/services/pet.service'
 import { isCat } from '@/types/pet.types'
 import type { PetDTO } from '@/types/pet.types'
-import PetDetailModal from '@/components/pet/PetDetailModal'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 const MyPetsPage: React.FC = () => {
   const [pets, setPets] = useState<PetDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [selectedPet, setSelectedPet] = useState<PetDTO | null>(null)
   const [petToDelete, setPetToDelete] = useState<PetDTO | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [toast, setToast] = useState('')
@@ -195,7 +193,9 @@ const MyPetsPage: React.FC = () => {
                 {/* Card Body */}
                 <div style={{ padding: '14px 16px', flex: 1 }}>
                   <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
-                    {pet.name}
+                    <Link to={`/customer/pets/${pet.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                      {pet.name}
+                    </Link>
                   </h3>
                   <p style={{ margin: '0 0 4px', fontSize: '0.85rem', color: '#64748b' }}>
                     <strong>Breed:</strong> {pet.breed || 'N/A'}
@@ -217,24 +217,22 @@ const MyPetsPage: React.FC = () => {
                     gap: 8,
                   }}
                 >
-                  <button
-                    type="button"
+                  <Link
+                    to={`/customer/pets/${pet.id}`}
                     className="btn-action view"
-                    onClick={() => setSelectedPet(pet)}
                     style={{ flex: 1, justifyContent: 'center' }}
                     title="View Details"
                   >
                     View
-                  </button>
-                  <button
-                    type="button"
+                  </Link>
+                  <Link
+                    to={`/customer/pets/${pet.id}/edit`}
                     className="btn-action edit"
-                    onClick={() => navigate(`/customer/pets/${pet.id}/edit`)}
                     style={{ flex: 1, justifyContent: 'center' }}
                     title="Edit"
                   >
                     Edit
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     className="btn-action danger"
@@ -249,13 +247,6 @@ const MyPetsPage: React.FC = () => {
           })}
         </div>
       )}
-
-      {/* Pet Detail Modal */}
-      <PetDetailModal
-        pet={selectedPet}
-        open={Boolean(selectedPet)}
-        onClose={() => setSelectedPet(null)}
-      />
 
       {/* Delete Confirmation */}
       {petToDelete && (
