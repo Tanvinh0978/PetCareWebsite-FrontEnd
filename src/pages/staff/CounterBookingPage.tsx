@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Card, DatePicker, Form, Select, Space, Spin, Typography, message } from 'antd'
+import { Alert, Button, Card, DatePicker, Form, Select, Space, Spin, Typography, message } from 'antd'
 import { ArrowLeftOutlined, CalendarOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -11,6 +11,8 @@ import type { CustomerDTO } from '@/types/customer.types'
 import type { PetDTO } from '@/types/pet.types'
 import type { ServiceDTO } from '@/types/service.types'
 import { getApiErrorMessage } from '@/utils/apiError'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
 const { Title, Text } = Typography
 const { RangePicker } = DatePicker
@@ -28,6 +30,8 @@ export default function CounterBookingPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const base = location.pathname.startsWith('/admin') ? '/admin/bookings' : '/staff/bookings'
+  const currentUser = useAuthStore((s) => s.user)
+  const canCreate = hasPermission(currentUser, PERMISSIONS.BOOKING_CREATE)
   const [customers, setCustomers] = useState<CustomerDTO[]>([])
   const [pets, setPets] = useState<PetDTO[]>([])
   const [services, setServices] = useState<ServiceDTO[]>([])
@@ -68,6 +72,9 @@ export default function CounterBookingPage() {
   }, [selectedCustomerId])
 
   const submit = async (values: FormValues) => {
+    if (!canCreate) {
+      return message.error('Bạn không có quyền tạo đơn đặt lịch tại quầy (Yêu cầu quyền BOOKING_CREATE).')
+    }
     if (!values.customerId) return message.warning('Choose a customer for this booking.')
     if (!values.petId || !values.serviceId) return message.warning('Choose a pet and service.')
     if (isBoarding && !selectedService?.roomTypeId) {
@@ -113,6 +120,15 @@ export default function CounterBookingPage() {
       </div>
 
       <Card className="counter-booking-card" bordered={false}>
+        {!canCreate && (
+          <Alert
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message="Không có quyền thao tác"
+            description="Tài khoản của bạn chưa được cấp quyền Tạo đơn đặt lịch tại quầy (BOOKING_CREATE). Vui lòng liên hệ Quản trị viên để được cấp quyền."
+          />
+        )}
         <Form form={form} layout="vertical" onFinish={submit}>
           <Form.Item name="customerId" label="Customer" rules={[{ required: true, message: 'Select the customer.' }]}>
             <Select
@@ -163,7 +179,7 @@ export default function CounterBookingPage() {
           </div>
           <Space style={{ width: '100%', justifyContent: 'flex-end', marginTop: 20 }}>
             <Button onClick={() => navigate(base)}>Cancel</Button>
-            <Button type="primary" htmlType="submit" icon={<CheckCircleOutlined />} loading={saving}>Create booking</Button>
+            <Button type="primary" htmlType="submit" icon={<CheckCircleOutlined />} loading={saving} disabled={!canCreate}>Create booking</Button>
           </Space>
         </Form>
       </Card>

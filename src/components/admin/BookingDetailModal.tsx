@@ -37,6 +37,8 @@ import { staffService } from '@/services/staff.service'
 import type { StaffDTO } from '@/types/staff.types'
 import { roomService, type RoomDTO } from '@/services/room.service'
 import { ReceiptModal } from './ReceiptModal'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
 const { Title, Text } = Typography
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
@@ -76,6 +78,10 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [cancellationReason, setCancellationReason] = useState('')
   const [cancelLoading, setCancelLoading] = useState(false)
+  const currentUser = useAuthStore((s) => s.user)
+  const canCheckInPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CHECKIN)
+  const canCancelPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CANCEL)
+  const canAssignPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_ASSIGN_STAFF)
 
   // Load booking details & staff/room options
   const loadData = async (id: string) => {
@@ -371,7 +377,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   size="small"
                   placeholder="Select room for boarding"
                   style={{ width: '100%' }}
-                  disabled={isReadOnly}
+                  disabled={isReadOnly || !canAssignPerm}
                   value={currentRoomId}
                   onChange={(val) => handleAssignmentChange(r.id, 'roomId', val)}
                   allowClear
@@ -436,7 +442,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               size="small"
               placeholder={placeholder}
               style={{ width: '100%' }}
-              disabled={isStaffDisabled}
+              disabled={isStaffDisabled || !canAssignPerm}
               value={currentStaffId}
               onChange={(val) => handleAssignmentChange(r.id, 'staffId', val)}
               allowClear
@@ -487,7 +493,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             size="small"
             icon={<SaveOutlined />}
             loading={savingItemId === r.id}
-            disabled={!canSave}
+            disabled={!canSave || !canAssignPerm}
             onClick={() => handleSaveAssignment(r)}
             style={{
               borderRadius: 6,
@@ -543,63 +549,75 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
             {isConfirmed && hasEligibleCheckInItems && (
               <>
-                {canCheckIn ? (
-                  <Button
-                    type="primary"
-                    icon={<CheckCircleOutlined />}
-                    loading={checkInLoading}
-                    onClick={handleCheckIn}
-                    style={{
-                      borderRadius: 8,
-                      backgroundColor: '#f59e0b',
-                      borderColor: '#f59e0b',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Check-in Pet at Front Desk
-                  </Button>
+                {canCheckInPerm ? (
+                  canCheckIn ? (
+                    <Button
+                      type="primary"
+                      icon={<CheckCircleOutlined />}
+                      loading={checkInLoading}
+                      onClick={handleCheckIn}
+                      style={{
+                        borderRadius: 8,
+                        backgroundColor: '#f59e0b',
+                        borderColor: '#f59e0b',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Check-in Pet at Front Desk
+                    </Button>
+                  ) : (
+                    <Tooltip title="Vui lòng phân công nhân viên và xếp phòng đầy đủ trước khi Check-in.">
+                      <Button disabled style={{ borderRadius: 8 }}>
+                        Check-in Pet at Front Desk
+                      </Button>
+                    </Tooltip>
+                  )
                 ) : (
-                  <Tooltip title="Vui lòng phân công nhân viên và xếp phòng đầy đủ trước khi Check-in.">
+                  <Tooltip title="Bạn không có quyền Check-in (Yêu cầu quyền BOOKING_CHECKIN).">
                     <Button disabled style={{ borderRadius: 8 }}>
                       Check-in Pet at Front Desk
                     </Button>
                   </Tooltip>
                 )}
 
-                <Button
-                  danger
-                  icon={<CloseOutlined />}
-                  onClick={() => {
-                    setCancellationReason('Khách liên hệ xin hủy hẹn')
-                    setCancelModalOpen(true)
-                  }}
-                  style={{ borderRadius: 8 }}
-                >
-                  Hủy đơn (Cancel)
-                </Button>
-
-                <Popconfirm
-                  title="Đánh dấu khách không đến (No-Show)?"
-                  description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
-                  okText="Xác nhận No-Show"
-                  cancelText="Bỏ qua"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={handleNoShow}
-                >
+                {canCancelPerm && (
                   <Button
-                    icon={<StopOutlined />}
-                    loading={noShowLoading}
-                    style={{
-                      borderRadius: 8,
-                      color: '#7c3aed',
-                      borderColor: '#c4b5fd',
-                      backgroundColor: '#f5f3ff',
-                      fontWeight: 600,
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={() => {
+                      setCancellationReason('Khách liên hệ xin hủy hẹn')
+                      setCancelModalOpen(true)
                     }}
+                    style={{ borderRadius: 8 }}
                   >
-                    Đánh dấu No-Show
+                    Hủy đơn (Cancel)
                   </Button>
-                </Popconfirm>
+                )}
+
+                {canCancelPerm && (
+                  <Popconfirm
+                    title="Đánh dấu khách không đến (No-Show)?"
+                    description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
+                    okText="Xác nhận No-Show"
+                    cancelText="Bỏ qua"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={handleNoShow}
+                  >
+                    <Button
+                      icon={<StopOutlined />}
+                      loading={noShowLoading}
+                      style={{
+                        borderRadius: 8,
+                        color: '#7c3aed',
+                        borderColor: '#c4b5fd',
+                        backgroundColor: '#f5f3ff',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Đánh dấu No-Show
+                    </Button>
+                  </Popconfirm>
+                )}
               </>
             )}
           </Space>

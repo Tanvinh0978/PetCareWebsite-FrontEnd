@@ -10,6 +10,8 @@ import { roomService, type RoomDTO } from '@/services/room.service';
 import { staffService } from '@/services/staff.service';
 import type { StaffDTO } from '@/types/staff.types';
 import { getApiErrorMessage } from '@/utils/apiError';
+import { useAuthStore } from '@/store/useAuthStore';
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
 
 const { Title, Text } = Typography;
 const money = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value ?? 0);
@@ -62,6 +64,11 @@ export default function StaffBookingListPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const bookingBase = location.pathname.startsWith('/admin') ? '/admin/bookings' : '/staff/bookings';
+  const currentUser = useAuthStore((s) => s.user);
+  const canCreate = hasPermission(currentUser, PERMISSIONS.BOOKING_CREATE);
+  const canCheckInPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CHECKIN);
+  const canCancelPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CANCEL);
+  const canAssignPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_ASSIGN_STAFF);
   const [bookings, setBookings] = useState<BookingListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
@@ -293,10 +300,10 @@ export default function StaffBookingListPage() {
     {
       title: 'Actions', key: 'actions', render: (_: unknown, row) => {
         const items: MenuProps['items'] = [
-          ...(canCheckIn(row.status) ? [{ key: 'check-in', label: 'Check in', icon: <CheckOutlined /> }] : []),
+          ...(canCheckIn(row.status) && canCheckInPerm ? [{ key: 'check-in', label: 'Check in', icon: <CheckOutlined /> }] : []),
           ...(!['Completed', 'Cancelled', 'No Show'].includes(statusName(row.status)) ? [{ key: 'checkout', label: 'Checkout', icon: <CreditCardOutlined /> }] : []),
-          ...(canCancelByStatus(row.status) ? [{ key: 'cancel', label: <span style={{ color: '#dc2626' }}>Cancel booking</span>, icon: <CloseOutlined /> }] : []),
-          ...(statusName(row.status) === 'Confirmed' ? [{ key: 'no-show', label: <span style={{ color: '#7c3aed' }}>Mark No-Show</span>, icon: <StopOutlined /> }] : []),
+          ...(canCancelByStatus(row.status) && canCancelPerm ? [{ key: 'cancel', label: <span style={{ color: '#dc2626' }}>Cancel booking</span>, icon: <CloseOutlined /> }] : []),
+          ...(statusName(row.status) === 'Confirmed' && canCancelPerm ? [{ key: 'no-show', label: <span style={{ color: '#7c3aed' }}>Mark No-Show</span>, icon: <StopOutlined /> }] : []),
         ];
         return (
           <Space size="small">
@@ -331,7 +338,9 @@ export default function StaffBookingListPage() {
           <Text type="secondary">Search bookings, check in arrivals, and settle payments at checkout.</Text>
         </div>
         <Space wrap>
-          <Button type="primary" icon={<CalendarOutlined />} onClick={() => navigate(`${bookingBase}/new`)}>+ Create walk-in booking</Button>
+          {canCreate && (
+            <Button type="primary" icon={<CalendarOutlined />} onClick={() => navigate(`${bookingBase}/new`)}>+ Create walk-in booking</Button>
+          )}
           <Button icon={<ReloadOutlined />} onClick={() => void loadBookings()} loading={loading}>Refresh</Button>
         </Space>
       </div>
@@ -383,8 +392,8 @@ export default function StaffBookingListPage() {
         open={detailOpen}
         onCancel={() => setDetailOpen(false)}
         footer={detail ? <Space>
-          {canCancelBooking(detail) && <Button danger onClick={() => { setCancelId(detail.id); setCancelReason(''); }}>Cancel booking</Button>}
-          {statusName(detail.status) === 'Confirmed' && !hasInProgressItem(detail.bookingItems) && (
+          {canCancelBooking(detail) && canCancelPerm && <Button danger onClick={() => { setCancelId(detail.id); setCancelReason(''); }}>Cancel booking</Button>}
+          {statusName(detail.status) === 'Confirmed' && !hasInProgressItem(detail.bookingItems) && canCancelPerm && (
             <Button
               onClick={() => { setDetailOpen(false); void handleMarkNoShow(detail.id); }}
               style={{ color: '#7c3aed', borderColor: '#c4b5fd', backgroundColor: '#f5f3ff' }}
@@ -422,6 +431,13 @@ export default function StaffBookingListPage() {
                   title: 'Assignment',
                   key: 'assignment',
                   render: (_: unknown, item: BookingDetailItem) => {
+                    if (!canAssignPerm) {
+                      return (
+                        <Tooltip title="Bạn không có quyền phân công nhân viên hoặc xếp phòng (Yêu cầu quyền BOOKING_ASSIGN_STAFF)">
+                          <Button size="small" icon={<UserSwitchOutlined />} disabled>Assign</Button>
+                        </Tooltip>
+                      );
+                    }
                     const isConfirmed = statusName(detail.status) === 'Confirmed';
                     return isConfirmed ? (
                       <Button size="small" icon={<UserSwitchOutlined />} onClick={() => void openAssignment(item)}>Assign</Button>

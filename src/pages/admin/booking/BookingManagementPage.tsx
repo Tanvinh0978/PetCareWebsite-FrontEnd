@@ -34,6 +34,8 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
 import BookingDetailModal from '@/components/admin/BookingDetailModal'
 import CheckoutBookingModal from '@/components/admin/CheckoutBookingModal'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
 const { Title, Text } = Typography
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
@@ -58,6 +60,10 @@ export default function BookingManagementPage() {
   const [detailBookingId, setDetailBookingId] = useState<string | null>(null)
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const currentUser = useAuthStore((s) => s.user)
+  const canCreate = hasPermission(currentUser, PERMISSIONS.BOOKING_CREATE)
+  const canCheckInPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CHECKIN)
+  const canCancelPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CANCEL)
 
   // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
@@ -311,23 +317,25 @@ export default function BookingManagementPage() {
                   </Button>
                 </Popconfirm>
 
-                <Button
-                  danger
-                  size="small"
-                  loading={isLoading}
-                  icon={<CloseOutlined />}
-                  onClick={() => openCancelModal(record.id)}
-                  style={{ borderRadius: 6 }}
-                >
-                  Cancel
-                </Button>
+                {canCancelPerm && (
+                  <Button
+                    danger
+                    size="small"
+                    loading={isLoading}
+                    icon={<CloseOutlined />}
+                    onClick={() => openCancelModal(record.id)}
+                    style={{ borderRadius: 6 }}
+                  >
+                    Cancel
+                  </Button>
+                )}
               </>
             )}
 
             {/* Confirmed actions: Check-in, Check-out, Cancel, or No-Show */}
             {isConfirmed && (
               <>
-                {record.canCheckIn && (
+                {record.canCheckIn && canCheckInPerm && (
                   <Popconfirm
                     title="Check in pet at salon?"
                     description="Customer has arrived with pet. Tasks will become available for staff."
@@ -352,7 +360,7 @@ export default function BookingManagementPage() {
                   </Popconfirm>
                 )}
 
-                {!record.hasInServiceItems && !record.canCheckout && (
+                {!record.hasInServiceItems && !record.canCheckout && canCancelPerm && (
                   <>
                     <Button
                       danger
@@ -442,20 +450,22 @@ export default function BookingManagementPage() {
           </Text>
         </div>
         <Space size={8}>
-          <Link to={createBookingPath}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              style={{
-                borderRadius: 8,
-                fontWeight: 600,
-                backgroundColor: '#059669',
-                borderColor: '#059669',
-              }}
-            >
-              + Counter Booking
-            </Button>
-          </Link>
+          {canCreate && (
+            <Link to={createBookingPath}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                style={{
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  backgroundColor: '#059669',
+                  borderColor: '#059669',
+                }}
+              >
+                + Counter Booking
+              </Button>
+            </Link>
+          )}
           <Button
             icon={<ReloadOutlined />}
             onClick={() => fetchBookings()}
