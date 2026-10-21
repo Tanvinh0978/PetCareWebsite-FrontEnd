@@ -8,6 +8,7 @@ import { serviceService } from '@/services/service.service';
 import { bookingService, rememberVnpayBooking } from '@/services/booking.service';
 import { roomService } from '@/services/room.service';
 import type { ServiceDTO } from '@/types/service.types';
+import { isServiceCompatibleWithPet, getRoomTierInfo, isPetCat } from '@/utils/petServiceFilter';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -32,6 +33,7 @@ const CreateBookingPage: React.FC = () => {
   // New state to separate flows
   const [bookingType, setBookingType] = useState<'Grooming' | 'Boarding' | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [activePetTab, setActivePetTab] = useState<string>('');
 
   const [petServices, setPetServices] = useState<Record<string, { groomingIds?: string[], boardingId?: string, dietId?: string }>>({});
   const selectedPetIds: string[] = Form.useWatch('petIds', form) || [];
@@ -98,6 +100,30 @@ const CreateBookingPage: React.FC = () => {
     });
     return { hasGrooming: groomingSelected, hasBoarding: boardingIds.size > 0, boardingServiceIds: boardingIds };
   }, [petServices]);
+
+    const unconfiguredPets = useMemo(() => {
+    return selectedPetIds
+      .map(id => pets.find(p => p.id === id))
+      .filter((pet): pet is any => {
+        if (!pet) return false;
+        const srvs = petServices[pet.id];
+        if (bookingType === 'Grooming') {
+          return !srvs || !srvs.groomingIds || srvs.groomingIds.length === 0;
+        }
+        if (bookingType === 'Boarding') {
+          return !srvs || !srvs.boardingId;
+        }
+        return false;
+      });
+  }, [selectedPetIds, pets, petServices, bookingType]);
+
+  const hasMissingPetServices = unconfiguredPets.length > 0;
+
+  useEffect(() => {
+    if (selectedPetIds.length > 0 && !selectedPetIds.includes(activePetTab)) {
+      setActivePetTab(selectedPetIds[0]);
+    }
+  }, [selectedPetIds, activePetTab]);
 
   const boardingServiceCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -249,8 +275,19 @@ const CreateBookingPage: React.FC = () => {
   const next = () => {
     if (currentStep === 0 && selectedPetIds.length === 0) return message.warning('Please select at least 1 pet.');
     if (currentStep === 1) {
-      if (bookingType === 'Grooming' && !hasGrooming) return message.warning('Please select at least 1 grooming service.');
-      if (bookingType === 'Boarding' && !hasBoarding) return message.warning('Please select a room for the hotel.');
+      if (unconfiguredPets.length > 0) {
+        const firstUnconfigured = unconfiguredPets[0];
+        if (firstUnconfigured) {
+          setActivePetTab(firstUnconfigured.id);
+        }
+        const petNames = unconfiguredPets.map(p => `"${p.name}"`).join(', ');
+        return message.warning(
+          bookingType === 'Boarding'
+            ? `Vui lòng chọn phòng lưu trú cho ${petNames} trước khi tiếp tục.`
+            : `Vui lòng chọn ít nhất 1 dịch vụ chăm sóc cho ${petNames} trước khi tiếp tục.`
+        );
+      }
+
       if (bookingType === 'Boarding') {
         const unlinkedService = Array.from(boardingServiceIds)
           .map((id) => services.find((service) => service.id === id))
@@ -330,6 +367,13 @@ const CreateBookingPage: React.FC = () => {
   const totalAmount = calculateTotal();
 
   const onFinish = async (values: any) => {
+    if (hasMissingPetServices) {
+      const petNames = unconfiguredPets.map(p => `"${p?.name}"`).join(', ');
+      message.error(`Vui lòng chọn dịch vụ cho ${petNames} trước khi xác nhận đặt lịch.`);
+      setCurrentStep(1);
+      if (unconfiguredPets[0]) setActivePetTab(unconfiguredPets[0].id);
+      return;
+    }
     if (bookingType === 'Boarding') {
       const unlinkedService = Array.from(boardingServiceIds)
         .map((id) => services.find((service) => service.id === id))
@@ -439,6 +483,11 @@ const CreateBookingPage: React.FC = () => {
     const current = form.getFieldValue('petIds') || [];
     if (current.includes(id)) {
       form.setFieldsValue({ petIds: current.filter((x: string) => x !== id) });
+      setPetServices(prev => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     } else {
       form.setFieldsValue({ petIds: [...current, id] });
     }
@@ -630,15 +679,56 @@ const CreateBookingPage: React.FC = () => {
           <Tabs 
             type="card"
             className="booking-tabs"
+            activeKey={activePetTab || selectedPetIds[0]}
+            onChange={(key) => setActivePetTab(key)}
             items={selectedPetIds.map(petId => {
               const pet = pets.find(p => p.id === petId);
               if (!pet) return { key: petId, label: 'Unknown' };
-              const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
+              const isCat = isPetCat(pet.species);
               const pServices = petServices[petId] || {};
+              const petGroomingOptions = groomingOptions.filter(srv => isServiceCompatibleWithPet(srv, pet.species));
+              const petBoardingOptions = boardingOptions.filter(srv => isServiceCompatibleWithPet(srv, pet.species));
+              const petDietOptions = dietOptions.filter(srv => isServiceCompatibleWithPet(srv, pet.species));
+
+              const isPetConfigured = bookingType === 'Grooming'
+                ? Boolean(pServices.groomingIds && pServices.groomingIds.length > 0)
+                : Boolean(pServices.boardingId);
 
               return {
                 key: petId,
-                label: `${isCat ? '🐱' : '🐶'} ${pet.name} (${pet.weight} kg)`,
+                label: (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{isCat ? '🐱' : '🐶'}</span>
+                    <span style={{ fontWeight: 600 }}>{pet.name}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--slate-500)' }}>({pet.weight}kg)</span>
+                    {isPetConfigured ? (
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        background: '#dcfce7',
+                        color: '#16a34a',
+                        fontSize: '11px',
+                        marginLeft: '4px'
+                      }} title="Đã chọn dịch vụ">✓</span>
+                    ) : (
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '1px 6px',
+                        borderRadius: '999px',
+                        background: '#fef3c7',
+                        color: '#b45309',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        marginLeft: '4px'
+                      }} title="Chưa chọn dịch vụ">Chưa chọn</span>
+                    )}
+                  </span>
+                ),
                 children: (
                   <div style={{ padding: '22px 20px', background: 'var(--paper-card)', borderRadius: '0 0 14px 14px', border: '1px solid var(--slate-200)', borderTop: 'none' }}>
                     
@@ -647,9 +737,35 @@ const CreateBookingPage: React.FC = () => {
                         <Title level={4} style={{ color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>✂️</span> Botanical Grooming &amp; Spa Treatments
                         </Title>
-                        {groomingOptions.length === 0 ? (
+
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          flexWrap: 'wrap',
+                          gap: '10px',
+                          marginBottom: '16px',
+                          padding: '10px 14px',
+                          background: isCat ? 'linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%)' : 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
+                          border: `1px solid ${isCat ? '#fbcfe8' : '#bbf7d0'}`,
+                          borderRadius: '10px'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '1.25rem' }}>{isCat ? '🐱' : '🐶'}</span>
+                            <span style={{ fontWeight: 600, color: isCat ? '#9d174d' : '#166534', fontSize: '0.92rem' }}>
+                              {isCat ? 'Spa & grooming treatments suitable for Cats' : 'Spa & grooming treatments suitable for Dogs'}
+                            </span>
+                          </div>
+                          <Tag color={isCat ? 'magenta' : 'green'} style={{ fontWeight: 600, borderRadius: '6px', margin: 0 }}>
+                            {isCat ? 'Cat' : 'Dog'} • {pet.weight} kg
+                          </Tag>
+                        </div>
+
+                        {petGroomingOptions.length === 0 ? (
                           <div style={{ padding: '28px', textAlign: 'center', background: 'var(--slate-50)', borderRadius: '12px', border: '1px dashed var(--slate-300)' }}>
-                            <p style={{ margin: 0, color: 'var(--slate-600)' }}>No grooming services are currently available.</p>
+                            <p style={{ margin: 0, color: 'var(--slate-600)' }}>
+                              No grooming treatments currently available for {isCat ? 'Cats' : 'Dogs'}.
+                            </p>
                           </div>
                         ) : (
                           <Checkbox.Group 
@@ -658,7 +774,7 @@ const CreateBookingPage: React.FC = () => {
                             onChange={(vals) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], groomingIds: vals as string[] } }))}
                           >
                             <Row gutter={[16, 16]}>
-                              {groomingOptions.map(srv => {
+                              {petGroomingOptions.map(srv => {
                                 const price = getPriceForPet(srv, pet.weight);
                                 const isItemChecked = pServices.groomingIds?.includes(srv.id);
                                 return (
@@ -716,12 +832,47 @@ const CreateBookingPage: React.FC = () => {
                         <Title level={4} style={{ color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>🏨</span> Sanctuary Suites &amp; Rooms
                         </Title>
-                        {boardingOptions.length === 0 ? (
-                          <div style={{ padding: '28px', textAlign: 'center', background: 'var(--slate-50)', borderRadius: '12px', border: '1px dashed var(--slate-300)' }}>
-                            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '8px' }}>🏨</span>
-                            <p style={{ margin: 0, color: 'var(--slate-600)', fontSize: '0.95rem' }}>
-                              No boarding services are currently available.<br />
-                              Ask an administrator to add a <strong>Boarding</strong> service with pricing to display it here.
+
+                        {/* Species header banner */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          flexWrap: 'wrap',
+                          gap: '12px',
+                          marginBottom: '20px',
+                          padding: '12px 18px',
+                          background: isCat ? 'linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%)' : 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
+                          border: `1.5px solid ${isCat ? '#fbcfe8' : '#bbf7d0'}`,
+                          borderRadius: '12px'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '1.5rem' }}>{isCat ? '🐱' : '🐶'}</span>
+                            <div>
+                              <Text strong style={{ color: isCat ? '#9d174d' : '#166534', fontSize: '0.98rem' }}>
+                                {isCat ? 'Cat-Friendly Sanctuary Suites' : 'Dog-Friendly Resort & Suites'}
+                              </Text>
+                              <div style={{ fontSize: '12.5px', color: 'var(--slate-600)' }}>
+                                {isCat
+                                  ? 'Quiet, multi-tier vertical cabins designed specifically for feline comfort'
+                                  : 'Spacious, secure accommodations with regular play areas for canines'}
+                              </div>
+                            </div>
+                          </div>
+                          <Tag color={isCat ? 'magenta' : 'green'} style={{ fontWeight: 600, padding: '4px 12px', borderRadius: '8px', fontSize: '12px', margin: 0 }}>
+                            {isCat ? 'Feline Resident' : 'Canine Resident'} • {pet.weight} kg
+                          </Tag>
+                        </div>
+
+                        {petBoardingOptions.length === 0 ? (
+                          <div style={{ padding: '36px', textAlign: 'center', background: 'var(--slate-50)', borderRadius: '14px', border: '1px dashed var(--slate-300)' }}>
+                            <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '10px' }}>🏨</span>
+                            <Title level={4} style={{ color: 'var(--slate-800)', marginBottom: '8px' }}>
+                              No boarding suites available for {isCat ? 'Cats' : 'Dogs'}
+                            </Title>
+                            <p style={{ margin: 0, color: 'var(--slate-600)', fontSize: '0.95rem', maxWidth: '460px', marginInline: 'auto' }}>
+                              There are currently no active boarding services linked to {isCat ? 'Cat' : 'Dog'} room types.<br />
+                              Please contact our front desk for personal assistance.
                             </p>
                           </div>
                         ) : (
@@ -742,122 +893,213 @@ const CreateBookingPage: React.FC = () => {
                               }}
                             >
                               <Row gutter={[16, 16]}>
-                              {boardingOptions.map(srv => {
-                                const price = getPriceForPet(srv, pet.weight);
-                                const isItemChecked = pServices.boardingId === srv.id;
-                                return (
-                                  <Col span={24} key={srv.id}>
-                                    <Radio 
-                                      value={srv.id} 
-                                      style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        padding: '14px 16px', 
-                                        border: `1.5px solid ${isItemChecked ? 'var(--secondary)' : 'var(--slate-200)'}`, 
-                                        borderRadius: '12px', 
-                                        background: isItemChecked ? 'var(--primary-light)' : 'var(--paper-card)',
-                                        transition: 'all 0.2s ease',
-                                        width: '100%',
-                                        boxShadow: isItemChecked ? 'var(--shadow-xs)' : 'none',
-                                      }}
-                                    >
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '10px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                          {srv.imageUrl ? (
-                                            <img
-                                              src={srv.imageUrl}
-                                              alt={srv.name}
-                                              style={{ width: 48, height: 48, borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--slate-200)', flexShrink: 0 }}
-                                            />
-                                          ) : (
-                                            <div style={{ width: 48, height: 48, borderRadius: '10px', backgroundColor: 'var(--primary-light)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
-                                              🏨
-                                            </div>
-                                          )}
-                                          <div>
-                                            <Text strong style={{ fontSize: '1rem', color: 'var(--slate-900)' }}>{srv.name}</Text>
-                                            {srv.description && (
-                                              <div style={{ fontSize: '13px', color: 'var(--slate-600)', marginTop: 2 }}>{srv.description}</div>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <Text strong style={{ color: 'var(--secondary)', fontSize: '1.05rem', fontWeight: 700, whiteSpace: 'nowrap', marginLeft: '12px' }}>
-                                          {price.toLocaleString()} VND / day
-                                        </Text>
-                                      </div>
-                                    </Radio>
-                                  </Col>
-                                );
-                              })}
-                            </Row>
-                          </Radio.Group>
-                          
-                          {pServices.boardingId && (
-                            <div style={{ marginTop: '14px' }}>
-                               <Button 
-                                 type="link" 
-                                 danger 
-                                 onClick={() => {
-                                    setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
-                                 }}
-                                 style={{ padding: 0, fontWeight: 600, color: 'var(--danger)' }}
-                               >
-                                  ✕ Clear room selection
-                               </Button>
-                            </div>
-                          )}
+                                {petBoardingOptions.map(srv => {
+                                  const price = getPriceForPet(srv, pet.weight);
+                                  const isItemChecked = pServices.boardingId === srv.id;
+                                  const tier = getRoomTierInfo(srv.roomTypeName, srv.name);
 
-                          {pServices.boardingId && dietOptions.length > 0 && (
-                            <div style={{ marginTop: '20px', padding: '16px 20px', background: 'var(--slate-50)', borderRadius: '12px', border: '1px solid var(--slate-200)' }}>
-                              <Text strong style={{ display: 'block', marginBottom: '12px', color: 'var(--slate-800)', fontSize: '14px' }}>
-                                🥗 Additional Nutrition &amp; Diet Plan (Optional):
-                              </Text>
-                              <Radio.Group 
-                                style={{ width: '100%' }}
-                                value={pServices.dietId}
-                                onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
-                              >
-                                <Row gutter={[16, 12]}>
-                                  {dietOptions.map(srv => {
-                                    const price = getPriceForPet(srv, pet.weight);
-                                    return (
-                                      <Col span={24} key={srv.id}>
-                                        <Radio value={srv.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                                            {srv.imageUrl && (
+                                  return (
+                                    <Col xs={24} md={petBoardingOptions.length >= 3 ? 8 : 12} key={srv.id} style={{ display: 'flex' }}>
+                                      <div 
+                                        onClick={() => {
+                                          setPetServices(prev => ({ 
+                                            ...prev, 
+                                            [petId]: { 
+                                              ...prev[petId], 
+                                              boardingId: srv.id
+                                            } 
+                                          }));
+                                        }}
+                                        style={{
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          justifyContent: 'space-between',
+                                          width: '100%',
+                                          cursor: 'pointer',
+                                          padding: '16px',
+                                          borderRadius: '14px',
+                                          border: `2px solid ${isItemChecked ? tier.accentColor : 'var(--slate-200)'}`,
+                                          background: isItemChecked ? 'var(--primary-light)' : 'var(--paper-card)',
+                                          boxShadow: isItemChecked ? '0 4px 14px rgba(0, 0, 0, 0.08)' : '0 1px 3px rgba(0, 0, 0, 0.03)',
+                                          transition: 'all 0.25s ease',
+                                          position: 'relative',
+                                          overflow: 'hidden'
+                                        }}
+                                      >
+                                        <div>
+                                          {/* Top Badge + Radio */}
+                                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                            <span style={{
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '5px',
+                                              padding: '3px 10px',
+                                              borderRadius: '999px',
+                                              fontSize: '0.78rem',
+                                              fontWeight: 700,
+                                              background: tier.badgeBg,
+                                              color: tier.badgeColor,
+                                              border: `1px solid ${tier.badgeBorder}`
+                                            }}>
+                                              {tier.badgeText}
+                                            </span>
+                                            <Radio value={srv.id} checked={isItemChecked} style={{ pointerEvents: 'none' }} />
+                                          </div>
+
+                                          {/* Media + Title */}
+                                          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
+                                            {srv.imageUrl ? (
                                               <img
                                                 src={srv.imageUrl}
                                                 alt={srv.name}
-                                                style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--slate-200)' }}
+                                                style={{ width: 52, height: 52, borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--slate-200)', flexShrink: 0 }}
                                               />
+                                            ) : (
+                                              <div style={{
+                                                width: 52,
+                                                height: 52,
+                                                borderRadius: '10px',
+                                                background: tier.badgeBg,
+                                                color: tier.badgeColor,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '1.5rem',
+                                                flexShrink: 0
+                                              }}>
+                                                {tier.icon}
+                                              </div>
                                             )}
-                                            <span style={{ color: 'var(--slate-800)', fontWeight: 500 }}>
-                                              {srv.name} — <Text strong style={{ color: 'var(--secondary)' }}>{price.toLocaleString()} VND / day</Text>
-                                            </span>
-                                          </span>
-                                        </Radio>
-                                      </Col>
-                                    );
-                                  })}
-                                </Row>
-                              </Radio.Group>
-                              <div style={{ marginTop: '10px' }}>
-                                <Button 
-                                  type="link" 
-                                  size="small" 
-                                  onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}
-                                  style={{ padding: 0, fontSize: '13px', color: 'var(--slate-600)' }}
-                                >
-                                   Clear diet selection
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                              <Text strong style={{ fontSize: '1rem', color: 'var(--slate-900)', display: 'block', lineHeight: 1.3 }}>
+                                                {srv.name}
+                                              </Text>
+                                              {srv.roomTypeName && (
+                                                <span style={{ fontSize: '12px', color: 'var(--slate-500)', display: 'block', marginTop: '2px' }}>
+                                                  Category: <strong>{srv.roomTypeName}</strong>
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
 
+                                          {/* Description */}
+                                          {srv.description && (
+                                            <p style={{
+                                              fontSize: '13px',
+                                              color: 'var(--slate-600)',
+                                              margin: '0 0 12px 0',
+                                              lineHeight: 1.45,
+                                              display: '-webkit-box',
+                                              WebkitLineClamp: 3,
+                                              WebkitBoxOrient: 'vertical',
+                                              overflow: 'hidden'
+                                            }}>
+                                              {srv.description}
+                                            </p>
+                                          )}
+
+                                          {/* Feature Highlights */}
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '14px' }}>
+                                            {tier.features.slice(0, 2).map((feat, fIdx) => (
+                                              <span key={fIdx} style={{
+                                                fontSize: '11px',
+                                                padding: '2px 7px',
+                                                borderRadius: '4px',
+                                                background: 'var(--slate-100)',
+                                                color: 'var(--slate-600)'
+                                              }}>
+                                                ✓ {feat}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+
+                                        {/* Price Footer */}
+                                        <div style={{
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'baseline',
+                                          paddingTop: '10px',
+                                          borderTop: '1px solid var(--slate-100)',
+                                          marginTop: 'auto'
+                                        }}>
+                                          <span style={{ fontSize: '12px', color: 'var(--slate-500)' }}>Price / day:</span>
+                                          <Text strong style={{ color: isItemChecked ? tier.accentColor : 'var(--secondary)', fontSize: '1.1rem', fontWeight: 700 }}>
+                                            {price.toLocaleString()} VND
+                                          </Text>
+                                        </div>
+                                      </div>
+                                    </Col>
+                                  );
+                                })}
+                              </Row>
+                            </Radio.Group>
+                            
+                            {pServices.boardingId && (
+                              <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end' }}>
+                                 <Button 
+                                   type="link" 
+                                   danger 
+                                   onClick={() => {
+                                      setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], boardingId: undefined, dietId: undefined } }));
+                                   }}
+                                   style={{ padding: 0, fontWeight: 600, color: 'var(--danger)' }}
+                                 >
+                                    ✕ Clear room selection
+                                 </Button>
+                              </div>
+                            )}
+
+                            {pServices.boardingId && petDietOptions.length > 0 && (
+                              <div style={{ marginTop: '20px', padding: '16px 20px', background: 'var(--slate-50)', borderRadius: '12px', border: '1px solid var(--slate-200)' }}>
+                                <Text strong style={{ display: 'block', marginBottom: '12px', color: 'var(--slate-800)', fontSize: '14px' }}>
+                                  🥗 Additional Nutrition &amp; Diet Plan (Optional):
+                                </Text>
+                                <Radio.Group 
+                                  style={{ width: '100%' }}
+                                  value={pServices.dietId}
+                                  onChange={(e) => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: e.target.value } }))}
+                                >
+                                  <Row gutter={[16, 12]}>
+                                    {petDietOptions.map(srv => {
+                                      const price = getPriceForPet(srv, pet.weight);
+                                      return (
+                                        <Col span={24} key={srv.id}>
+                                          <Radio value={srv.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                              {srv.imageUrl && (
+                                                <img
+                                                  src={srv.imageUrl}
+                                                  alt={srv.name}
+                                                  style={{ width: 28, height: 28, borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--slate-200)' }}
+                                                />
+                                              )}
+                                              <span style={{ color: 'var(--slate-800)', fontWeight: 500 }}>
+                                                {srv.name} — <Text strong style={{ color: 'var(--secondary)' }}>{price.toLocaleString()} VND / day</Text>
+                                              </span>
+                                            </span>
+                                          </Radio>
+                                        </Col>
+                                      );
+                                    })}
+                                  </Row>
+                                </Radio.Group>
+                                <div style={{ marginTop: '10px' }}>
+                                  <Button 
+                                    type="link" 
+                                    size="small" 
+                                    onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}
+                                    style={{ padding: 0, fontSize: '13px', color: 'var(--slate-600)' }}
+                                  >
+                                    ✕ Remove diet plan
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )
               };
@@ -1271,7 +1513,7 @@ const CreateBookingPage: React.FC = () => {
             {currentStep === steps.length - 1 && (
               <button 
                 type="submit" 
-                disabled={submitting} 
+                disabled={submitting || hasMissingPetServices} 
                 className="btn" 
                 style={{ 
                   borderRadius: 999, 

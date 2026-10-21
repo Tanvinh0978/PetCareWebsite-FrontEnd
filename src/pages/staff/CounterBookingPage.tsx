@@ -13,6 +13,7 @@ import type { ServiceDTO } from '@/types/service.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 import { useAuthStore } from '@/store/useAuthStore'
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
+import { isServiceCompatibleWithPet, getRoomTierInfo } from '@/utils/petServiceFilter'
 
 const { Title, Text } = Typography
 const { RangePicker } = DatePicker
@@ -40,6 +41,12 @@ export default function CounterBookingPage() {
   const [saving, setSaving] = useState(false)
   const selectedCustomerId = Form.useWatch('customerId', form)
   const selectedServiceId = Form.useWatch('serviceId', form)
+  const selectedPetId = Form.useWatch('petId', form)
+  const selectedPet = useMemo(() => pets.find((p) => p.id === selectedPetId), [pets, selectedPetId])
+  const availableServices = useMemo(() => {
+    if (!selectedPet) return services
+    return services.filter((s) => isServiceCompatibleWithPet(s, selectedPet.species))
+  }, [services, selectedPet])
   const selectedService = useMemo(() => services.find((service) => service.id === selectedServiceId), [services, selectedServiceId])
   const isBoarding = String(selectedService?.serviceType).toLowerCase() === 'boarding' || String(selectedService?.serviceType) === '1'
 
@@ -150,7 +157,10 @@ export default function CounterBookingPage() {
               loading={petsLoading}
               disabled={!selectedCustomerId}
               placeholder={selectedCustomerId ? 'Select this customer’s pet' : 'Select a customer first'}
-              options={pets.map((pet) => ({ value: pet.id, label: `${pet.name} · ${pet.weight} kg` }))}
+              options={pets.map((pet) => {
+                const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
+                return { value: pet.id, label: `${isCat ? '🐱' : '🐶'} ${pet.name} (${isCat ? 'Cat' : 'Dog'}) · ${pet.weight} kg` };
+              })}
             />
           </Form.Item>
 
@@ -159,7 +169,12 @@ export default function CounterBookingPage() {
               showSearch
               optionFilterProp="label"
               placeholder="Choose Grooming or Boarding"
-              options={services.map((service) => ({ value: service.id, label: `${service.name} · ${service.serviceType}` }))}
+              options={availableServices.map((service) => {
+                const isBoarding = String(service.serviceType).toLowerCase() === 'boarding';
+                const tier = getRoomTierInfo(service.roomTypeName, service.name);
+                const tag = isBoarding ? `[${tier.badgeText}]` : `[✂️ ${service.serviceType}]`;
+                return { value: service.id, label: `${service.name} ${tag}` };
+              })}
               onChange={() => form.setFieldsValue({ appointmentAt: undefined, boardingDates: undefined })}
             />
           </Form.Item>
