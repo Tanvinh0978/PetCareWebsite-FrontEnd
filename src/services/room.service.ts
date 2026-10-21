@@ -45,7 +45,14 @@ export const roomService = {
   },
 
   // Check availability
-  checkAvailability: (params: { serviceId?: string; month?: number; year?: number }) => {
+  checkAvailability: (params: {
+    serviceId?: string
+    roomTypeId?: string
+    month?: number
+    year?: number
+    startDate?: string
+    endDate?: string
+  }) => {
     return get<any>('/api/rooms/check-availability', params)
   },
 

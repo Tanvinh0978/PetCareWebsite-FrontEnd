@@ -2,6 +2,8 @@ import React, { useEffect, useState, type FormEvent } from 'react'
 import { App } from 'antd'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { staffService } from '@/services/staff.service'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 import type { StaffDTO } from '@/types/staff.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
@@ -41,6 +43,8 @@ const AdminStaffListPage: React.FC = () => {
 
   const [staffToDeactivate, setStaffToDeactivate] = useState<StaffDTO | null>(null)
   const [deactivating, setDeactivating] = useState(false)
+  const user = useAuthStore((s) => s.user)
+  const canManage = hasPermission(user, PERMISSIONS.STAFF_MANAGE)
 
   useEffect(() => {
     let cancelled = false
@@ -145,7 +149,7 @@ const AdminStaffListPage: React.FC = () => {
           >
             🛡️ Manage Roles & Permissions
           </button>
-          <Link
+          {canManage && (<Link
             to={`${baseStaffPath}/new`}
             className="btn"
           >
@@ -154,7 +158,7 @@ const AdminStaffListPage: React.FC = () => {
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
             Add staff
-          </Link>
+          </Link>)}
         </div>
       </div>
 

@@ -18,6 +18,7 @@ import {
   DatePicker,
   Select,
   Image,
+  Tooltip,
 } from 'antd';
 import {
   CalendarOutlined,
@@ -193,6 +194,15 @@ const MyBookingsPage: React.FC = () => {
   }, [syncReviewedItems]);
 
   const handleOpenReview = (item: BookingDetailItem) => {
+    const isBookingCompleted =
+      String(selectedBooking?.status).toLowerCase() === '2' ||
+      String(selectedBooking?.status).toLowerCase() === 'completed';
+
+    if (!isBookingCompleted) {
+      message.warning('Bạn chỉ có thể đánh giá dịch vụ sau khi đơn đặt lịch đã hoàn tất (Check-out xong)!');
+      return;
+    }
+
     if ((item as any).isReviewed || reviewedItemIds.has(item.id)) {
       message.info('This service has already been reviewed.');
       handleViewReview(item);
@@ -870,6 +880,9 @@ const MyBookingsPage: React.FC = () => {
               {selectedBooking.bookingItems?.map((item) => {
                 const itemStatus = getItemStatusConfig(item.status);
                 const isBoarding = String(item.serviceType) === '1' || String(item.serviceType).toLowerCase() === 'boarding';
+                const isBookingCompleted =
+                  String(selectedBooking.status).toLowerCase() === '2' ||
+                  String(selectedBooking.status).toLowerCase() === 'completed';
                 return (
                   <Card
                     key={item.id}
@@ -933,7 +946,15 @@ const MyBookingsPage: React.FC = () => {
                             Qty: {item.quantity} x {item.unitPrice?.toLocaleString()} VND
                           </div>
                         )}
-                        {itemStatus.label === 'Completed' ? (
+                        {!isBookingCompleted ? (
+                          <div style={{ marginTop: 8 }}>
+                            <Tooltip title="Dịch vụ chỉ có thể đánh giá sau khi hoàn tất thanh toán & bàn giao thú cưng (Check-out hoàn tất).">
+                              <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', cursor: 'help' }}>
+                                🔒 Đánh giá sau khi Check-out đơn
+                              </Tag>
+                            </Tooltip>
+                          </div>
+                        ) : itemStatus.label === 'Completed' ? (
                           ((item as any).isReviewed || reviewedItemIds.has(item.id)) ? (
                             <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
                               <Tag

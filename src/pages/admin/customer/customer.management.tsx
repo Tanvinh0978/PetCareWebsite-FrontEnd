@@ -2,6 +2,8 @@ import React, { useEffect, useState, type FormEvent } from 'react'
 import { App } from 'antd'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { customerService } from '@/services/customer.service'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 import type { CustomerDTO } from '@/types/customer.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
@@ -24,6 +26,8 @@ const CustomerManagement: React.FC = () => {
 
   const [customerToToggle, setCustomerToToggle] = useState<CustomerDTO | null>(null)
   const [toggling, setToggling] = useState(false)
+  const user = useAuthStore((s) => s.user)
+  const canManage = hasPermission(user, PERMISSIONS.CUSTOMER_MANAGE)
 
   useEffect(() => {
     let cancelled = false
@@ -116,13 +120,13 @@ const CustomerManagement: React.FC = () => {
           <h1>Customers Management</h1>
           <p className="page-subtitle">View, search, and manage customers in table format.</p>
         </div>
-        <Link to={`${baseCustomerPath}/new`} className="btn">
+        {canManage && <Link to={`${baseCustomerPath}/new`} className="btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
           Add customer
-        </Link>
+        </Link>}
       </div>
 
       {/* Filter and Search Panel */}
@@ -264,7 +268,7 @@ const CustomerManagement: React.FC = () => {
                             </svg>
                             View
                           </Link>
-                          <Link
+                          {canManage && (<><Link
                             to={`${baseCustomerPath}/${c.id}/edit`}
                             className="btn-action edit"
                             title="Edit customer"
@@ -297,7 +301,7 @@ const CustomerManagement: React.FC = () => {
                                 Activate
                               </>
                             )}
-                          </button>
+                          </button></>)}
                         </div>
                       </td>
                     </tr>

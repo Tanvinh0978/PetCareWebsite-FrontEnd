@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { roomService, type RoomDTO } from '@/services/room.service'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 const AdminRoomListPage: React.FC = () => {
@@ -15,6 +17,8 @@ const AdminRoomListPage: React.FC = () => {
   const [status, setStatus] = useState<string>('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const user = useAuthStore((s) => s.user)
+  const canManage = hasPermission(user, PERMISSIONS.ROOM_MANAGE)
 
   const fetchRooms = async () => {
     try {
@@ -120,13 +124,13 @@ const AdminRoomListPage: React.FC = () => {
           <h1>Rooms Management</h1>
           <p className="page-subtitle">View, search, and manage individual rooms.</p>
         </div>
-        <Link to={`${baseRoomPath}/new`} className="btn">
+        {canManage && <Link to={`${baseRoomPath}/new`} className="btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
           Add Room
-        </Link>
+        </Link>}
       </div>
 
       {/* Filter and Search Panel */}
@@ -227,9 +231,7 @@ const AdminRoomListPage: React.FC = () => {
                           Clear filters
                         </button>
                       ) : (
-                        <Link to={`${baseRoomPath}/new`} className="btn">
-                          + Add first room
-                        </Link>
+                        canManage ? (<Link to={`${baseRoomPath}/new`} className="btn">+ Add first room</Link>) : null
                       )}
                     </div>
                   </td>
@@ -248,7 +250,7 @@ const AdminRoomListPage: React.FC = () => {
                       </td>
                       <td className="col-actions">
                         <div className="action-group">
-                          <button
+                          {canManage && (<><button
                             type="button"
                             className="btn-action view"
                             title="Toggle status"
@@ -272,7 +274,7 @@ const AdminRoomListPage: React.FC = () => {
                               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                             Edit
-                          </Link>
+                          </Link></>)}
                           
                           <button
                             type="button"

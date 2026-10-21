@@ -2,6 +2,8 @@ import React, { useEffect, useState, type FormEvent } from 'react'
 import { App } from 'antd'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { voucherService } from '@/services/voucher.service'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 import type { VoucherDTO } from '@/types/voucher.types'
 import { DiscountType, DISCOUNT_TYPE_LABEL, DISCOUNT_TYPE_SHORT } from '@/types/voucher.types'
 import { getApiErrorMessage } from '@/utils/apiError'
@@ -47,6 +49,8 @@ const VoucherListPage: React.FC = () => {
   // Delete confirmation modal
   const [voucherToDelete, setVoucherToDelete] = useState<VoucherDTO | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const user = useAuthStore((s) => s.user)
+  const canManage = hasPermission(user, PERMISSIONS.VOUCHER_MANAGE)
 
   /* ── data fetching ── */
   useEffect(() => {
@@ -178,13 +182,13 @@ const VoucherListPage: React.FC = () => {
           <h1>Vouchers Management</h1>
           <p className="page-subtitle">Create, search, and manage discount vouchers.</p>
         </div>
-        <button type="button" className="btn" onClick={() => navigate(`${baseVoucherPath}/new`)}>
+        {canManage && (<button type="button" className="btn" onClick={() => navigate(`${baseVoucherPath}/new`)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
           Add voucher
-        </button>
+        </button>)}
       </div>
 
       {/* Toolbar */}
@@ -359,7 +363,7 @@ const VoucherListPage: React.FC = () => {
                             </svg>
                             View
                           </Link>
-                          <Link
+                          {canManage && (<><Link
                             to={`${baseVoucherPath}/${v.id}/edit`}
                             className="btn-action edit"
                             title="Edit voucher"
@@ -384,7 +388,7 @@ const VoucherListPage: React.FC = () => {
                               <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
                             </svg>
                             Delete
-                          </button>
+                          </button></>)}
                         </div>
                       </td>
                     </tr>

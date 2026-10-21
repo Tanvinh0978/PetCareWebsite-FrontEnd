@@ -32,3 +32,8 @@ export const resetPassword = async (data: {
   const response = await http.post<ApiResponse<boolean>>('/auth/reset-password', data);
   return response.data;
 };
+
+export const getMyPermissions = async () => {
+  const response = await http.get<ApiResponse<string[]>>('/auth/my-permissions');
+  return response.data;
+};
