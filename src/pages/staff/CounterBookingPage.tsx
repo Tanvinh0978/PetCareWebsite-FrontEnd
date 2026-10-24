@@ -87,11 +87,18 @@ export default function CounterBookingPage() {
     if (isBoarding && !selectedService?.roomTypeId) {
       return message.error(`Boarding service "${selectedService?.name}" has no room type linked. Please choose another service or contact an administrator.`)
     }
-    const start = isBoarding ? values.boardingDates?.[0] : values.appointmentAt
-    const end = isBoarding ? values.boardingDates?.[1] : undefined
+    const isSameDay = isBoarding && values.boardingDates && values.boardingDates[0].isSame(values.boardingDates[1], 'day');
+    const start = isBoarding && values.boardingDates 
+      ? values.boardingDates[0].startOf('day').add(isSameDay ? 8 : 14, 'hour') 
+      : values.appointmentAt;
+    const end = isBoarding && values.boardingDates 
+      ? values.boardingDates[1].startOf('day').add(isSameDay ? 18 : 12, 'hour') 
+      : undefined;
     if (!start) return message.warning('Choose an appointment date and time.')
 
-    const quantity = isBoarding && end ? Math.max(1, end.startOf('day').diff(start.startOf('day'), 'day')) : 1
+    const quantity = isBoarding && values.boardingDates?.[1] && values.boardingDates?.[0] 
+      ? Math.max(1, values.boardingDates[1].startOf('day').diff(values.boardingDates[0].startOf('day'), 'day')) 
+      : 1;
     setSaving(true)
     try {
       await bookingService.create({
@@ -180,8 +187,13 @@ export default function CounterBookingPage() {
           </Form.Item>
 
           {isBoarding ? (
-            <Form.Item name="boardingDates" label="Check-in and check-out" rules={[{ required: true, message: 'Select the boarding dates.' }]}>
-              <RangePicker showTime style={{ width: '100%' }} disabledDate={(current) => current.isBefore(dayjs().startOf('day'))} />
+            <Form.Item name="boardingDates" label="Check-in and check-out (Hotel Boarding)" rules={[{ required: true, message: 'Select the boarding dates.' }]}>
+              <RangePicker 
+                format="MMM DD, YYYY" 
+                style={{ width: '100%' }} 
+                disabledDate={(current) => current.isBefore(dayjs().startOf('day'))} 
+                placeholder={['Check-in date (14:00)', 'Check-out date (12:00)']}
+              />
             </Form.Item>
           ) : (
             <Form.Item name="appointmentAt" label="Appointment date and time" rules={[{ required: true, message: 'Select the appointment date and time.' }]}>

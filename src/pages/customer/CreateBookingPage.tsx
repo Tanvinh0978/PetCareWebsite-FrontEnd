@@ -408,12 +408,19 @@ const CreateBookingPage: React.FC = () => {
           boardingDays = Math.max(1, values.boardingDateRange[1].diff(values.boardingDateRange[0], 'day'));
         }
 
+        const isSameDay = values.boardingDateRange[0].isSame(values.boardingDateRange[1], 'day');
+        const startHour = isSameDay ? 8 : 14;
+        const endHour = isSameDay ? 18 : 12;
+
+        const scheduledStartAt = values.boardingDateRange[0].startOf('day').add(startHour, 'hour').toISOString();
+        const scheduledEndAt = values.boardingDateRange[1].startOf('day').add(endHour, 'hour').toISOString();
+
         if (srvs.boardingId) {
           bookingItems.push({
             petId,
             serviceId: srvs.boardingId,
-            scheduledStartAt: values.boardingDateRange[0].toISOString(),
-            scheduledEndAt: values.boardingDateRange[1].toISOString(),
+            scheduledStartAt,
+            scheduledEndAt,
             quantity: boardingDays
           });
         }
@@ -422,8 +429,8 @@ const CreateBookingPage: React.FC = () => {
           bookingItems.push({
             petId,
             serviceId: srvs.dietId,
-            scheduledStartAt: values.boardingDateRange[0].toISOString(),
-            scheduledEndAt: values.boardingDateRange[1].toISOString(),
+            scheduledStartAt,
+            scheduledEndAt,
             quantity: boardingDays
           });
         }
@@ -1161,18 +1168,39 @@ const CreateBookingPage: React.FC = () => {
             {bookingType === 'Boarding' && (
               <div style={{ marginBottom: '16px' }}>
                 <Title level={5} style={{ margin: '0 0 8px 0', color: 'var(--slate-900)', fontFamily: 'var(--font-heading)' }}>
-                  Boarding Check-in &amp; Check-out:
+                  Boarding Check-in &amp; Check-out Dates:
                 </Title>
-                <Form.Item name="boardingDateRange" rules={[{ required: true, message: 'Please select check-in and check-out dates' }]} style={{ marginBottom: '16px' }}>
+                <Form.Item name="boardingDateRange" rules={[{ required: true, message: 'Please select check-in and check-out dates' }]} style={{ marginBottom: '10px' }}>
                   <RangePicker 
                     disabledDate={disabledDate} 
                     style={{ width: '100%', padding: '10px 14px', fontSize: '15px', borderRadius: '10px', borderColor: 'var(--slate-300)' }} 
-                    showTime={{ format: 'HH:mm' }} 
-                    format="MMM DD, YYYY HH:mm"
+                    format="MMM DD, YYYY"
                     size="large"
-                    placeholder={['Check-in date & time', 'Check-out date & time']}
+                    placeholder={['Check-in date', 'Check-out date']}
                   />
                 </Form.Item>
+
+                <div style={{
+                  marginBottom: '16px',
+                  padding: '12px 16px',
+                  background: '#f8fafc',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                  fontSize: '13px',
+                  color: '#475569'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                    <CalendarOutlined style={{ color: '#0284c7' }} />
+                    <span>Hotel Boarding Schedule Policy</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', color: '#64748b', fontSize: '13px' }}>
+                    <span>📥 Check-in: <strong>From 14:00</strong></span>
+                    <span>📤 Check-out: <strong>Before 12:00</strong></span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px', fontStyle: 'italic' }}>
+                    *Room is automatically allocated by pet weight &amp; tier. 12:00 - 14:00 window is reserved for daily sanitization.
+                  </div>
+                </div>
 
                 {checkingAvailability && (
                   <div style={{ marginBottom: '16px', padding: '12px 16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}>
