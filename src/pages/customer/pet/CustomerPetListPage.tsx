@@ -5,7 +5,6 @@ import { petService } from '@/services/pet.service'
 import type { PetDTO } from '@/types/pet.types'
 import { isCat } from '@/types/pet.types'
 import { getApiErrorMessage } from '@/utils/apiError'
-import PetDetailModal from '@/components/pet/PetDetailModal'
 
 const CustomerPetListPage: React.FC = () => {
   const navigate = useNavigate()
@@ -14,7 +13,6 @@ const CustomerPetListPage: React.FC = () => {
   const [pets, setPets] = useState<PetDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [selectedPet, setSelectedPet] = useState<PetDTO | null>(null)
   const [petToDelete, setPetToDelete] = useState<PetDTO | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -293,22 +291,20 @@ const CustomerPetListPage: React.FC = () => {
                     marginTop: '0.5rem',
                   }}
                 >
-                  <button
-                    type="button"
+                  <Link
+                    to={`/customer/pets/${pet.id}`}
                     className="btn-action view"
                     style={{ flex: 1, justifyContent: 'center' }}
-                    onClick={() => setSelectedPet(pet)}
                   >
                     Details
-                  </button>
-                  <button
-                    type="button"
+                  </Link>
+                  <Link
+                    to={`/customer/pets/${pet.id}/edit`}
                     className="btn-action edit"
                     style={{ flex: 1, justifyContent: 'center' }}
-                    onClick={() => navigate(`/customer/pets/${pet.id}/edit`)}
                   >
                     Edit
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     className="btn-action danger"
@@ -324,13 +320,6 @@ const CustomerPetListPage: React.FC = () => {
           })}
         </div>
       )}
-
-      {/* Detail Modal */}
-      <PetDetailModal
-        pet={selectedPet}
-        open={Boolean(selectedPet)}
-        onClose={() => setSelectedPet(null)}
-      />
 
       {/* Delete Confirmation Modal */}
       {petToDelete && (

@@ -1,10 +1,11 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
 import { App } from 'antd'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { staffService } from '@/services/staff.service'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 import type { StaffDTO } from '@/types/staff.types'
 import { getApiErrorMessage } from '@/utils/apiError'
-import StaffDetailModal from './components/StaffDetailModal'
 
 const getRoleBadgeStyle = (roleName: string) => {
   const lower = roleName.toLowerCase()
@@ -25,6 +26,8 @@ const getRoleBadgeStyle = (roleName: string) => {
 
 const AdminStaffListPage: React.FC = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const baseStaffPath = location.pathname.startsWith('/staff') ? '/staff/staff' : '/admin/staff'
   const { message } = App.useApp()
 
   const [keywordInput, setKeywordInput] = useState('')
@@ -38,9 +41,10 @@ const AdminStaffListPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [selectedStaff, setSelectedStaff] = useState<StaffDTO | null>(null)
   const [staffToDeactivate, setStaffToDeactivate] = useState<StaffDTO | null>(null)
   const [deactivating, setDeactivating] = useState(false)
+  const user = useAuthStore((s) => s.user)
+  const canManage = hasPermission(user, PERMISSIONS.STAFF_MANAGE)
 
   useEffect(() => {
     let cancelled = false
@@ -145,17 +149,16 @@ const AdminStaffListPage: React.FC = () => {
           >
             🛡️ Manage Roles & Permissions
           </button>
-          <button
-            type="button"
+          {canManage && (<Link
+            to={`${baseStaffPath}/new`}
             className="btn"
-            onClick={() => navigate('/admin/staff/new')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
             Add staff
-          </button>
+          </Link>)}
         </div>
       </div>
 
@@ -313,9 +316,12 @@ const AdminStaffListPage: React.FC = () => {
                             {st.fullName.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <strong style={{ display: 'block', color: '#0f172a' }}>
+                            <Link
+                              to={`${baseStaffPath}/${st.id}`}
+                              style={{ display: 'block', color: '#0f172a', fontWeight: 700, textDecoration: 'none' }}
+                            >
                               {st.fullName}
-                            </strong>
+                            </Link>
                             <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                               ID: {st.id.slice(0, 8)}...
                             </span>
@@ -372,22 +378,28 @@ const AdminStaffListPage: React.FC = () => {
                       </td>
                       <td className="col-actions">
                         <div className="action-group">
-                          <button
-                            type="button"
+                          <Link
+                            to={`${baseStaffPath}/${st.id}`}
                             className="btn-action view"
-                            onClick={() => setSelectedStaff(st)}
                             title="View details"
                           >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
                             View
-                          </button>
-                          <button
-                            type="button"
+                          </Link>
+                          <Link
+                            to={`${baseStaffPath}/${st.id}/edit`}
                             className="btn-action edit"
-                            onClick={() => navigate(`/admin/staff/${st.id}/edit`)}
                             title="Edit staff"
                           >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
                             Edit
-                          </button>
+                          </Link>
                           {st.status === 'Active' && (
                             <button
                               type="button"
@@ -395,6 +407,10 @@ const AdminStaffListPage: React.FC = () => {
                               onClick={() => setStaffToDeactivate(st)}
                               title="Deactivate staff"
                             >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                              </svg>
                               Deactivate
                             </button>
                           )}
@@ -446,13 +462,6 @@ const AdminStaffListPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Staff Detail Modal */}
-      <StaffDetailModal
-        staff={selectedStaff}
-        open={Boolean(selectedStaff)}
-        onClose={() => setSelectedStaff(null)}
-      />
 
       {/* Deactivate Staff Confirmation Dialog */}
       {staffToDeactivate && (

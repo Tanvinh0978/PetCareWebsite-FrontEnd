@@ -1,8 +1,11 @@
 import type { NavItem } from '@/routes/nav'
 import { roleService } from '@/services/role.service'
+import { getMyPermissions } from '@/api/authApi'
 import { useAuthStore } from '@/store/useAuthStore'
 
 export const PERMISSIONS = {
+  // Dashboard
+  DASHBOARD_VIEW: 'DASHBOARD_VIEW',
   // Service
   SERVICE_VIEW: 'SERVICE_VIEW',
   SERVICE_MANAGE: 'SERVICE_MANAGE',
@@ -28,11 +31,24 @@ export const PERMISSIONS = {
   // Booking
   BOOKING_VIEW: 'BOOKING_VIEW',
   BOOKING_MANAGE: 'BOOKING_MANAGE',
+  BOOKING_CREATE: 'BOOKING_CREATE',
+  BOOKING_CHECKIN: 'BOOKING_CHECKIN',
+  BOOKING_CANCEL: 'BOOKING_CANCEL',
+  BOOKING_UPDATE_STATUS: 'BOOKING_UPDATE_STATUS',
+  BOOKING_ASSIGN_STAFF: 'BOOKING_ASSIGN_STAFF',
+  // Grooming
+  GROOMING_TASK_VIEW: 'GROOMING_TASK_VIEW',
+  GROOMING_TASK_UPDATE: 'GROOMING_TASK_UPDATE',
+  // Care Record
+  CARE_RECORD_VIEW: 'CARE_RECORD_VIEW',
+  CARE_RECORD_CREATE: 'CARE_RECORD_CREATE',
+  CARE_RECORD_MANAGE: 'CARE_RECORD_MANAGE',
 } as const
 
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   Admin: Object.values(PERMISSIONS),
   Receptionist: [
+    PERMISSIONS.DASHBOARD_VIEW,
     PERMISSIONS.SERVICE_VIEW,
     PERMISSIONS.SERVICE_MANAGE,
     PERMISSIONS.ROOM_VIEW,
@@ -43,10 +59,15 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.CUSTOMER_VIEW,
     PERMISSIONS.CUSTOMER_MANAGE,
     PERMISSIONS.VOUCHER_VIEW,
-    PERMISSIONS.VOUCHER_MANAGE,
     PERMISSIONS.STAFF_VIEW,
     PERMISSIONS.BOOKING_VIEW,
     PERMISSIONS.BOOKING_MANAGE,
+    PERMISSIONS.BOOKING_CREATE,
+    PERMISSIONS.BOOKING_CHECKIN,
+    PERMISSIONS.BOOKING_CANCEL,
+    PERMISSIONS.BOOKING_UPDATE_STATUS,
+    PERMISSIONS.BOOKING_ASSIGN_STAFF,
+    PERMISSIONS.CARE_RECORD_VIEW,
   ],
   'Boarding Staff': [
     PERMISSIONS.ROOM_VIEW,
@@ -54,11 +75,16 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.ROOM_CHECK_AVAILABILITY,
     PERMISSIONS.PET_VIEW,
     PERMISSIONS.PET_MANAGE,
+    PERMISSIONS.CARE_RECORD_VIEW,
+    PERMISSIONS.CARE_RECORD_CREATE,
+    PERMISSIONS.CARE_RECORD_MANAGE,
   ],
   'Grooming Staff': [
     PERMISSIONS.SERVICE_VIEW,
     PERMISSIONS.PET_VIEW,
     PERMISSIONS.PET_MANAGE,
+    PERMISSIONS.GROOMING_TASK_VIEW,
+    PERMISSIONS.GROOMING_TASK_UPDATE,
   ],
 }
 
@@ -95,37 +121,42 @@ export function getUserEffectivePermissions(user: IUser | null): string[] {
     return Object.values(PERMISSIONS)
   }
 
-  // 1. Direct permissions on user if already loaded
-  if (user.permissions && user.permissions.length > 0) {
-    return user.permissions
-  }
-
-  // 2. Check cached permissions per role in localStorage
   const userRoles =
     user.roles && user.roles.length > 0
       ? user.roles
       : [guessRoleFromUser(user)]
 
+  // 1. Prioritize real-time / custom permissions cached per role in localStorage
+  let hasRolePermInCache = false
   const aggregated = new Set<string>()
 
   for (const roleName of userRoles) {
-    let loadedFromCache = false
     try {
       const cached = localStorage.getItem(`petcare.role_perms.${roleName}`)
       if (cached) {
         const parsed = JSON.parse(cached)
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           parsed.forEach((p) => aggregated.add(p))
-          loadedFromCache = true
+          hasRolePermInCache = true
         }
       }
     } catch {}
+  }
 
-    if (!loadedFromCache) {
-      const defaults = DEFAULT_ROLE_PERMISSIONS[roleName]
-      if (defaults) {
-        defaults.forEach((p) => aggregated.add(p))
-      }
+  if (hasRolePermInCache) {
+    return Array.from(aggregated)
+  }
+
+  // 2. Direct permissions on user if already loaded (e.g. from token)
+  if (user.permissions && user.permissions.length > 0) {
+    return user.permissions
+  }
+
+  // 3. Fallback to default role permissions
+  for (const roleName of userRoles) {
+    const defaults = DEFAULT_ROLE_PERMISSIONS[roleName]
+    if (defaults) {
+      defaults.forEach((p) => aggregated.add(p))
     }
   }
 
@@ -240,7 +271,7 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
 
   // Boarding Tasks
   if (isAdmin || isReceptionist || isBoardingStaff) {
-    items.push({ label: 'Manage Boarding', to: 'manage-boarding' })
+    items.push({ label: 'Boarding Tasks', to: 'manage-boarding' })
   }
 
   // Bookings
@@ -251,11 +282,12 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
   // Reviews
   items.push({ label: 'Reviews', to: 'reviews' })
 
-  return items
+  // Deduplicate items by route path
+  return items.filter((item, index, self) => index === self.findIndex((t) => t.to === item.to))
 }
 
 /**
- * Async sync user permissions from backend /api/Roles
+ * Async sync user permissions from backend /api/auth/my-permissions or /api/Roles
  */
 export async function syncUserPermissions(): Promise<string[]> {
   const user = useAuthStore.getState().user
@@ -270,13 +302,25 @@ export async function syncUserPermissions(): Promise<string[]> {
     return all
   }
 
-  // Nếu user đã có permissions từ lúc đăng nhập, dùng luôn mà không cần gọi /api/Roles
-  if (user.permissions && user.permissions.length > 0) {
-    return user.permissions
-  }
-
   const roleName = user.roles?.[0] || guessRoleFromUser(user)
 
+  // 1. Try fetching real-time permissions directly from backend for authenticated user
+  try {
+    const res = await getMyPermissions()
+    if (res?.isSuccess && Array.isArray(res.result)) {
+      const codes = res.result
+      localStorage.setItem(`petcare.role_perms.${roleName}`, JSON.stringify(codes))
+      useAuthStore.getState().setPermissions(codes)
+      if (!user.roles || user.roles.length === 0) {
+        useAuthStore.getState().setRoles([roleName])
+      }
+      return codes
+    }
+  } catch (err) {
+    // If endpoint fails, continue fallback
+  }
+
+  // 2. Fallback to /api/Roles if Admin or allowed
   try {
     const roles = await roleService.getRoles()
     const matched = roles.find(
@@ -296,10 +340,10 @@ export async function syncUserPermissions(): Promise<string[]> {
       }
     }
   } catch (err) {
-    // Không ném lỗi hay cảnh báo console nếu backend từ chối (401/403)
+    // Ignore 401/403
   }
 
-  // Fallback to local
+  // 3. Fallback to local / cached
   const effective = getUserEffectivePermissions(user)
   useAuthStore.getState().setPermissions(effective)
   if (!user.roles || user.roles.length === 0) {

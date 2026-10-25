@@ -212,6 +212,7 @@ const AdminRoomTypeListPage: React.FC = () => {
                               <path d="M12 20h9"></path>
                               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                             </svg>
+                            Edit
                           </Link>
                           
                           <button
@@ -226,6 +227,7 @@ const AdminRoomTypeListPage: React.FC = () => {
                               <line x1="10" y1="11" x2="10" y2="17"></line>
                               <line x1="14" y1="11" x2="14" y2="17"></line>
                             </svg>
+                            Delete
                           </button>
                         </div>
                       </td>

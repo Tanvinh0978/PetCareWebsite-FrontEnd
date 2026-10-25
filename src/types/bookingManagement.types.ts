@@ -56,6 +56,7 @@ export interface CheckoutSummaryDTO {
   remainingAmount: number
   paymentStatus: string // "UNPAID" | "PARTIALLY_PAID" | "PAID"
   canCheckout: boolean
+  restrictionReason?: string
   paymentHistory: PaymentTransactionDTO[]
 }
 

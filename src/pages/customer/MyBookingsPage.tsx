@@ -17,6 +17,8 @@ import {
   Alert,
   DatePicker,
   Select,
+  Image,
+  Tooltip,
 } from 'antd';
 import {
   CalendarOutlined,
@@ -31,6 +33,8 @@ import {
   StarFilled,
   CreditCardOutlined,
   ClearOutlined,
+  CameraOutlined,
+  ZoomInOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -62,6 +66,9 @@ export const getBookingStatusConfig = (status: any) => {
   if (s === '3' || s === 'cancelled' || s === 'canceled') {
     return { label: 'Cancelled', color: 'red', icon: <CloseCircleOutlined /> };
   }
+  if (s === '4' || s === 'no_show' || s === 'noshow') {
+    return { label: 'No Show', color: 'purple', icon: <CloseCircleOutlined style={{ color: '#7c3aed' }} /> };
+  }
   return { label: String(status || 'Unknown'), color: 'default', icon: null };
 };
 
@@ -88,7 +95,7 @@ export const getItemStatusConfig = (status: any) => {
   if (s === '3' || s === 'in_progress' || s === 'inprogress') return { label: 'In Progress', color: 'processing' };
   if (s === '4' || s === 'completed') return { label: 'Completed', color: 'green' };
   if (s === '5' || s === 'cancelled' || s === 'canceled') return { label: 'Cancelled', color: 'red' };
-  if (s === '6' || s === 'no_show' || s === 'noshow') return { label: 'No Show', color: 'default' };
+  if (s === '6' || s === 'no_show' || s === 'noshow') return { label: 'No Show', color: 'purple' };
   return { label: String(status || 'Unknown'), color: 'default' };
 };
 
@@ -107,6 +114,7 @@ const MyBookingsPage: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<BookingDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
+  const [beforeAfterItem, setBeforeAfterItem] = useState<BookingDetailItem | null>(null);
 
   // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -186,6 +194,15 @@ const MyBookingsPage: React.FC = () => {
   }, [syncReviewedItems]);
 
   const handleOpenReview = (item: BookingDetailItem) => {
+    const isBookingCompleted =
+      String(selectedBooking?.status).toLowerCase() === '2' ||
+      String(selectedBooking?.status).toLowerCase() === 'completed';
+
+    if (!isBookingCompleted) {
+      message.warning('Bạn chỉ có thể đánh giá dịch vụ sau khi đơn đặt lịch đã hoàn tất (Check-out xong)!');
+      return;
+    }
+
     if ((item as any).isReviewed || reviewedItemIds.has(item.id)) {
       message.info('This service has already been reviewed.');
       handleViewReview(item);
@@ -387,7 +404,7 @@ const MyBookingsPage: React.FC = () => {
         return (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500, color: '#0f172a' }}>
-              <ClockCircleOutlined style={{ color: '#059669', fontSize: 13 }} />
+              <ClockCircleOutlined style={{ color: '#785839', fontSize: 13 }} />
               <span>{startStr}</span>
             </div>
             {endStr && endStr !== startStr && record.bookingType === 'Boarding' && (
@@ -424,7 +441,7 @@ const MyBookingsPage: React.FC = () => {
       key: 'totalPrice',
       width: 170,
       render: (price: number) => (
-        <Text strong style={{ color: '#059669', whiteSpace: 'nowrap' }}>
+        <Text strong style={{ color: '#785839', whiteSpace: 'nowrap' }}>
           {price ? `${price.toLocaleString()} VND` : '0 VND'}
         </Text>
       ),
@@ -451,11 +468,28 @@ const MyBookingsPage: React.FC = () => {
             type="primary"
             size="small"
             icon={<EyeOutlined />}
-            style={{ backgroundColor: '#059669', borderRadius: 6 }}
+            style={{ backgroundColor: '#3d2d23', borderRadius: 6 }}
             onClick={() => handleOpenDetail(record.id)}
           >
             Details
           </Button>
+          {record.hasPhotos && (
+            <Button
+              type="default"
+              size="small"
+              icon={<CameraOutlined style={{ color: '#0d9488' }} />}
+              style={{
+                borderColor: '#14b8a6',
+                color: '#0f766e',
+                borderRadius: 6,
+                fontWeight: 600,
+                backgroundColor: '#f0fdfa',
+              }}
+              onClick={() => handleOpenDetail(record.id)}
+            >
+              Before & After 📸
+            </Button>
+          )}
           {(String(record.status).toLowerCase() === '2' || String(record.status).toLowerCase() === 'completed') && (
             <Button
               type="default"
@@ -535,7 +569,7 @@ const MyBookingsPage: React.FC = () => {
       >
         <div>
           <Title level={2} style={{ margin: 0, color: '#0f172a' }}>
-            <CalendarOutlined style={{ marginRight: 10, color: '#059669' }} />
+            <CalendarOutlined style={{ marginRight: 10, color: '#785839' }} />
             My Bookings
           </Title>
           <Text type="secondary" style={{ fontSize: 15 }}>
@@ -547,7 +581,7 @@ const MyBookingsPage: React.FC = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            style={{ backgroundColor: '#059669', borderRadius: 8 }}
+            style={{ backgroundColor: '#3d2d23', borderRadius: 8 }}
             onClick={() => navigate('/customer/booking')}
           >
             New Booking
@@ -577,7 +611,7 @@ const MyBookingsPage: React.FC = () => {
           <Space wrap size={16} align="center">
             {/* Service Date Picker */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CalendarOutlined style={{ color: '#059669', fontSize: 15 }} />
+              <CalendarOutlined style={{ color: '#785839', fontSize: 15 }} />
               <Text strong style={{ fontSize: 13, color: '#334155' }}>
                 Service Date:
               </Text>
@@ -660,6 +694,14 @@ const MyBookingsPage: React.FC = () => {
                       </span>
                     ),
                   },
+                  {
+                    value: '4',
+                    label: (
+                      <span>
+                        <Badge color="#7c3aed" /> No-Show
+                      </span>
+                    ),
+                  },
                 ]}
               />
             </div>
@@ -685,7 +727,7 @@ const MyBookingsPage: React.FC = () => {
 
           <div>
             <Text type="secondary" style={{ fontSize: 13 }}>
-              Found <strong style={{ color: '#059669' }}>{totalCount}</strong> booking(s)
+              Found <strong style={{ color: '#785839' }}>{totalCount}</strong> booking(s)
             </Text>
           </div>
         </div>
@@ -724,7 +766,7 @@ const MyBookingsPage: React.FC = () => {
               >
                 <Button
                   type="primary"
-                  style={{ backgroundColor: '#059669' }}
+                  style={{ backgroundColor: '#3d2d23' }}
                   onClick={() => navigate('/customer/booking')}
                 >
                   Book an Appointment Now
@@ -739,7 +781,7 @@ const MyBookingsPage: React.FC = () => {
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CalendarOutlined style={{ color: '#059669' }} />
+            <CalendarOutlined style={{ color: '#785839' }} />
             <span>Booking Details</span>
             {selectedBooking && (() => {
               const cfg = getBookingStatusConfig(selectedBooking.status);
@@ -796,7 +838,7 @@ const MyBookingsPage: React.FC = () => {
             )}
             <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }} style={{ marginBottom: 20 }}>
               <Descriptions.Item label="Booking Code">
-                <Text strong style={{ fontFamily: 'monospace', color: '#059669' }}>
+                <Text strong style={{ fontFamily: 'monospace', color: '#785839' }}>
                   #{selectedBooking.id.slice(0, 8).toUpperCase()}
                 </Text>
               </Descriptions.Item>
@@ -820,7 +862,7 @@ const MyBookingsPage: React.FC = () => {
                 </>
               )}
               <Descriptions.Item label="Total Amount" span={2}>
-                <Text strong style={{ fontSize: 17, color: '#059669' }}>
+                <Text strong style={{ fontSize: 17, color: '#785839' }}>
                   {selectedBooking.totalPrice.toLocaleString()} VND
                 </Text>
               </Descriptions.Item>
@@ -838,6 +880,9 @@ const MyBookingsPage: React.FC = () => {
               {selectedBooking.bookingItems?.map((item) => {
                 const itemStatus = getItemStatusConfig(item.status);
                 const isBoarding = String(item.serviceType) === '1' || String(item.serviceType).toLowerCase() === 'boarding';
+                const isBookingCompleted =
+                  String(selectedBooking.status).toLowerCase() === '2' ||
+                  String(selectedBooking.status).toLowerCase() === 'completed';
                 return (
                   <Card
                     key={item.id}
@@ -893,7 +938,7 @@ const MyBookingsPage: React.FC = () => {
                             Care history
                           </Button>
                         )}
-                        <div style={{ fontSize: 15, fontWeight: 600, color: '#059669' }}>
+                        <div style={{ fontSize: 15, fontWeight: 600, color: '#785839' }}>
                           {item.assignedPrice?.toLocaleString()} VND
                         </div>
                         {item.quantity > 1 && (
@@ -901,19 +946,27 @@ const MyBookingsPage: React.FC = () => {
                             Qty: {item.quantity} x {item.unitPrice?.toLocaleString()} VND
                           </div>
                         )}
-                        {itemStatus.label === 'Completed' ? (
+                        {!isBookingCompleted ? (
+                          <div style={{ marginTop: 8 }}>
+                            <Tooltip title="Dịch vụ chỉ có thể đánh giá sau khi hoàn tất thanh toán & bàn giao thú cưng (Check-out hoàn tất).">
+                              <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', cursor: 'help' }}>
+                                🔒 Đánh giá sau khi Check-out đơn
+                              </Tag>
+                            </Tooltip>
+                          </div>
+                        ) : itemStatus.label === 'Completed' ? (
                           ((item as any).isReviewed || reviewedItemIds.has(item.id)) ? (
                             <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
                               <Tag
                                 color="success"
-                                icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
+                                icon={<CheckCircleFilled style={{ color: '#785839' }} />}
                                 style={{
                                   borderRadius: 6,
                                   padding: '3px 8px',
                                   fontWeight: 600,
-                                  background: '#ecfdf5',
-                                  borderColor: '#a7f3d0',
-                                  color: '#065f46',
+                                  background: '#fdf6ee',
+                                  borderColor: '#e8ded6',
+                                  color: '#785839',
                                   fontSize: 12,
                                   marginRight: 0,
                                 }}
@@ -959,6 +1012,124 @@ const MyBookingsPage: React.FC = () => {
                         )}
                       </div>
                     </div>
+
+                    {/* Grooming Outcome & Before / After Photos Section */}
+                    {(item.beforeImageUrl || item.resultImageUrl || item.resultNote) && (
+                      <div
+                        style={{
+                          marginTop: 14,
+                          padding: '12px 14px',
+                          background: '#ffffff',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: 10,
+                            flexWrap: 'wrap',
+                            gap: 6,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <CameraOutlined style={{ color: '#0d9488', fontSize: 16 }} />
+                            <Text strong style={{ fontSize: 13, color: '#0f766e' }}>
+                              Hình ảnh & Kết quả chăm sóc (Before & After)
+                            </Text>
+                          </div>
+                          {(item.beforeImageUrl || item.resultImageUrl) && (
+                            <Button
+                              type="link"
+                              size="small"
+                              icon={<ZoomInOutlined />}
+                              style={{ color: '#0284c7', padding: 0, fontSize: 12, fontWeight: 600 }}
+                              onClick={() => setBeforeAfterItem(item)}
+                            >
+                              Xem so sánh chi tiết
+                            </Button>
+                          )}
+                        </div>
+
+                        {(item.beforeImageUrl || item.resultImageUrl) && (
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: 16,
+                              alignItems: 'center',
+                              flexWrap: 'wrap',
+                              marginBottom: item.resultNote ? 10 : 0,
+                            }}
+                          >
+                            <Image.PreviewGroup>
+                              {item.beforeImageUrl && (
+                                <div style={{ textAlign: 'center' }}>
+                                  <Image
+                                    src={item.beforeImageUrl}
+                                    alt="Trước khi làm (Before)"
+                                    width={100}
+                                    height={100}
+                                    style={{
+                                      objectFit: 'cover',
+                                      borderRadius: 8,
+                                      border: '2px solid #cbd5e1',
+                                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                    }}
+                                  />
+                                  <div style={{ marginTop: 4 }}>
+                                    <Tag color="default" style={{ fontSize: 11, fontWeight: 600, borderRadius: 6, margin: 0 }}>
+                                      📷 Trước (Before)
+                                    </Tag>
+                                  </div>
+                                </div>
+                              )}
+                              {item.resultImageUrl && (
+                                <div style={{ textAlign: 'center' }}>
+                                  <Image
+                                    src={item.resultImageUrl}
+                                    alt="Sau khi làm (After)"
+                                    width={100}
+                                    height={100}
+                                    style={{
+                                      objectFit: 'cover',
+                                      borderRadius: 8,
+                                      border: '2px solid #c69f7b',
+                                      boxShadow: '0 2px 8px rgba(198,159,123,0.25)',
+                                    }}
+                                  />
+                                  <div style={{ marginTop: 4 }}>
+                                    <Tag color="success" style={{ fontSize: 11, fontWeight: 600, borderRadius: 6, margin: 0 }}>
+                                      ✨ Sau (After)
+                                    </Tag>
+                                  </div>
+                                </div>
+                              )}
+                            </Image.PreviewGroup>
+                          </div>
+                        )}
+
+                        {item.resultNote && (
+                          <div
+                            style={{
+                              marginTop: (item.beforeImageUrl || item.resultImageUrl) ? 10 : 0,
+                              padding: '8px 12px',
+                              background: '#f8fafc',
+                              borderLeft: '3px solid #0d9488',
+                              borderRadius: '0 6px 6px 0',
+                              fontSize: 13,
+                              color: '#334155',
+                            }}
+                          >
+                            <span style={{ fontWeight: 600, color: '#0f766e' }}>
+                              💬 Ghi chú hoàn thành {item.staffName ? `(${item.staffName})` : ''}:
+                            </span>{' '}
+                            <span>{item.resultNote}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </Card>
                 );
               })}
@@ -973,6 +1144,144 @@ const MyBookingsPage: React.FC = () => {
         petName={careHistoryItem?.petName}
         onClose={() => setCareHistoryItem(null)}
       />
+
+      {/* Before & After Comparison Modal */}
+      <Modal
+        open={Boolean(beforeAfterItem)}
+        onCancel={() => setBeforeAfterItem(null)}
+        footer={[
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setBeforeAfterItem(null)}
+            style={{ borderRadius: 8, backgroundColor: '#3d2d23', borderColor: '#3d2d23', padding: '0 20px', fontWeight: 600 }}
+          >
+            Đóng
+          </Button>,
+        ]}
+        width={760}
+        centered
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: '#ccfbf1',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#0d9488',
+              }}
+            >
+              <CameraOutlined style={{ fontSize: 18 }} />
+            </div>
+            <div>
+              <Typography.Title level={4} style={{ margin: 0, color: '#0f172a' }}>
+                Ảnh So Sánh Trước & Sau Khi Chăm Sóc
+              </Typography.Title>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                {beforeAfterItem?.petName} • {beforeAfterItem?.serviceName}
+              </Text>
+            </div>
+          </div>
+        }
+      >
+        {beforeAfterItem && (
+          <div style={{ padding: '8px 0' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: beforeAfterItem.beforeImageUrl && beforeAfterItem.resultImageUrl ? '1fr 1fr' : '1fr',
+                gap: 16,
+                marginBottom: 20,
+              }}
+            >
+              {beforeAfterItem.beforeImageUrl && (
+                <div
+                  style={{
+                    border: '1px solid #cbd5e1',
+                    borderRadius: 12,
+                    padding: 12,
+                    background: '#f8fafc',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Tag color="default" style={{ marginBottom: 10, fontSize: 13, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+                    📷 TRƯỚC KHI LÀM (BEFORE)
+                  </Tag>
+                  <div style={{ overflow: 'hidden', borderRadius: 8 }}>
+                    <Image
+                      src={beforeAfterItem.beforeImageUrl}
+                      alt="Before Grooming"
+                      style={{
+                        width: '100%',
+                        maxHeight: 340,
+                        objectFit: 'contain',
+                        borderRadius: 8,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {beforeAfterItem.resultImageUrl && (
+                <div
+                  style={{
+                    border: '2px solid #c69f7b',
+                    borderRadius: 12,
+                    padding: 12,
+                    background: '#f0fdf4',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Tag color="success" style={{ marginBottom: 10, fontSize: 13, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+                    ✨ SAU KHI LÀM ĐẸP (AFTER)
+                  </Tag>
+                  <div style={{ overflow: 'hidden', borderRadius: 8 }}>
+                    <Image
+                      src={beforeAfterItem.resultImageUrl}
+                      alt="After Grooming"
+                      style={{
+                        width: '100%',
+                        maxHeight: 340,
+                        objectFit: 'contain',
+                        borderRadius: 8,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {beforeAfterItem.resultNote && (
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderLeft: '4px solid #0d9488',
+                  borderRadius: 8,
+                  padding: '14px 16px',
+                  marginBottom: 12,
+                }}
+              >
+                <Text strong style={{ fontSize: 13, color: '#0f766e', display: 'block', marginBottom: 4 }}>
+                  💬 Ghi chú hoàn tất dịch vụ từ thợ {beforeAfterItem.staffName ? `(${beforeAfterItem.staffName})` : ''}:
+                </Text>
+                <Text style={{ fontSize: 14, color: '#334155' }}>
+                  {beforeAfterItem.resultNote}
+                </Text>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#94a3b8', padding: '0 4px' }}>
+              <span>Thú cưng: <strong style={{ color: '#475569' }}>{beforeAfterItem.petName}</strong> ({beforeAfterItem.petWeight}kg)</span>
+              <span>Kỹ thuật viên: <strong style={{ color: '#475569' }}>{beforeAfterItem.staffName || 'Chuyên viên Salon'}</strong></span>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Cancel Confirmation Modal */}
       <Modal
@@ -1044,7 +1353,7 @@ const MyBookingsPage: React.FC = () => {
             key="close"
             type="primary"
             onClick={() => setViewingReview(null)}
-            style={{ borderRadius: 8, backgroundColor: '#059669', borderColor: '#059669', padding: '0 20px', fontWeight: 600 }}
+            style={{ borderRadius: 8, backgroundColor: '#3d2d23', borderColor: '#3d2d23', padding: '0 20px', fontWeight: 600 }}
           >
             Close
           </Button>,
@@ -1102,14 +1411,14 @@ const MyBookingsPage: React.FC = () => {
                 {viewingReview.petName && (
                   <div style={{ marginTop: 2 }}>
                     <Text type="secondary" style={{ fontSize: 13 }}>
-                      Pet: <strong style={{ color: '#059669' }}>{viewingReview.petName}</strong>
+                      Pet: <strong style={{ color: '#785839' }}>{viewingReview.petName}</strong>
                     </Text>
                   </div>
                 )}
               </div>
               <Tag
                 color="success"
-                icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
+                icon={<CheckCircleFilled style={{ color: '#785839' }} />}
                 style={{
                   padding: '4px 10px',
                   borderRadius: 8,

@@ -67,6 +67,14 @@ export interface BookingListItem {
   scheduledStartAt?: string | null;
   scheduledEndAt?: string | null;
   serviceNames?: string[];
+  canCheckIn?: boolean;
+  canCheckout?: boolean;
+  hasInServiceItems?: boolean;
+  isFullyAssigned?: boolean;
+  cancellationReason?: string;
+  canMarkNoShow?: boolean;
+  isNoShow?: boolean;
+  hasPhotos?: boolean;
 }
 
 export interface BookingDetailItem {
@@ -89,6 +97,7 @@ export interface BookingDetailItem {
   staffId?: string;
   staffName?: string;
   resultNote?: string;
+  beforeImageUrl?: string;
   resultImageUrl?: string;
 }
 
@@ -215,11 +224,20 @@ export const bookingService = {
     return res?.result ?? res?.data?.result ?? res?.data ?? res;
   },
 
+  getBookingReceipt: async (id: string): Promise<any> => {
+    const res: any = await axiosClient.get(`/api/bookings/${id}/receipt`);
+    return res?.result ?? res?.data?.result ?? res?.data ?? res;
+  },
+
   checkout: (id: string, payload: CheckoutPayload) =>
     axiosClient.post(`/api/bookings/${id}/checkout`, payload),
 
   cancelBooking: async (id: string, cancellationReason = 'Customer requested cancellation'): Promise<any> => {
     return axiosClient.put(`/api/bookings/${id}/cancel`, { cancellationReason });
+  },
+
+  markNoShow: async (id: string, reason = 'Khách không đến theo lịch hẹn (No-Show)'): Promise<any> => {
+    return axiosClient.put(`/api/bookings/${id}/no-show`, { reason });
   },
 
   createVnpayUrl: async (bookingId: string): Promise<any> => {

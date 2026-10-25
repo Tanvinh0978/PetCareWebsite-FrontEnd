@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import {
   Alert, Avatar, Button, Card, Col, DatePicker, Descriptions, Empty, Input, Modal,
   Pagination, Row, Space, Spin, Statistic, Tag, Typography, message,
@@ -81,7 +81,7 @@ export default function BoardingTasksPage() {
   const changeStatus = async (task: BoardingTaskResponseDTO, nextStatus: number, note?: string) => {
     setStatusBusyId(task.itemId)
     try {
-      await boardingTaskService.updateItemStatus(task.bookingId, task.itemId, nextStatus, note)
+      await boardingTaskService.updateItemStatus(task.bookingId, task.itemId, nextStatus, note, task.staffId || undefined, task.roomId || undefined)
       message.success(`${task.petName}'s boarding status was updated.`)
       setCompletionTask(null)
       setResultNote('')
@@ -187,6 +187,9 @@ export default function BoardingTasksPage() {
                       </Descriptions.Item>
                       <Descriptions.Item label={<><PhoneOutlined /> Phone</>}>
                         {task.customerPhone ? <a href={`tel:${task.customerPhone}`}>{task.customerPhone}</a> : '—'}
+                      </Descriptions.Item>
+                      <Descriptions.Item label={<><UserOutlined /> Assigned Staff</>}>
+                        {task.staffName ? <Tag color="blue">{task.staffName}</Tag> : <Tag color="default">Unassigned</Tag>}
                       </Descriptions.Item>
                     </Descriptions>
 

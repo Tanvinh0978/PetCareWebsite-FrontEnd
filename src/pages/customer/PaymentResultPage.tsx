@@ -145,44 +145,46 @@ const PaymentResultPage: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: '100vh',
-        backgroundColor: '#f8fafc',
+        minHeight: '85vh',
+        backgroundColor: 'var(--paper)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '32px 16px',
+        padding: '48px 16px',
+        fontFamily: 'var(--font-sans)',
       }}
     >
       {/* Brand Header */}
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+      <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <span>🐾</span> PetCare
+          <div style={{ fontSize: '30px', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--slate-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <span>🐾</span> Haven &amp; Hound <small style={{ fontSize: '13px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>PetCare</small>
           </div>
         </Link>
-        <Text type="secondary" style={{ fontSize: '14px' }}>Pet care service payment portal</Text>
+        <Text type="secondary" style={{ fontSize: '15px', color: 'var(--slate-600)' }}>Sanctuary Service Payment Status</Text>
       </div>
 
       <Card
         style={{
           width: '100%',
           maxWidth: 680,
-          borderRadius: 16,
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
-          border: '1px solid #e2e8f0',
+          borderRadius: 20,
+          boxShadow: 'var(--shadow-lg)',
+          border: '1px solid var(--slate-200)',
+          backgroundColor: 'var(--paper-card)',
           overflow: 'hidden',
         }}
-        bodyStyle={{ padding: '32px 24px' }}
+        bodyStyle={{ padding: '36px 28px' }}
       >
         {loading ? (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
             <Spin size="large" />
             <div style={{ marginTop: 24 }}>
-              <Title level={4} style={{ color: '#1e293b', marginBottom: 8 }}>
-                Checking payment result...
+              <Title level={4} style={{ color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', marginBottom: 8 }}>
+                Verifying payment signature...
               </Title>
-              <Text type="secondary">
+              <Text type="secondary" style={{ color: 'var(--slate-600)' }}>
                 Please keep this page open while we verify VNPay's secure signature.
               </Text>
             </div>
@@ -190,11 +192,12 @@ const PaymentResultPage: React.FC = () => {
         ) : verifyStatus === 'success' ? (
           <Result
             status="success"
-            icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
-            title="Payment successful!"
+            icon={<CheckCircleFilled style={{ color: '#4a634e' }} />}
+            title={<span style={{ fontFamily: 'var(--font-heading)', fontSize: '26px', color: 'var(--slate-900)' }}>Payment Successful!</span>}
             subTitle={
-              verifyMessage ||
-              'Your online payment through VNPay has been confirmed.'
+              <span style={{ fontSize: '15px', color: 'var(--slate-600)' }}>
+                {verifyMessage || 'Your online payment through VNPay has been confirmed and your booking is reserved.'}
+              </span>
             }
             extra={[
               <Button
@@ -202,7 +205,7 @@ const PaymentResultPage: React.FC = () => {
                 key="my-bookings"
                 icon={<HistoryOutlined />}
                 size="large"
-                style={{ backgroundColor: '#059669', borderRadius: 8, padding: '0 24px' }}
+                style={{ background: 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)', borderRadius: 999, padding: '0 28px', border: 'none', fontWeight: 600 }}
                 onClick={() => navigate('/customer/bookings')}
               >
                 View My Bookings
@@ -211,7 +214,7 @@ const PaymentResultPage: React.FC = () => {
                 key="home"
                 icon={<HomeOutlined />}
                 size="large"
-                style={{ borderRadius: 8, padding: '0 24px' }}
+                style={{ borderRadius: 999, padding: '0 28px', border: '1px solid var(--slate-300)', color: 'var(--slate-700)', fontWeight: 600 }}
                 onClick={() => navigate('/')}
               >
                 Back to Home
@@ -221,15 +224,15 @@ const PaymentResultPage: React.FC = () => {
             {paymentData && (
               <div
                 style={{
-                  background: '#f8fafc',
-                  padding: 20,
-                  borderRadius: 12,
-                  border: '1px solid #e2e8f0',
-                  marginTop: 16,
+                  background: 'var(--slate-50)',
+                  padding: 24,
+                  borderRadius: 14,
+                  border: '1px solid var(--slate-200)',
+                  marginTop: 20,
                   textAlign: 'left',
                 }}
               >
-                <Title level={5} style={{ marginBottom: 16, color: '#0f172a' }}>
+                <Title level={5} style={{ marginBottom: 16, color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', fontSize: '18px' }}>
                   Transaction Information
                 </Title>
                 <Descriptions column={{ xs: 1, sm: 2 }} size="small" bordered>
@@ -239,17 +242,17 @@ const PaymentResultPage: React.FC = () => {
                     </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Booking ID">
-                    <Text strong style={{ fontFamily: 'monospace', color: '#059669' }}>
+                    <Text strong style={{ fontFamily: 'monospace', color: 'var(--secondary)' }}>
                       {paymentData.bookingId ? `#${paymentData.bookingId.slice(0, 8).toUpperCase()}` : 'N/A'}
                     </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Amount Paid">
-                    <Text strong style={{ color: '#059669', fontSize: 16 }}>
+                    <Text strong style={{ color: 'var(--secondary)', fontSize: 16 }}>
                       {paymentData.amount !== undefined ? `${paymentData.amount.toLocaleString()} VND` : 'N/A'}
                     </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Bank">
-                    <Tag color="blue">{paymentData.bankCode || 'VNPay'}</Tag>
+                    <Tag style={{ background: 'var(--primary-light)', color: 'var(--secondary)', border: '1px solid var(--slate-200)', borderRadius: '999px', fontWeight: 600 }}>{paymentData.bankCode || 'VNPay'}</Tag>
                   </Descriptions.Item>
                   <Descriptions.Item label="Payment Time" span={2}>
                     {formatPayDate(paymentData.payDate)}
@@ -261,11 +264,12 @@ const PaymentResultPage: React.FC = () => {
         ) : verifyStatus === 'error' ? (
           <Result
             status="error"
-            icon={<CloseCircleFilled style={{ color: '#ef4444' }} />}
-            title="Payment failed"
+            icon={<CloseCircleFilled style={{ color: 'var(--danger)' }} />}
+            title={<span style={{ fontFamily: 'var(--font-heading)', fontSize: '26px', color: 'var(--slate-900)' }}>Payment Failed</span>}
             subTitle={
-              verifyMessage ||
-              'The transaction was cancelled or an error occurred during VNPay payment.'
+              <span style={{ fontSize: '15px', color: 'var(--slate-600)' }}>
+                {verifyMessage || 'The transaction was cancelled or an error occurred during VNPay payment.'}
+              </span>
             }
             extra={[
               <Space key="actions" wrap style={{ justifyContent: 'center', width: '100%' }}>
@@ -277,7 +281,7 @@ const PaymentResultPage: React.FC = () => {
                     icon={<ReloadOutlined />}
                     size="large"
                     loading={retrying}
-                    style={{ borderRadius: 8, padding: '0 24px' }}
+                    style={{ borderRadius: 999, padding: '0 28px', fontWeight: 600 }}
                     onClick={handleRetryPayment}
                   >
                     Try payment again
@@ -287,7 +291,7 @@ const PaymentResultPage: React.FC = () => {
                   key="my-bookings"
                   icon={<HistoryOutlined />}
                   size="large"
-                  style={{ borderRadius: 8, padding: '0 24px' }}
+                  style={{ borderRadius: 999, padding: '0 28px', border: '1px solid var(--slate-300)', color: 'var(--slate-700)', fontWeight: 600 }}
                   onClick={() => navigate('/customer/bookings')}
                 >
                   Back to Bookings
@@ -296,7 +300,7 @@ const PaymentResultPage: React.FC = () => {
                   key="home"
                   icon={<HomeOutlined />}
                   size="large"
-                  style={{ borderRadius: 8, padding: '0 20px' }}
+                  style={{ borderRadius: 999, padding: '0 24px', border: '1px solid var(--slate-300)', color: 'var(--slate-700)', fontWeight: 600 }}
                   onClick={() => navigate('/')}
                 >
                   Back to Home
@@ -307,15 +311,15 @@ const PaymentResultPage: React.FC = () => {
             {paymentData && (
               <div
                 style={{
-                  background: '#fef2f2',
-                  padding: 20,
-                  borderRadius: 12,
-                  border: '1px solid #fee2e2',
-                  marginTop: 16,
+                  background: 'var(--danger-light)',
+                  padding: 24,
+                  borderRadius: 14,
+                  border: '1px solid var(--danger-border)',
+                  marginTop: 20,
                   textAlign: 'left',
                 }}
               >
-                <Title level={5} style={{ marginBottom: 16, color: '#991b1b' }}>
+                <Title level={5} style={{ marginBottom: 16, color: 'var(--danger)', fontFamily: 'var(--font-heading)' }}>
                   Result Details
                 </Title>
                 <Descriptions column={{ xs: 1, sm: 2 }} size="small" bordered>
@@ -348,7 +352,7 @@ const PaymentResultPage: React.FC = () => {
         ) : (
           <Result
             status="warning"
-            title="Transaction information not found"
+            title={<span style={{ fontFamily: 'var(--font-heading)', fontSize: '24px', color: 'var(--slate-900)' }}>Transaction Information Not Found</span>}
             subTitle="This page displays the result after a VNPay payment transaction is completed."
             extra={[
               <Button
@@ -356,7 +360,7 @@ const PaymentResultPage: React.FC = () => {
                 key="home"
                 icon={<HomeOutlined />}
                 size="large"
-                style={{ backgroundColor: '#059669', borderRadius: 8 }}
+                style={{ background: 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)', borderRadius: 999, padding: '0 28px', border: 'none', fontWeight: 600 }}
                 onClick={() => navigate('/')}
               >
                 Back to Home
@@ -365,7 +369,7 @@ const PaymentResultPage: React.FC = () => {
                 key="my-bookings"
                 icon={<HistoryOutlined />}
                 size="large"
-                style={{ borderRadius: 8 }}
+                style={{ borderRadius: 999, padding: '0 28px', border: '1px solid var(--slate-300)', color: 'var(--slate-700)', fontWeight: 600 }}
                 onClick={() => navigate('/customer/bookings')}
               >
                 View My Bookings

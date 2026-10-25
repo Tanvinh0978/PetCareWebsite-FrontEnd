@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Card, DatePicker, Form, Select, Space, Spin, Typography, message } from 'antd'
+import { Alert, Button, Card, DatePicker, Form, Select, Space, Spin, Typography, message } from 'antd'
 import { ArrowLeftOutlined, CalendarOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -11,6 +11,9 @@ import type { CustomerDTO } from '@/types/customer.types'
 import type { PetDTO } from '@/types/pet.types'
 import type { ServiceDTO } from '@/types/service.types'
 import { getApiErrorMessage } from '@/utils/apiError'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
+import { isServiceCompatibleWithPet, getRoomTierInfo } from '@/utils/petServiceFilter'
 
 const { Title, Text } = Typography
 const { RangePicker } = DatePicker
@@ -28,6 +31,8 @@ export default function CounterBookingPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const base = location.pathname.startsWith('/admin') ? '/admin/bookings' : '/staff/bookings'
+  const currentUser = useAuthStore((s) => s.user)
+  const canCreate = hasPermission(currentUser, PERMISSIONS.BOOKING_CREATE)
   const [customers, setCustomers] = useState<CustomerDTO[]>([])
   const [pets, setPets] = useState<PetDTO[]>([])
   const [services, setServices] = useState<ServiceDTO[]>([])
@@ -36,6 +41,12 @@ export default function CounterBookingPage() {
   const [saving, setSaving] = useState(false)
   const selectedCustomerId = Form.useWatch('customerId', form)
   const selectedServiceId = Form.useWatch('serviceId', form)
+  const selectedPetId = Form.useWatch('petId', form)
+  const selectedPet = useMemo(() => pets.find((p) => p.id === selectedPetId), [pets, selectedPetId])
+  const availableServices = useMemo(() => {
+    if (!selectedPet) return services
+    return services.filter((s) => isServiceCompatibleWithPet(s, selectedPet.species))
+  }, [services, selectedPet])
   const selectedService = useMemo(() => services.find((service) => service.id === selectedServiceId), [services, selectedServiceId])
   const isBoarding = String(selectedService?.serviceType).toLowerCase() === 'boarding' || String(selectedService?.serviceType) === '1'
 
@@ -68,16 +79,26 @@ export default function CounterBookingPage() {
   }, [selectedCustomerId])
 
   const submit = async (values: FormValues) => {
+    if (!canCreate) {
+      return message.error('Bạn không có quyền tạo đơn đặt lịch tại quầy (Yêu cầu quyền BOOKING_CREATE).')
+    }
     if (!values.customerId) return message.warning('Choose a customer for this booking.')
     if (!values.petId || !values.serviceId) return message.warning('Choose a pet and service.')
     if (isBoarding && !selectedService?.roomTypeId) {
       return message.error(`Boarding service "${selectedService?.name}" has no room type linked. Please choose another service or contact an administrator.`)
     }
-    const start = isBoarding ? values.boardingDates?.[0] : values.appointmentAt
-    const end = isBoarding ? values.boardingDates?.[1] : undefined
+    const isSameDay = isBoarding && values.boardingDates && values.boardingDates[0].isSame(values.boardingDates[1], 'day');
+    const start = isBoarding && values.boardingDates 
+      ? values.boardingDates[0].startOf('day').add(isSameDay ? 8 : 14, 'hour') 
+      : values.appointmentAt;
+    const end = isBoarding && values.boardingDates 
+      ? values.boardingDates[1].startOf('day').add(isSameDay ? 18 : 12, 'hour') 
+      : undefined;
     if (!start) return message.warning('Choose an appointment date and time.')
 
-    const quantity = isBoarding && end ? Math.max(1, end.startOf('day').diff(start.startOf('day'), 'day')) : 1
+    const quantity = isBoarding && values.boardingDates?.[1] && values.boardingDates?.[0] 
+      ? Math.max(1, values.boardingDates[1].startOf('day').diff(values.boardingDates[0].startOf('day'), 'day')) 
+      : 1;
     setSaving(true)
     try {
       await bookingService.create({
@@ -113,6 +134,15 @@ export default function CounterBookingPage() {
       </div>
 
       <Card className="counter-booking-card" bordered={false}>
+        {!canCreate && (
+          <Alert
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message="Không có quyền thao tác"
+            description="Tài khoản của bạn chưa được cấp quyền Tạo đơn đặt lịch tại quầy (BOOKING_CREATE). Vui lòng liên hệ Quản trị viên để được cấp quyền."
+          />
+        )}
         <Form form={form} layout="vertical" onFinish={submit}>
           <Form.Item name="customerId" label="Customer" rules={[{ required: true, message: 'Select the customer.' }]}>
             <Select
@@ -134,7 +164,10 @@ export default function CounterBookingPage() {
               loading={petsLoading}
               disabled={!selectedCustomerId}
               placeholder={selectedCustomerId ? 'Select this customer’s pet' : 'Select a customer first'}
-              options={pets.map((pet) => ({ value: pet.id, label: `${pet.name} · ${pet.weight} kg` }))}
+              options={pets.map((pet) => {
+                const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
+                return { value: pet.id, label: `${isCat ? '🐱' : '🐶'} ${pet.name} (${isCat ? 'Cat' : 'Dog'}) · ${pet.weight} kg` };
+              })}
             />
           </Form.Item>
 
@@ -143,14 +176,24 @@ export default function CounterBookingPage() {
               showSearch
               optionFilterProp="label"
               placeholder="Choose Grooming or Boarding"
-              options={services.map((service) => ({ value: service.id, label: `${service.name} · ${service.serviceType}` }))}
+              options={availableServices.map((service) => {
+                const isBoarding = String(service.serviceType).toLowerCase() === 'boarding';
+                const tier = getRoomTierInfo(service.roomTypeName, service.name);
+                const tag = isBoarding ? `[${tier.badgeText}]` : `[✂️ ${service.serviceType}]`;
+                return { value: service.id, label: `${service.name} ${tag}` };
+              })}
               onChange={() => form.setFieldsValue({ appointmentAt: undefined, boardingDates: undefined })}
             />
           </Form.Item>
 
           {isBoarding ? (
-            <Form.Item name="boardingDates" label="Check-in and check-out" rules={[{ required: true, message: 'Select the boarding dates.' }]}>
-              <RangePicker showTime style={{ width: '100%' }} disabledDate={(current) => current.isBefore(dayjs().startOf('day'))} />
+            <Form.Item name="boardingDates" label="Check-in and check-out (Hotel Boarding)" rules={[{ required: true, message: 'Select the boarding dates.' }]}>
+              <RangePicker 
+                format="MMM DD, YYYY" 
+                style={{ width: '100%' }} 
+                disabledDate={(current) => current.isBefore(dayjs().startOf('day'))} 
+                placeholder={['Check-in date (14:00)', 'Check-out date (12:00)']}
+              />
             </Form.Item>
           ) : (
             <Form.Item name="appointmentAt" label="Appointment date and time" rules={[{ required: true, message: 'Select the appointment date and time.' }]}>
@@ -163,7 +206,7 @@ export default function CounterBookingPage() {
           </div>
           <Space style={{ width: '100%', justifyContent: 'flex-end', marginTop: 20 }}>
             <Button onClick={() => navigate(base)}>Cancel</Button>
-            <Button type="primary" htmlType="submit" icon={<CheckCircleOutlined />} loading={saving}>Create booking</Button>
+            <Button type="primary" htmlType="submit" icon={<CheckCircleOutlined />} loading={saving} disabled={!canCreate}>Create booking</Button>
           </Space>
         </Form>
       </Card>

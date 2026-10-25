@@ -13,6 +13,7 @@ import {
   message,
   Tooltip,
   Typography,
+  Modal,
 } from 'antd'
 import {
   SearchOutlined,
@@ -26,11 +27,15 @@ import {
   CheckOutlined,
   CloseOutlined,
   PlusOutlined,
+  SyncOutlined,
+  StopOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
 import BookingDetailModal from '@/components/admin/BookingDetailModal'
 import CheckoutBookingModal from '@/components/admin/CheckoutBookingModal'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
 const { Title, Text } = Typography
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
@@ -55,6 +60,16 @@ export default function BookingManagementPage() {
   const [detailBookingId, setDetailBookingId] = useState<string | null>(null)
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const currentUser = useAuthStore((s) => s.user)
+  const canCreate = hasPermission(currentUser, PERMISSIONS.BOOKING_CREATE)
+  const canCheckInPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CHECKIN)
+  const canCancelPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CANCEL)
+
+  // Cancel Modal state
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null)
+  const [cancellationReason, setCancellationReason] = useState('')
+  const [cancelLoading, setCancelLoading] = useState(false)
 
   const fetchBookings = useCallback(async () => {
     setLoading(true)
@@ -94,48 +109,105 @@ export default function BookingManagementPage() {
     }
   }
 
-  const handleCancelBooking = async (bookingId: string) => {
-    setActionLoadingId(bookingId)
+  const openCancelModal = (bookingId: string) => {
+    setCancellingBookingId(bookingId)
+    setCancellationReason('Khách liên hệ xin hủy hẹn')
+    setCancelModalOpen(true)
+  }
+
+  const handleConfirmCancel = async () => {
+    if (!cancellingBookingId) return
+    setCancelLoading(true)
     try {
-      await bookingService.updateBookingStatus(bookingId, { status: 3 }) // 3: Cancelled
-      message.success('Booking cancelled.')
+      await bookingService.cancelBooking(cancellingBookingId, cancellationReason.trim() || 'Khách liên hệ xin hủy hẹn')
+      message.success('Đơn đặt lịch đã được hủy thành công.')
+      setCancelModalOpen(false)
+      setCancellingBookingId(null)
+      setCancellationReason('')
       fetchBookings()
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to cancel booking'
+      const msg = err?.response?.data?.message || err?.message || 'Không thể hủy đơn đặt lịch.'
+      message.error(msg)
+    } finally {
+      setCancelLoading(false)
+    }
+  }
+
+  const handleMarkNoShow = async (bookingId: string) => {
+    setActionLoadingId(bookingId)
+    try {
+      await bookingService.markNoShow(bookingId)
+      message.success('Đã đánh dấu khách không đến (No-Show). Lịch hẹn và phòng đã được giải phóng.')
+      fetchBookings()
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Không thể đánh dấu No-Show.'
       message.error(msg)
     } finally {
       setActionLoadingId(null)
     }
   }
 
-  const getStatusBadge = (status: number | string) => {
+  const handleCheckInBooking = async (bookingId: string) => {
+    setActionLoadingId(bookingId)
+    try {
+      await bookingService.checkIn(bookingId)
+      message.success('Pet checked in successfully! Tasks are now active for staff.')
+      fetchBookings()
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to check in pet'
+      message.error(msg)
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
+  const getStatusBadge = (status: number | string, record?: BookingListItem) => {
     const s = Number(status)
+    const isNoShow =
+      s === 4 ||
+      status === 'No_Show' ||
+      status === 'No-Show' ||
+      record?.isNoShow ||
+      (record?.cancellationReason && record.cancellationReason.toLowerCase().includes('no-show'))
+
+    if (isNoShow) {
+      return (
+        <Tooltip title={record?.cancellationReason || 'Khách không đến theo lịch hẹn (No-Show)'}>
+          <Tag color="purple" style={{ fontWeight: 600 }}>
+            No-Show
+          </Tag>
+        </Tooltip>
+      )
+    }
+
     if (s === 0 || status === 'Pending') {
       return (
-        <Tag color="warning" style={{ fontWeight: 600, padding: '3px 8px' }}>
-          ⏳ Pending Confirmation
+        <Tag color="warning" style={{ fontWeight: 600 }}>
+          Pending
         </Tag>
       )
     }
     if (s === 1 || status === 'Confirmed') {
       return (
-        <Tag color="processing" style={{ fontWeight: 600, padding: '3px 8px' }}>
-          🔵 Confirmed / In Salon
+        <Tag color="blue" style={{ fontWeight: 600 }}>
+          Confirmed
         </Tag>
       )
     }
     if (s === 2 || status === 'Completed') {
       return (
-        <Tag color="success" style={{ fontWeight: 600, padding: '3px 8px' }}>
-          ✓ Completed & Checked Out
+        <Tag color="success" style={{ fontWeight: 600 }}>
+          Completed
         </Tag>
       )
     }
     if (s === 3 || status === 'Cancelled') {
       return (
-        <Tag color="error" style={{ fontWeight: 600, padding: '3px 8px' }}>
-          ✕ Cancelled
-        </Tag>
+        <Tooltip title={record?.cancellationReason || undefined}>
+          <Tag color="error" style={{ fontWeight: 600 }}>
+            Cancelled
+          </Tag>
+        </Tooltip>
       )
     }
     return <Tag>{status}</Tag>
@@ -206,12 +278,12 @@ export default function BookingManagementPage() {
       title: 'Status',
       key: 'status',
       width: 190,
-      render: (_: any, record: BookingListItem) => getStatusBadge(record.status),
+      render: (_: any, record: BookingListItem) => getStatusBadge(record.status, record),
     },
     {
       title: 'Front Desk Actions',
       key: 'actions',
-      width: 240,
+      width: 270,
       render: (_: any, record: BookingListItem) => {
         const isPending = Number(record.status) === 0 || record.status === 'Pending'
         const isConfirmed = Number(record.status) === 1 || record.status === 'Confirmed'
@@ -245,56 +317,118 @@ export default function BookingManagementPage() {
                   </Button>
                 </Popconfirm>
 
-                <Popconfirm
-                  title="Cancel this booking?"
-                  description="Are you sure you want to cancel this booking?"
-                  okText="Yes, Cancel"
-                  cancelText="No"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={() => handleCancelBooking(record.id)}
-                >
+                {canCancelPerm && (
                   <Button
                     danger
                     size="small"
                     loading={isLoading}
                     icon={<CloseOutlined />}
+                    onClick={() => openCancelModal(record.id)}
                     style={{ borderRadius: 6 }}
                   >
                     Cancel
                   </Button>
-                </Popconfirm>
+                )}
               </>
             )}
 
-            {/* Confirmed action: Front desk check-out */}
+            {/* Confirmed actions: Check-in, Check-out, Cancel, or No-Show */}
             {isConfirmed && (
-              <Button
-                type="primary"
-                size="small"
-                icon={<DollarCircleOutlined />}
-                onClick={() => setCheckoutBookingId(record.id)}
-                style={{
-                  backgroundColor: '#0284c7',
-                  borderColor: '#0284c7',
-                  fontWeight: 600,
-                  borderRadius: 6,
-                }}
-              >
-                Check-out at Counter
-              </Button>
+              <>
+                {record.canCheckIn && canCheckInPerm && (
+                  <Popconfirm
+                    title="Check in pet at salon?"
+                    description="Customer has arrived with pet. Tasks will become available for staff."
+                    okText="Check-in"
+                    cancelText="Dismiss"
+                    onConfirm={() => handleCheckInBooking(record.id)}
+                  >
+                    <Button
+                      type="primary"
+                      size="small"
+                      loading={isLoading}
+                      icon={<CheckCircleOutlined />}
+                      style={{
+                        backgroundColor: '#f59e0b',
+                        borderColor: '#f59e0b',
+                        fontWeight: 600,
+                        borderRadius: 6,
+                      }}
+                    >
+                      Check-in Pet
+                    </Button>
+                  </Popconfirm>
+                )}
+
+                {!record.hasInServiceItems && !record.canCheckout && canCancelPerm && (
+                  <>
+                    <Button
+                      danger
+                      size="small"
+                      loading={isLoading}
+                      icon={<CloseOutlined />}
+                      onClick={() => openCancelModal(record.id)}
+                      style={{ borderRadius: 6 }}
+                    >
+                      Cancel
+                    </Button>
+
+                    {(record.canMarkNoShow ?? true) && (
+                      <Popconfirm
+                        title="Đánh dấu khách không đến (No-Show)?"
+                        description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
+                        okText="Xác nhận No-Show"
+                        cancelText="Bỏ qua"
+                        okButtonProps={{ danger: true }}
+                        onConfirm={() => handleMarkNoShow(record.id)}
+                      >
+                        <Button
+                          size="small"
+                          loading={isLoading}
+                          icon={<StopOutlined />}
+                          style={{
+                            borderRadius: 6,
+                            color: '#7c3aed',
+                            borderColor: '#c4b5fd',
+                            backgroundColor: '#f5f3ff',
+                            fontWeight: 600,
+                          }}
+                        >
+                          No-Show
+                        </Button>
+                      </Popconfirm>
+                    )}
+                  </>
+                )}
+
+                {record.canCheckout && (
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<DollarCircleOutlined />}
+                    onClick={() => setCheckoutBookingId(record.id)}
+                    style={{
+                      backgroundColor: '#0284c7',
+                      borderColor: '#0284c7',
+                      fontWeight: 600,
+                      borderRadius: 6,
+                    }}
+                  >
+                    Check-out at Counter
+                  </Button>
+                )}
+              </>
             )}
 
             {/* Detail modal button */}
-            <Tooltip title="View full booking breakdown">
-              <Button
-                size="small"
-                icon={<EyeOutlined />}
-                onClick={() => setDetailBookingId(record.id)}
-                style={{ borderRadius: 6 }}
-              >
-                Detail
-              </Button>
-            </Tooltip>
+            <Button
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => setDetailBookingId(record.id)}
+              style={{ borderRadius: 6 }}
+            >
+              Detail & Assign
+            </Button>
           </Space>
         )
       },
@@ -316,20 +450,22 @@ export default function BookingManagementPage() {
           </Text>
         </div>
         <Space size={8}>
-          <Link to={createBookingPath}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              style={{
-                borderRadius: 8,
-                fontWeight: 600,
-                backgroundColor: '#059669',
-                borderColor: '#059669',
-              }}
-            >
-              + Counter Booking
-            </Button>
-          </Link>
+          {canCreate && (
+            <Link to={createBookingPath}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                style={{
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  backgroundColor: '#059669',
+                  borderColor: '#059669',
+                }}
+              >
+                + Counter Booking
+              </Button>
+            </Link>
+          )}
           <Button
             icon={<ReloadOutlined />}
             onClick={() => fetchBookings()}
@@ -487,6 +623,7 @@ export default function BookingManagementPage() {
               <Radio.Button value={1}>🔵 Confirmed</Radio.Button>
               <Radio.Button value={2}>✓ Completed</Radio.Button>
               <Radio.Button value={3}>✕ Cancelled</Radio.Button>
+              <Radio.Button value={4}>🚫 No-Show</Radio.Button>
             </Radio.Group>
 
             {serviceDate && (
@@ -534,6 +671,7 @@ export default function BookingManagementPage() {
         bookingId={detailBookingId}
         onClose={() => setDetailBookingId(null)}
         onOpenCheckout={(id) => setCheckoutBookingId(id)}
+        onUpdated={fetchBookings}
       />
 
       {/* Front Desk Check-out Modal */}
@@ -545,6 +683,33 @@ export default function BookingManagementPage() {
           fetchBookings()
         }}
       />
+
+      {/* Cancel Booking Reason Modal */}
+      <Modal
+        title="Hủy đơn đặt lịch"
+        open={cancelModalOpen}
+        onCancel={() => {
+          setCancelModalOpen(false)
+          setCancellingBookingId(null)
+          setCancellationReason('')
+        }}
+        onOk={handleConfirmCancel}
+        confirmLoading={cancelLoading}
+        okText="Xác nhận hủy đơn"
+        okButtonProps={{ danger: true }}
+        cancelText="Bỏ qua"
+        centered
+      >
+        <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
+          Lễ tân thực hiện hủy đơn theo yêu cầu của khách hàng (hoặc trường hợp bất khả kháng). Vui lòng nhập lý do hủy:
+        </p>
+        <Input.TextArea
+          rows={3}
+          value={cancellationReason}
+          onChange={(e) => setCancellationReason(e.target.value)}
+          placeholder="Ví dụ: Khách gọi điện xin hủy vì bận đột xuất / Thú cưng đang ốm..."
+        />
+      </Modal>
     </section>
   )
 }
