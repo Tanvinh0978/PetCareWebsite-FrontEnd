@@ -107,8 +107,8 @@ export default function CounterBookingPage() {
         bookingItems: [{
           petId: values.petId,
           serviceId: values.serviceId,
-          scheduledStartAt: start.toISOString(),
-          scheduledEndAt: end?.toISOString() ?? null,
+          scheduledStartAt: start.format('YYYY-MM-DDTHH:mm:ss'),
+          scheduledEndAt: end ? end.format('YYYY-MM-DDTHH:mm:ss') : null,
           quantity,
         }],
       })

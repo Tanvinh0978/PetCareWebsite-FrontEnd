@@ -121,11 +121,18 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
       render: (_: any, record: CheckoutItemSummaryDTO) => (
         <div>
           <div>{record.serviceName}</div>
-          {record.roomName && (
-            <Tag color="cyan" style={{ fontSize: 11, marginTop: 2 }}>
-              <ShopOutlined /> {record.roomName}
-            </Tag>
-          )}
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 2 }}>
+            {record.roomName && (
+              <Tag color="cyan" style={{ fontSize: 11, margin: 0 }}>
+                <ShopOutlined /> {record.roomName}
+              </Tag>
+            )}
+            {record.resultNote && (
+              <Tag color="orange" style={{ fontSize: 11, margin: 0 }}>
+                ⚠️ {record.resultNote}
+              </Tag>
+            )}
+          </div>
         </div>
       ),
     },
@@ -256,6 +263,27 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               />
             </div>
 
+            {Boolean(summary.lateFee && summary.lateFee > 0) && (
+              <Alert
+                type="warning"
+                showIcon
+                message={
+                  <span style={{ fontWeight: 600 }}>
+                    Late Checkout Detected ({summary.lateHours}h overdue) — Surcharge: +{vnd.format(summary.lateFee!)}
+                  </span>
+                }
+                description={
+                  <div>
+                    <div>{summary.lateFeeReason}</div>
+                    <div style={{ marginTop: 4, fontSize: 12, color: '#78350f' }}>
+                      Late checkout surcharge has been automatically added to the remaining balance due.
+                    </div>
+                  </div>
+                }
+                style={{ marginBottom: 16, borderRadius: 8, border: '1px solid #fde68a', background: '#fffbeb' }}
+              />
+            )}
+
             {/* Financial Summary Card */}
             <div
               style={{
@@ -279,6 +307,17 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
                   </Text>
                   <Text style={{ color: '#059669', fontWeight: 600 }}>
                     -{vnd.format(summary.discountAmount)}
+                  </Text>
+                </div>
+              )}
+
+              {Boolean(summary.lateFee && summary.lateFee > 0) && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
+                  <Text type="secondary" style={{ color: '#d97706', fontWeight: 600 }}>
+                    Late Checkout Surcharge:
+                  </Text>
+                  <Text style={{ color: '#d97706', fontWeight: 600 }}>
+                    +{vnd.format(summary.lateFee!)}
                   </Text>
                 </div>
               )}
@@ -417,7 +456,7 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
                 }}
               >
                 {isFullyPaid
-                  ? '✓ Confirm Handover & Check-out'
+                  ? 'Check-out'
                   : `✓ Collect ${vnd.format(summary.remainingAmount)} & Check-out`}
               </Button>
             </div>

@@ -395,7 +395,7 @@ const CreateBookingPage: React.FC = () => {
           bookingItems.push({
             petId,
             serviceId: gId,
-            scheduledStartAt: values.groomingDate.toISOString(),
+            scheduledStartAt: values.groomingDate.format('YYYY-MM-DDTHH:mm:ss'),
             scheduledEndAt: null,
             quantity: 1
           });
@@ -412,8 +412,8 @@ const CreateBookingPage: React.FC = () => {
         const startHour = isSameDay ? 8 : 14;
         const endHour = isSameDay ? 18 : 12;
 
-        const scheduledStartAt = values.boardingDateRange[0].startOf('day').add(startHour, 'hour').toISOString();
-        const scheduledEndAt = values.boardingDateRange[1].startOf('day').add(endHour, 'hour').toISOString();
+        const scheduledStartAt = values.boardingDateRange[0].startOf('day').add(startHour, 'hour').format('YYYY-MM-DDTHH:mm:ss');
+        const scheduledEndAt = values.boardingDateRange[1].startOf('day').add(endHour, 'hour').format('YYYY-MM-DDTHH:mm:ss');
 
         if (srvs.boardingId) {
           bookingItems.push({

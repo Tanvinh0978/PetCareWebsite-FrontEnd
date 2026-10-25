@@ -25,6 +25,7 @@ export interface CheckoutItemSummaryDTO {
   status: number | string
   scheduledStartAt: string
   scheduledEndAt?: string | null
+  resultNote?: string | null
 }
 
 export interface PaymentTransactionDTO {
@@ -51,6 +52,10 @@ export interface CheckoutSummaryDTO {
   voucherId?: string
   voucherCode?: string
   discountAmount: number
+  originalTotalPrice?: number
+  lateFee?: number
+  lateHours?: number
+  lateFeeReason?: string
   totalPrice: number
   totalPaid: number
   remainingAmount: number

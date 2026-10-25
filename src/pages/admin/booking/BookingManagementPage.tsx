@@ -111,7 +111,7 @@ export default function BookingManagementPage() {
 
   const openCancelModal = (bookingId: string) => {
     setCancellingBookingId(bookingId)
-    setCancellationReason('Khách liên hệ xin hủy hẹn')
+    setCancellationReason('Customer requested cancellation')
     setCancelModalOpen(true)
   }
 
@@ -119,14 +119,14 @@ export default function BookingManagementPage() {
     if (!cancellingBookingId) return
     setCancelLoading(true)
     try {
-      await bookingService.cancelBooking(cancellingBookingId, cancellationReason.trim() || 'Khách liên hệ xin hủy hẹn')
-      message.success('Đơn đặt lịch đã được hủy thành công.')
+      await bookingService.cancelBooking(cancellingBookingId, cancellationReason.trim() || 'Customer requested cancellation')
+      message.success('Booking has been successfully cancelled.')
       setCancelModalOpen(false)
       setCancellingBookingId(null)
       setCancellationReason('')
       fetchBookings()
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Không thể hủy đơn đặt lịch.'
+      const msg = err?.response?.data?.message || err?.message || 'Failed to cancel booking.'
       message.error(msg)
     } finally {
       setCancelLoading(false)
@@ -137,10 +137,10 @@ export default function BookingManagementPage() {
     setActionLoadingId(bookingId)
     try {
       await bookingService.markNoShow(bookingId)
-      message.success('Đã đánh dấu khách không đến (No-Show). Lịch hẹn và phòng đã được giải phóng.')
+      message.success('Marked as No-Show. Scheduled room and staff resources released.')
       fetchBookings()
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Không thể đánh dấu No-Show.'
+      const msg = err?.response?.data?.message || err?.message || 'Failed to mark as No-Show.'
       message.error(msg)
     } finally {
       setActionLoadingId(null)
@@ -172,7 +172,7 @@ export default function BookingManagementPage() {
 
     if (isNoShow) {
       return (
-        <Tooltip title={record?.cancellationReason || 'Khách không đến theo lịch hẹn (No-Show)'}>
+        <Tooltip title={record?.cancellationReason || 'Customer did not show up (No-Show)'}>
           <Tag color="purple" style={{ fontWeight: 600 }}>
             No-Show
           </Tag>
@@ -228,7 +228,7 @@ export default function BookingManagementPage() {
     {
       title: 'Customer',
       key: 'customer',
-      width: 220,
+      width: 200,
       render: (_: any, record: BookingListItem) => (
         <div>
           <Text strong style={{ fontSize: 14, color: '#0f172a', display: 'block' }}>
@@ -241,27 +241,67 @@ export default function BookingManagementPage() {
       ),
     },
     {
-      title: 'Services / Items',
+      title: 'Scheduled Time',
+      key: 'scheduledTime',
+      width: 200,
+      render: (_: any, record: BookingListItem) => {
+        const isBoarding =
+          record.bookingType === 'Boarding' ||
+          (record.serviceNames && record.serviceNames.some((s) => s.toLowerCase().includes('boarding')));
+
+        if (isBoarding) {
+          const startStr = record.scheduledStartAt ? dayjs(record.scheduledStartAt).format('DD/MM/YYYY HH:mm') : '—';
+          const endStr = record.scheduledEndAt ? dayjs(record.scheduledEndAt).format('DD/MM/YYYY HH:mm') : '—';
+          return (
+            <div>
+              <div style={{ fontWeight: 600, color: '#0f172a', fontSize: 13 }}>
+                <CalendarOutlined style={{ marginRight: 6, color: '#059669' }} />
+                {startStr}
+              </div>
+              <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                → Out: {endStr}
+              </div>
+              <Tag color="cyan" style={{ fontSize: 11, marginTop: 4 }}>
+                🏨 Boarding Stay
+              </Tag>
+            </div>
+          );
+        }
+
+        const apptStr = record.scheduledStartAt ? dayjs(record.scheduledStartAt).format('DD/MM/YYYY HH:mm') : '—';
+        return (
+          <div>
+            <div style={{ fontWeight: 600, color: '#1e293b', fontSize: 13 }}>
+              <CalendarOutlined style={{ marginRight: 6, color: '#6366f1' }} />
+              {apptStr}
+            </div>
+            <Tag color="purple" style={{ fontSize: 11, marginTop: 4 }}>
+              ✂️ Grooming Appointment
+            </Tag>
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Services',
       dataIndex: 'itemsCount',
       key: 'itemsCount',
-      width: 150,
-      render: (count: number, record: BookingListItem) => (
-        <div>
-          <Tag color="blue" style={{ fontWeight: 600 }}>
-            {count || 1} Service Item(s)
-          </Tag>
-          <div style={{ marginTop: 4 }}>
-            <Button
-              type="link"
-              size="small"
-              onClick={() => setDetailBookingId(record.id)}
-              style={{ padding: 0, fontSize: 12, height: 'auto', color: '#059669' }}
-            >
-              View Service Items →
-            </Button>
+      width: 170,
+      render: (count: number, record: BookingListItem) => {
+        const names = record.serviceNames && record.serviceNames.length > 0
+          ? record.serviceNames.join(', ')
+          : `${count || 1} Service Item(s)`;
+        return (
+          <div>
+            <div style={{ fontWeight: 500, color: '#1e293b', fontSize: 13, lineHeight: 1.3 }}>
+              {names}
+            </div>
+            <Tag color="blue" style={{ fontSize: 11, marginTop: 4 }}>
+              {count || 1} Item(s)
+            </Tag>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       title: 'Total Price',
@@ -355,7 +395,7 @@ export default function BookingManagementPage() {
                         borderRadius: 6,
                       }}
                     >
-                      Check-in Pet
+                      Check-in
                     </Button>
                   </Popconfirm>
                 )}
@@ -375,10 +415,10 @@ export default function BookingManagementPage() {
 
                     {(record.canMarkNoShow ?? true) && (
                       <Popconfirm
-                        title="Đánh dấu khách không đến (No-Show)?"
-                        description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
-                        okText="Xác nhận No-Show"
-                        cancelText="Bỏ qua"
+                        title="Mark customer as No-Show?"
+                        description="Customer missed the appointment. Room and staff assignments will be released."
+                        okText="Mark No-Show"
+                        cancelText="Dismiss"
                         okButtonProps={{ danger: true }}
                         onConfirm={() => handleMarkNoShow(record.id)}
                       >
@@ -414,7 +454,7 @@ export default function BookingManagementPage() {
                       borderRadius: 6,
                     }}
                   >
-                    Check-out at Counter
+                    Check-out
                   </Button>
                 )}
               </>
@@ -427,7 +467,7 @@ export default function BookingManagementPage() {
               onClick={() => setDetailBookingId(record.id)}
               style={{ borderRadius: 6 }}
             >
-              Detail & Assign
+              View Detail
             </Button>
           </Space>
         )
@@ -462,7 +502,7 @@ export default function BookingManagementPage() {
                   borderColor: '#059669',
                 }}
               >
-                + Counter Booking
+                Counter Booking
               </Button>
             </Link>
           )}
@@ -686,7 +726,7 @@ export default function BookingManagementPage() {
 
       {/* Cancel Booking Reason Modal */}
       <Modal
-        title="Hủy đơn đặt lịch"
+        title="Cancel Booking"
         open={cancelModalOpen}
         onCancel={() => {
           setCancelModalOpen(false)
@@ -695,19 +735,19 @@ export default function BookingManagementPage() {
         }}
         onOk={handleConfirmCancel}
         confirmLoading={cancelLoading}
-        okText="Xác nhận hủy đơn"
+        okText="Confirm Cancel"
         okButtonProps={{ danger: true }}
-        cancelText="Bỏ qua"
+        cancelText="Dismiss"
         centered
       >
         <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
-          Lễ tân thực hiện hủy đơn theo yêu cầu của khách hàng (hoặc trường hợp bất khả kháng). Vui lòng nhập lý do hủy:
+          Receptionist is cancelling this booking per customer request or unexpected circumstances. Please provide a cancellation reason:
         </p>
         <Input.TextArea
           rows={3}
           value={cancellationReason}
           onChange={(e) => setCancellationReason(e.target.value)}
-          placeholder="Ví dụ: Khách gọi điện xin hủy vì bận đột xuất / Thú cưng đang ốm..."
+          placeholder="e.g. Customer called to cancel / Pet is unwell..."
         />
       </Modal>
     </section>
