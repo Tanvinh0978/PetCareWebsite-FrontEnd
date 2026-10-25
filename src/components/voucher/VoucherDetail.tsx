@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useLocation } from 'react-router-dom'
 import { voucherService } from '@/services/voucher.service'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 import type { VoucherDTO } from '@/types/voucher.types'
 import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types'
 import { getApiErrorMessage } from '@/utils/apiError'
@@ -51,6 +53,9 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
   const defaultBackTo = isStaff ? '/staff/vouchers' : '/admin/vouchers'
   const resolvedBackTo = backTo || defaultBackTo
   const resolvedEditTo = editTo || ((vid: string) => `${defaultBackTo}/${vid}/edit`)
+
+  const user = useAuthStore((s) => s.user)
+  const canManage = hasPermission(user, PERMISSIONS.VOUCHER_MANAGE)
 
   const [voucher, setVoucher] = useState<VoucherDTO | null>(null)
   const [loading, setLoading] = useState(true)
@@ -112,7 +117,7 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
           <h1 style={{ marginTop: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.05em' }}>{voucher.code}</h1>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          {resolvedEditTo && (
+          {canManage && resolvedEditTo && (
             <Link to={resolvedEditTo(voucher.id)} className="btn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>

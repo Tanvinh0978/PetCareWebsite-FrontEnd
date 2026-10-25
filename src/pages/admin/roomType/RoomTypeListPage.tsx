@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { roomTypeService, type RoomTypeDTO } from '@/services/roomType.service'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 const AdminRoomTypeListPage: React.FC = () => {
@@ -12,6 +14,8 @@ const AdminRoomTypeListPage: React.FC = () => {
   
   const [searchTerm, setSearchTerm] = useState('')
   const [keywordInput, setKeywordInput] = useState('')
+  const user = useAuthStore((s) => s.user)
+  const canManage = hasPermission(user, PERMISSIONS.ROOM_MANAGE)
 
   const fetchRoomTypes = async (search?: string) => {
     try {
@@ -71,15 +75,17 @@ const AdminRoomTypeListPage: React.FC = () => {
       <div className="page-head">
         <div>
           <h1>Room Types Management</h1>
-          <p className="page-subtitle">View, search, and manage room categories in table format.</p>
+          <p className="page-subtitle">{canManage ? "View, search, and manage room categories in table format." : "View and search room categories."}</p>
         </div>
-        <Link to={`${baseRoomTypePath}/new`} className="btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add Room Type
-        </Link>
+        {canManage && (
+          <Link to={`${baseRoomTypePath}/new`} className="btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add Room Type
+          </Link>
+        )}
       </div>
 
       {/* Filter and Search Panel */}
@@ -152,11 +158,11 @@ const AdminRoomTypeListPage: React.FC = () => {
                         <button type="button" className="btn" onClick={clearSearch}>
                           Clear filters
                         </button>
-                      ) : (
+                      ) : canManage ? (
                         <Link to={`${baseRoomTypePath}/new`} className="btn">
                           + Add first room type
                         </Link>
-                      )}
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -202,34 +208,38 @@ const AdminRoomTypeListPage: React.FC = () => {
                          <span className="status-pill active">{c.totalRooms} Rooms</span>
                       </td>
                       <td className="col-actions">
-                        <div className="action-group">
-                          <Link
-                            to={`${baseRoomTypePath}/${c.id}/edit`}
-                            className="btn-action edit"
-                            title="Edit room type"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M12 20h9"></path>
-                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                            </svg>
-                            Edit
-                          </Link>
-                          
-                          <button
-                            type="button"
-                            className="btn-action danger"
-                            title="Delete room type"
-                            onClick={() => handleDelete(c.id, c.name)}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="3 6 5 6 21 6"></polyline>
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                              <line x1="10" y1="11" x2="10" y2="17"></line>
-                              <line x1="14" y1="11" x2="14" y2="17"></line>
-                            </svg>
-                            Delete
-                          </button>
-                        </div>
+                        {canManage ? (
+                          <div className="action-group">
+                            <Link
+                              to={`${baseRoomTypePath}/${c.id}/edit`}
+                              className="btn-action edit"
+                              title="Edit room type"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                              </svg>
+                              Edit
+                            </Link>
+                            
+                            <button
+                              type="button"
+                              className="btn-action danger"
+                              title="Delete room type"
+                              onClick={() => handleDelete(c.id, c.name)}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                              </svg>
+                              Delete
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '0.82rem', fontStyle: 'italic' }}>View only</span>
+                        )}
                       </td>
                     </tr>
                   )

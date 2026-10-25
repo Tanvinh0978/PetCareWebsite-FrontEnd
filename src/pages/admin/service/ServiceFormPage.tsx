@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { createService, getServiceById, updateService } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
+import { useAuthStore } from '@/store/useAuthStore';
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
 import ImageUpload from '@/components/common/ImageUpload';
 import { roomTypeService, type RoomTypeDTO } from '@/services/roomType.service';
 import {
@@ -41,6 +43,8 @@ export default function ServiceFormPage() {
   const location = useLocation();
   const baseServicePath = location.pathname.startsWith('/staff') ? '/staff/services' : '/admin/services';
   const editing = Boolean(id);
+  const user = useAuthStore((s) => s.user);
+  const canManage = hasPermission(user, PERMISSIONS.SERVICE_MANAGE);
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(editing);
   const [name, setName] = useState('');
@@ -137,6 +141,19 @@ export default function ServiceFormPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  if (!canManage) {
+    return (
+      <section className="page" style={{ maxWidth: '840px' }}>
+        <p className="msg error" role="alert">
+          You do not have permission to manage services.
+        </p>
+        <Link to={baseServicePath} className="btn btn-secondary">
+          ← Back to services
+        </Link>
+      </section>
+    );
   }
 
   return (

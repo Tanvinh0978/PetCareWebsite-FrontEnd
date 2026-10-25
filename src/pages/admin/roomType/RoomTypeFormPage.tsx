@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import ImageUpload from '@/components/common/ImageUpload';
 import { roomTypeService } from '@/services/roomType.service';
 import { getApiErrorMessage } from '@/utils/apiError';
+import { useAuthStore } from '@/store/useAuthStore';
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
 
 const AdminRoomTypeFormPage: React.FC = () => {
   const navigate = useNavigate();
@@ -10,6 +12,8 @@ const AdminRoomTypeFormPage: React.FC = () => {
   const baseRoomTypePath = location.pathname.startsWith('/staff') ? '/staff/room-types' : '/admin/room-types';
   const { id } = useParams<{ id: string }>();
   const editing = Boolean(id);
+  const user = useAuthStore((s) => s.user);
+  const canManage = hasPermission(user, PERMISSIONS.ROOM_MANAGE);
 
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
@@ -65,6 +69,19 @@ const AdminRoomTypeFormPage: React.FC = () => {
       setSaving(false);
     }
   };
+
+  if (!canManage) {
+    return (
+      <section className="page" style={{ maxWidth: '840px' }}>
+        <p className="msg error" role="alert">
+          You do not have permission to manage room types.
+        </p>
+        <Link to={baseRoomTypePath} className="btn btn-secondary">
+          ← Back to room types
+        </Link>
+      </section>
+    );
+  }
 
   return (
     <section className="page" style={{ maxWidth: '840px' }}>
