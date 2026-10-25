@@ -115,7 +115,7 @@ export default function VerifyOtpPage() {
             <Title level={2} className="auth-form-title">📩 Verify Your Email</Title>
             <Text className="auth-form-subtitle">
               We sent a 6-digit OTP to<br/>
-              <strong style={{ color: '#111827' }}>{email}</strong>
+              <strong style={{ color: '#26180f' }}>{email}</strong>
             </Text>
           </div>
 

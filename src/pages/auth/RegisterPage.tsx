@@ -94,7 +94,7 @@ export default function RegisterPage() {
               <Input.Password className="auth-input"
                 prefix={<LockOutlined className="auth-input-icon" />}
                 placeholder="Create a strong password"
-                iconRender={v => v ? <EyeTwoTone twoToneColor="#059669" /> : <EyeInvisibleOutlined style={{ color: '#9ca3af' }} />}
+                iconRender={v => v ? <EyeTwoTone twoToneColor="#785839" /> : <EyeInvisibleOutlined style={{ color: '#9ca3af' }} />}
               />
             </Form.Item>
 
@@ -113,7 +113,7 @@ export default function RegisterPage() {
               <Input.Password className="auth-input"
                 prefix={<LockOutlined className="auth-input-icon" />}
                 placeholder="Repeat your password"
-                iconRender={v => v ? <EyeTwoTone twoToneColor="#059669" /> : <EyeInvisibleOutlined style={{ color: '#9ca3af' }} />}
+                iconRender={v => v ? <EyeTwoTone twoToneColor="#785839" /> : <EyeInvisibleOutlined style={{ color: '#9ca3af' }} />}
               />
             </Form.Item>
 

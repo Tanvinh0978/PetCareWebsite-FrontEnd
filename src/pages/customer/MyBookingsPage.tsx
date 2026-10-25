@@ -81,7 +81,7 @@ const getPaymentChoice = (booking: { paymentChoice?: string }) => String(booking
 const isVnpayBooking = (booking: { id?: string; paymentChoice?: string }) =>
   getPaymentChoice(booking) === 'VNPAY' || Boolean(booking.id && hasRememberedVnpayChoice(booking.id));
 const isCounterPaymentBooking = (booking: { paymentChoice?: string }) => getPaymentChoice(booking) === 'PAY_AT_COUNTER';
-const vnpayWarning = 'Vui lòng hoàn tất thanh toán để xác nhận lịch hẹn';
+const vnpayWarning = 'Please complete payment to confirm your booking';
 
 export const isCancellable = (status: any) => {
   return isPending(status);
@@ -529,7 +529,7 @@ const MyBookingsPage: React.FC = () => {
             </Space>
           )}
           {isPending(record.status) && isCounterPaymentBooking(record) && (
-            <Tag color="blue">Thanh toán tại quầy</Tag>
+            <Tag color="blue">Pay at counter</Tag>
           )}
           {isCancellable(record.status) && (
             <Button
@@ -834,7 +834,7 @@ const MyBookingsPage: React.FC = () => {
               <Alert type="warning" showIcon message={vnpayWarning} style={{ marginBottom: 16 }} />
             )}
             {isPending(selectedBooking.status) && isCounterPaymentBooking(selectedBooking) && (
-              <div style={{ marginBottom: 16 }}><Tag color="blue">Thanh toán tại quầy</Tag></div>
+              <div style={{ marginBottom: 16 }}><Tag color="blue">Pay at counter</Tag></div>
             )}
             <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }} style={{ marginBottom: 20 }}>
               <Descriptions.Item label="Booking Code">
