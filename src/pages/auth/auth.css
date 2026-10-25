@@ -2,7 +2,7 @@
    PETCARE — Clean & Minimal Auth Pages
    ═══════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 .auth-shell *,
 .auth-shell *::before,
@@ -13,8 +13,8 @@
 .auth-shell {
   display: flex;
   min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f3f4f6; /* Soft gray background for the right side */
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fdf9f3;
 }
 
 /* ──────────────────────────────
@@ -155,27 +155,27 @@
 
 .auth-input.ant-input,
 .auth-input.ant-input-affix-wrapper {
-  border-radius: 11px !important;
-  border: 1px solid #dce7e1 !important;
+  border-radius: 12px !important;
+  border: 1px solid #e8ded6 !important;
   padding: 12px 14px !important;
   font-size: 0.95rem !important;
-  background: #f7fbf8 !important;
+  background: #faf6f2 !important;
   min-height: 48px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 1px 2px rgba(38, 24, 15, 0.03);
   transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
 .auth-input.ant-input:hover,
 .auth-input.ant-input-affix-wrapper:hover {
-  background: #f1f8f3 !important;
-  border-color: #a8c9b8 !important;
+  background: #ffffff !important;
+  border-color: #c69f7b !important;
 }
 
 .auth-input.ant-input:focus,
 .auth-input.ant-input-affix-wrapper-focused {
-  background: #fdfaf7 !important;
+  background: #ffffff !important;
   border-color: #785839 !important;
-  box-shadow: 0 0 0 3px rgba(120, 88, 57, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(198, 159, 123, 0.2) !important;
 }
 
 .auth-input.ant-input-affix-wrapper .ant-input {
@@ -272,25 +272,27 @@
 .otp-box {
   width: 48px;
   height: 56px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: 1px solid #e8ded6;
+  border-radius: 10px;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
-  color: #111827;
-  background: white;
+  color: #26180f;
+  background: #ffffff;
   outline: none;
   transition: all 0.2s ease;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 .otp-box:focus {
-  border-color: #059669;
-  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+  border-color: #c69f7b;
+  box-shadow: 0 0 0 3px rgba(198, 159, 123, 0.25);
 }
 
 .otp-box--filled {
-  border-color: #059669;
-  background: #ecfdf5;
+  border-color: #785839;
+  background: #fdf6ee;
+  color: #3d2d23;
 }
 
 .otp-resend-box {
@@ -306,7 +308,7 @@
 :root[data-theme="dark"] .auth-form-card {
   background: #111c2f;
   border-color: #334155;
-  border-top-color: #059669;
+  border-top-color: #c69f7b;
   box-shadow: 0 20px 55px -24px rgba(0, 0, 0, .55);
 }
 :root[data-theme="dark"] .auth-form-title { color: #f1f5f9 !important; }

@@ -78,7 +78,7 @@ export default function LoginPage() {
               <Input.Password className="auth-input"
                 prefix={<LockOutlined className="auth-input-icon" />}
                 placeholder="Enter your password"
-                iconRender={v => v ? <EyeTwoTone twoToneColor="#059669" /> : <EyeInvisibleOutlined style={{ color: '#9ca3af' }} />}
+                iconRender={v => v ? <EyeTwoTone twoToneColor="#785839" /> : <EyeInvisibleOutlined style={{ color: '#9ca3af' }} />}
               />
             </Form.Item>
 
