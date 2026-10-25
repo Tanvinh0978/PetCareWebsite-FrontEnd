@@ -239,9 +239,6 @@ export default function ServiceFormPage() {
                 No room types are available. Create a room type before saving this boarding service.
               </span>
             )}
-            <span role="status" style={{ color: '#92400e', fontSize: '0.85rem' }}>
-              The current service API does not save room type associations. This selection will not persist until the API supports it.
-            </span>
           </label>
         )}
 
