@@ -310,36 +310,63 @@ export default function PawstayAuthPage() {
 
     const isOtpComplete = otp.every(d => d !== "");
 
-    // Colors & Styles from new UI
-    const colors = { bg: "#F9F8F4", accent: "#244C3C", textMuted: "#758078", border: "#DCDDD4", formBg: "rgba(255, 251, 242, 0.72)", white: "#FFFFFF" };
-    const font = '"Nunito", sans-serif';
+    // Colors & Styles harmonized with Home page luxury theme
+    const colors = {
+        bg: "#fdf9f3", // luxury linen/paper background matching HomePage
+        accent: "#3d2d23", // rich warm espresso
+        accentHover: "#26180f", // deep espresso
+        gold: "#c69f7b", // warm caramel / amber gold
+        secondary: "#785839", // warm earth brown
+        textMuted: "#6b5a4e", // warm slate-600
+        border: "#e8ded6", // slate-200
+        formBg: "#ffffff",
+        white: "#ffffff"
+    };
+    const fontBody = "var(--font-sans, 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif)";
+    const fontHeading = "var(--font-heading, 'Playfair Display', Georgia, serif)";
 
     return (
         <div style={{ 
-            display: 'flex', minHeight: '100vh', backgroundColor: colors.bg, fontFamily: font,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23244c3c' fill-opacity='0.05' d='M12,2C10.5,2 9,3 9,4.5C9,5 9,6.5 12,9C15,6.5 15,5 15,4.5C15,3 13.5,2 12,2M6,6C4.5,6 3,7 3,8.5C3,9 3,10.5 6,13C9,10.5 9,9 9,8.5C9,7 7.5,6 6,6M18,6C16.5,6 15,7 15,8.5C15,9 15,10.5 18,13C21,10.5 21,9 21,8.5C21,7 19.5,6 18,6M12,11.5C9,11.5 5,14.5 5,19C5,21.5 8.5,22 12,22C15.5,22 19,21.5 19,19C19,14.5 15,11.5 12,11.5Z'/%3E%3C/svg%3E")`,
+            display: 'flex', minHeight: '100vh', backgroundColor: colors.bg, fontFamily: fontBody,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23c69f7b' fill-opacity='0.08' d='M12,2C10.5,2 9,3 9,4.5C9,5 9,6.5 12,9C15,6.5 15,5 15,4.5C15,3 13.5,2 12,2M6,6C4.5,6 3,7 3,8.5C3,9 3,10.5 6,13C9,10.5 9,9 9,8.5C9,7 7.5,6 6,6M18,6C16.5,6 15,7 15,8.5C15,9 15,10.5 18,13C21,10.5 21,9 21,8.5C21,7 19.5,6 18,6M12,11.5C9,11.5 5,14.5 5,19C5,21.5 8.5,22 12,22C15.5,22 19,21.5 19,19C19,14.5 15,11.5 12,11.5Z'/%3E%3C/svg%3E")`,
             backgroundSize: '48px 48px'
         }}>
-            {/* NỬA TRÁI: ẢNH CHÚ CHÓ */}
+            {/* LEFT PANEL: HERO & BRAND STORY */}
             <div style={{ flex: 1, padding: '24px 24px 24px 6vw', display: 'flex' }}>
                 <div style={{
                     width: '100%', height: '100%', minHeight: 'calc(100vh - 48px)', borderRadius: 24, overflow: 'hidden', position: 'relative',
                     backgroundImage: 'url("https://images.unsplash.com/photo-1668180540678-e6ccd67d1c17?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=1200")',
                     backgroundSize: 'cover', backgroundPosition: 'center',
+                    boxShadow: '0 20px 40px -15px rgba(38, 24, 15, 0.25)'
                 }}>
                     <div style={{
-                        position: 'absolute', bottom: 24, left: 24, right: 24,
-                        backgroundColor: colors.accent, borderRadius: 16, padding: '24px 32px', color: colors.white
+                        position: 'absolute', bottom: 28, left: 28, right: 28,
+                        background: 'linear-gradient(135deg, rgba(38, 24, 15, 0.94) 0%, rgba(61, 45, 35, 0.92) 100%)',
+                        border: '1px solid rgba(198, 159, 123, 0.3)',
+                        borderRadius: 20, padding: '28px 32px', color: colors.white,
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 12px 30px rgba(0, 0, 0, 0.35)'
                     }}>
-                        <h2 style={{ margin: '0 0 8px 0', fontSize: 24, fontWeight: 800, color: colors.white }}>Good care. Happy pets.<br/>Peace of mind.</h2>
-                        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, opacity: 0.9, color: colors.white }}>
+                        <div style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            padding: '4px 12px', borderRadius: 999,
+                            background: 'rgba(198, 159, 123, 0.2)', border: '1px solid rgba(198, 159, 123, 0.4)',
+                            color: '#fdf6ee', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                            marginBottom: 12, fontFamily: fontBody
+                        }}>
+                            <span>🐾</span> Cotswolds Sanctuary &amp; Luxury Spa
+                        </div>
+                        <h2 style={{ margin: '0 0 10px 0', fontSize: 26, fontWeight: 700, color: colors.white, fontFamily: fontHeading, lineHeight: 1.3 }}>
+                            Good care. Happy pets.<br/>Peace of mind.
+                        </h2>
+                        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: '#f4eee9', fontFamily: fontBody }}>
                             From fresh trims to cozy stays, their next little adventure starts here.
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* NỬA PHẢI: FORM */}
+            {/* RIGHT PANEL: FORM */}
             <div style={{ 
                 width: '100%', maxWidth: 550, flexShrink: 0, display: 'flex', flexDirection: 'column', 
                 alignItems: 'center', padding: 24, boxSizing: 'border-box',
@@ -348,14 +375,16 @@ export default function PawstayAuthPage() {
                 <div style={{ maxWidth: 400, width: '100%', margin: 'auto 0' }}>
                     
                     <div style={{ marginBottom: 24 }}>
-                        <h1 style={{ color: colors.accent, margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em' }}>pawstay.</h1>
-                        <p style={{ color: colors.textMuted, margin: '4px 0 0 0', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                            Your pet's happy place
+                        <h1 style={{ color: colors.accent, margin: 0, fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', fontFamily: fontHeading }}>
+                            pawstay.
+                        </h1>
+                        <p style={{ color: colors.gold, margin: '4px 0 0 0', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: fontBody }}>
+                            Luxury Pet Retreat &amp; Wellness
                         </p>
                     </div>
 
-                    <div style={{ marginBottom: 16 }}>
-                        <h2 style={{ color: colors.accent, margin: '0 0 8px 0', fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em' }}>
+                    <div style={{ marginBottom: 20 }}>
+                        <h2 style={{ color: '#26180f', margin: '0 0 8px 0', fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em', fontFamily: fontHeading }}>
                             {view === 'login' 
                                 ? 'Welcome back.' 
                                 : view === 'register' 
@@ -366,7 +395,7 @@ export default function PawstayAuthPage() {
                                 ? 'Reset password.'
                                 : 'Set new password.'}
                         </h2>
-                        <p style={{ color: colors.textMuted, margin: 0, fontSize: 13, lineHeight: 1.4 }}>
+                        <p style={{ color: colors.textMuted, margin: 0, fontSize: 13.5, lineHeight: 1.5, fontFamily: fontBody }}>
                             {view === 'login' 
                                 ? "Sign in to book grooming, plan a cozy stay, and keep your pet's care in one place."
                                 : view === 'register'
@@ -381,37 +410,41 @@ export default function PawstayAuthPage() {
 
                     {/* Box Form */}
                     <div style={{
-                        background: colors.formBg, border: `1px solid ${colors.border}`,
-                        borderRadius: 16, padding: 20, boxSizing: 'border-box'
+                        background: '#ffffff',
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: 20,
+                        padding: 28,
+                        boxSizing: 'border-box',
+                        boxShadow: '0 16px 40px -12px rgba(38, 24, 15, 0.08), 0 4px 16px -4px rgba(120, 88, 57, 0.05)'
                     }}>
                         {view === 'login' && (
                             <>
                                 <div style={{ 
                                     display: 'flex', 
-                                    marginBottom: 24, 
-                                    background: 'rgba(36, 76, 60, 0.08)', 
+                                    marginBottom: 20, 
+                                    background: '#f4eee9', 
                                     borderRadius: 100, 
                                     padding: 4,
                                     width: '100%',
                                     boxSizing: 'border-box',
-                                    border: `1px solid rgba(36, 76, 60, 0.1)`
+                                    border: `1px solid ${colors.border}`
                                 }}>
                                     <button 
                                         type="button"
                                         onClick={() => setLoginType('customer')}
                                         style={{
                                             flex: 1,
-                                            padding: '12px 16px',
+                                            padding: '10px 16px',
                                             border: 'none',
                                             borderRadius: 100,
-                                            background: loginType === 'customer' ? colors.accent : 'transparent',
-                                            color: loginType === 'customer' ? colors.white : colors.accent,
+                                            background: loginType === 'customer' ? 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)' : 'transparent',
+                                            color: loginType === 'customer' ? colors.white : colors.secondary,
                                             fontWeight: 700,
-                                            fontSize: 14,
+                                            fontSize: 13.5,
                                             cursor: 'pointer',
-                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            boxShadow: loginType === 'customer' ? '0 4px 12px rgba(36, 76, 60, 0.3)' : 'none',
-                                            opacity: loginType === 'customer' ? 1 : 0.7
+                                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            boxShadow: loginType === 'customer' ? '0 4px 12px rgba(38, 24, 15, 0.25)' : 'none',
+                                            fontFamily: fontBody
                                         }}
                                     >
                                         Customer
@@ -421,53 +454,62 @@ export default function PawstayAuthPage() {
                                         onClick={() => setLoginType('staff')}
                                         style={{
                                             flex: 1,
-                                            padding: '12px 16px',
+                                            padding: '10px 16px',
                                             border: 'none',
                                             borderRadius: 100,
-                                            background: loginType === 'staff' ? colors.accent : 'transparent',
-                                            color: loginType === 'staff' ? colors.white : colors.accent,
+                                            background: loginType === 'staff' ? 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)' : 'transparent',
+                                            color: loginType === 'staff' ? colors.white : colors.secondary,
                                             fontWeight: 700,
-                                            fontSize: 14,
+                                            fontSize: 13.5,
                                             cursor: 'pointer',
-                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            boxShadow: loginType === 'staff' ? '0 4px 12px rgba(36, 76, 60, 0.3)' : 'none',
-                                            opacity: loginType === 'staff' ? 1 : 0.7
+                                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            boxShadow: loginType === 'staff' ? '0 4px 12px rgba(38, 24, 15, 0.25)' : 'none',
+                                            fontFamily: fontBody
                                         }}
                                     >
                                         Staff & Admin
                                     </button>
                                 </div>
                                 <Form name="login" onFinish={onLoginFinish} layout="vertical" requiredMark={false}>
-                                    <Form.Item name="email" label={<span style={{color: colors.accent, fontWeight: 700}}>Email address</span>}
+                                    <Form.Item name="email" label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Email address</span>}
                                         normalize={(value) => value?.trim()}
                                         rules={[{ required: true, message: 'Email is required' }, { type: 'email', message: 'Invalid email' }]}
                                     >
                                         <Input className="auth-input" prefix={<MailOutlined className="auth-input-icon" />} placeholder="you@example.com" />
                                     </Form.Item>
 
-                                    <Form.Item name="password" label={<span style={{color: colors.accent, fontWeight: 700}}>Password</span>}
+                                    <Form.Item name="password" label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Password</span>}
                                         rules={[{ required: true, message: 'Password is required' }]}
                                     >
                                         <Input.Password className="auth-input" prefix={<LockOutlined className="auth-input-icon" />} placeholder="Enter your password"
-                                            iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
+                                            iconRender={v => v ? <EyeTwoTone twoToneColor={colors.secondary} /> : <EyeInvisibleOutlined />}
                                         />
                                     </Form.Item>
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                                         <Form.Item name="remember" valuePropName="checked" noStyle>
-                                            <Checkbox style={{color: colors.textMuted}}>Remember me</Checkbox>
+                                            <Checkbox style={{color: colors.textMuted, fontFamily: fontBody}}>Remember me</Checkbox>
                                         </Form.Item>
                                         <button 
                                             type="button" 
                                             onClick={() => handleSwitchView('forgot')} 
-                                            style={{ background: 'none', border: 'none', color: colors.accent, fontSize: 13, fontWeight: 700, cursor: 'pointer', padding: 0 }}
+                                            style={{ background: 'none', border: 'none', color: colors.secondary, fontSize: 13, fontWeight: 700, cursor: 'pointer', padding: 0, fontFamily: fontBody }}
                                         >
                                             Forgot password?
                                         </button>
                                     </div>
 
                                     <Button type="primary" htmlType="submit" loading={loading} block
-                                        style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700, fontSize: 14 }}
+                                        style={{
+                                            height: 48,
+                                            borderRadius: 999,
+                                            background: 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)',
+                                            border: 'none',
+                                            fontWeight: 700,
+                                            fontSize: 14.5,
+                                            fontFamily: fontBody,
+                                            boxShadow: '0 4px 14px rgba(38, 24, 15, 0.22)'
+                                        }}
                                     >
                                         Sign In
                                     </Button>
@@ -477,34 +519,34 @@ export default function PawstayAuthPage() {
 
                         {view === 'register' && (
                             <Form name="register" onFinish={onRegisterFinish} layout="vertical" requiredMark={false} scrollToFirstError>
-                                <Form.Item name="fullName" label={<span style={{color: colors.accent, fontWeight: 700}}>Full name</span>}
+                                <Form.Item name="fullName" label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Full name</span>}
                                     rules={[{ required: true, message: 'Full name is required', whitespace: true }]}
                                 >
-                                    <Input className="auth-input" prefix={<UserOutlined className="auth-input-icon" />} placeholder="Nguyen Van A" />
+                                    <Input className="auth-input" prefix={<UserOutlined className="auth-input-icon" />} placeholder="Alex Johnson" />
                                 </Form.Item>
 
-                                <Form.Item name="email" label={<span style={{color: colors.accent, fontWeight: 700}}>Email address</span>}
+                                <Form.Item name="email" label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Email address</span>}
                                     normalize={(value) => value?.trim()}
                                     rules={[{ required: true, message: 'Email is required' }, { type: 'email', message: 'Invalid email format' }]}
                                 >
                                     <Input className="auth-input" prefix={<MailOutlined className="auth-input-icon" />} placeholder="you@example.com" />
                                 </Form.Item>
 
-                                <Form.Item name="phone" label={<span style={{color: colors.accent, fontWeight: 700}}>Phone number</span>}
+                                <Form.Item name="phone" label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Phone number</span>}
                                     rules={[{ required: true, message: 'Phone number is required' }]}
                                 >
                                     <Input className="auth-input" prefix={<PhoneOutlined className="auth-input-icon" />} placeholder="0901 234 567" />
                                 </Form.Item>
 
-                                <Form.Item name="password" label={<span style={{color: colors.accent, fontWeight: 700}}>Password</span>}
+                                <Form.Item name="password" label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Password</span>}
                                     rules={[{ required: true, message: 'Password is required' }, { min: 6, message: 'At least 6 characters' }]}
                                 >
                                     <Input.Password className="auth-input" prefix={<LockOutlined className="auth-input-icon" />} placeholder="Create a strong password"
-                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
+                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.secondary} /> : <EyeInvisibleOutlined />}
                                     />
                                 </Form.Item>
 
-                                <Form.Item name="confirmPassword" label={<span style={{color: colors.accent, fontWeight: 700}}>Confirm password</span>}
+                                <Form.Item name="confirmPassword" label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Confirm password</span>}
                                     dependencies={['password']}
                                     rules={[
                                         { required: true, message: 'Please confirm your password' },
@@ -517,12 +559,22 @@ export default function PawstayAuthPage() {
                                     ]}
                                 >
                                     <Input.Password className="auth-input" prefix={<LockOutlined className="auth-input-icon" />} placeholder="Repeat your password"
-                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
+                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.secondary} /> : <EyeInvisibleOutlined />}
                                     />
                                 </Form.Item>
 
                                 <Button type="primary" htmlType="submit" loading={loading} block
-                                    style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700, marginTop: 8 }}
+                                    style={{
+                                        height: 48,
+                                        borderRadius: 999,
+                                        background: 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)',
+                                        border: 'none',
+                                        fontWeight: 700,
+                                        fontSize: 14.5,
+                                        marginTop: 10,
+                                        fontFamily: fontBody,
+                                        boxShadow: '0 4px 14px rgba(38, 24, 15, 0.22)'
+                                    }}
                                 >
                                     Create Account
                                 </Button>
@@ -531,7 +583,9 @@ export default function PawstayAuthPage() {
 
                         {view === 'otp' && (
                             <div>
-                                <div style={{ color: colors.accent, fontWeight: 700, marginBottom: 8, fontSize: 13 }}>6-Digit Code</div>
+                                <div style={{ color: colors.accent, fontWeight: 700, marginBottom: 12, fontSize: 13, fontFamily: fontBody }}>
+                                    6-Digit Verification Code
+                                </div>
                                 <div className="otp-input-row" onPaste={handleOtpPaste} style={{ margin: '0 0 24px 0', gap: 8 }}>
                                     {otp.map((digit, i) => (
                                         <input
@@ -544,22 +598,33 @@ export default function PawstayAuthPage() {
                                             autoComplete="off"
                                             style={{ 
                                                 width: '100%', height: 48, borderRadius: 10,
-                                                textAlign: 'center', fontSize: 20, fontWeight: 700, color: colors.accent
+                                                textAlign: 'center', fontSize: 20, fontWeight: 700, color: '#26180f',
+                                                fontFamily: fontBody
                                             }}
                                         />
                                     ))}
                                 </div>
 
                                 <Button type="primary" loading={loading} disabled={!isOtpComplete} onClick={onOtpSubmit} block
-                                    style={{ height: 50, borderRadius: 10, background: isOtpComplete ? colors.accent : '#d1d5db', fontWeight: 700 }}
+                                    style={{
+                                        height: 48,
+                                        borderRadius: 999,
+                                        background: isOtpComplete ? 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)' : '#e8ded6',
+                                        color: isOtpComplete ? colors.white : '#8c7b6f',
+                                        border: 'none',
+                                        fontWeight: 700,
+                                        fontSize: 14.5,
+                                        fontFamily: fontBody,
+                                        boxShadow: isOtpComplete ? '0 4px 14px rgba(38, 24, 15, 0.22)' : 'none'
+                                    }}
                                 >
                                     Verify & Activate
                                 </Button>
 
                                 <div style={{ textAlign: 'center', marginTop: 16 }}>
-                                    <span style={{ color: colors.textMuted, fontSize: 13, marginRight: 8 }}>Didn't receive code?</span>
+                                    <span style={{ color: colors.textMuted, fontSize: 13, marginRight: 8, fontFamily: fontBody }}>Didn't receive code?</span>
                                     <Button type="link" onClick={handleResendOtp} disabled={countdown > 0 || resending} loading={resending} 
-                                        style={{ padding: 0, color: colors.accent, fontWeight: 700 }}
+                                        style={{ padding: 0, color: colors.secondary, fontWeight: 700, fontFamily: fontBody }}
                                     >
                                         {countdown > 0 ? `Resend in ${countdown}s` : "Resend"}
                                     </Button>
@@ -571,7 +636,7 @@ export default function PawstayAuthPage() {
                             <Form name="forgotPassword" onFinish={onForgotPasswordFinish} layout="vertical" requiredMark={false}>
                                 <Form.Item 
                                     name="email" 
-                                    label={<span style={{color: colors.accent, fontWeight: 700}}>Registered email address</span>}
+                                    label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Registered email address</span>}
                                     normalize={(value) => value?.trim()}
                                     rules={[
                                         { required: true, message: 'Email is required' },
@@ -591,7 +656,17 @@ export default function PawstayAuthPage() {
                                     htmlType="submit" 
                                     loading={loading} 
                                     block
-                                    style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700, fontSize: 14, marginTop: 8 }}
+                                    style={{
+                                        height: 48,
+                                        borderRadius: 999,
+                                        background: 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)',
+                                        border: 'none',
+                                        fontWeight: 700,
+                                        fontSize: 14.5,
+                                        marginTop: 10,
+                                        fontFamily: fontBody,
+                                        boxShadow: '0 4px 14px rgba(38, 24, 15, 0.22)'
+                                    }}
                                 >
                                     Send Verification Code
                                 </Button>
@@ -600,7 +675,7 @@ export default function PawstayAuthPage() {
 
                         {view === 'reset' && (
                             <Form name="resetPassword" onFinish={onResetPasswordFinish} layout="vertical" requiredMark={false}>
-                                <div style={{ color: colors.accent, fontWeight: 700, marginBottom: 8, fontSize: 13 }}>
+                                <div style={{ color: colors.accent, fontWeight: 700, marginBottom: 12, fontSize: 13, fontFamily: fontBody }}>
                                     6-Digit Verification Code
                                 </div>
                                 <div className="otp-input-row" onPaste={handleOtpPaste} style={{ margin: '0 0 16px 0', gap: 8 }}>
@@ -615,7 +690,8 @@ export default function PawstayAuthPage() {
                                             autoComplete="off"
                                             style={{ 
                                                 width: '100%', height: 48, borderRadius: 10,
-                                                textAlign: 'center', fontSize: 20, fontWeight: 700, color: colors.accent
+                                                textAlign: 'center', fontSize: 20, fontWeight: 700, color: '#26180f',
+                                                fontFamily: fontBody
                                             }}
                                         />
                                     ))}
@@ -627,7 +703,7 @@ export default function PawstayAuthPage() {
                                         onClick={handleResendResetOtp} 
                                         disabled={countdown > 0 || resending} 
                                         loading={resending}
-                                        style={{ padding: 0, color: colors.accent, fontWeight: 700, fontSize: 13 }}
+                                        style={{ padding: 0, color: colors.secondary, fontWeight: 700, fontSize: 13, fontFamily: fontBody }}
                                     >
                                         {countdown > 0 ? `Resend code in ${countdown}s` : "Resend code"}
                                     </Button>
@@ -635,7 +711,7 @@ export default function PawstayAuthPage() {
 
                                 <Form.Item 
                                     name="newPassword" 
-                                    label={<span style={{color: colors.accent, fontWeight: 700}}>New password</span>}
+                                    label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>New password</span>}
                                     rules={[
                                         { required: true, message: 'New password is required' },
                                         { min: 6, message: 'Password must be at least 6 characters' }
@@ -645,13 +721,13 @@ export default function PawstayAuthPage() {
                                         className="auth-input" 
                                         prefix={<LockOutlined className="auth-input-icon" />} 
                                         placeholder="Enter new password"
-                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
+                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.secondary} /> : <EyeInvisibleOutlined />}
                                     />
                                 </Form.Item>
 
                                 <Form.Item 
                                     name="confirmNewPassword" 
-                                    label={<span style={{color: colors.accent, fontWeight: 700}}>Confirm new password</span>}
+                                    label={<span style={{color: colors.accent, fontWeight: 700, fontFamily: fontBody}}>Confirm new password</span>}
                                     dependencies={['newPassword']}
                                     rules={[
                                         { required: true, message: 'Please confirm your new password' },
@@ -669,7 +745,7 @@ export default function PawstayAuthPage() {
                                         className="auth-input" 
                                         prefix={<LockOutlined className="auth-input-icon" />} 
                                         placeholder="Confirm your new password"
-                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.accent} /> : <EyeInvisibleOutlined />}
+                                        iconRender={v => v ? <EyeTwoTone twoToneColor={colors.secondary} /> : <EyeInvisibleOutlined />}
                                     />
                                 </Form.Item>
 
@@ -678,7 +754,17 @@ export default function PawstayAuthPage() {
                                     htmlType="submit" 
                                     loading={loading} 
                                     block
-                                    style={{ height: 50, borderRadius: 10, background: colors.accent, fontWeight: 700, fontSize: 14, marginTop: 8 }}
+                                    style={{
+                                        height: 48,
+                                        borderRadius: 999,
+                                        background: 'linear-gradient(135deg, #3d2d23 0%, #26180f 100%)',
+                                        border: 'none',
+                                        fontWeight: 700,
+                                        fontSize: 14.5,
+                                        marginTop: 10,
+                                        fontFamily: fontBody,
+                                        boxShadow: '0 4px 14px rgba(38, 24, 15, 0.22)'
+                                    }}
                                 >
                                     Reset Password
                                 </Button>
@@ -686,18 +772,18 @@ export default function PawstayAuthPage() {
                         )}
                     </div>
 
-                    <div style={{ marginTop: 16, textAlign: 'center', color: colors.textMuted, fontSize: 13 }}>
+                    <div style={{ marginTop: 20, textAlign: 'center', color: colors.textMuted, fontSize: 13.5, fontFamily: fontBody }}>
                         {view === 'login' && (
-                            <>Don't have an account? <button type="button" onClick={() => handleSwitchView('register')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginLeft: 4 }}>Sign up</button></>
+                            <>Don't have an account? <button type="button" onClick={() => handleSwitchView('register')} style={{ background: 'none', border: 'none', color: colors.secondary, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginLeft: 4, fontFamily: fontBody }}>Sign up</button></>
                         )}
                         {view === 'register' && (
-                            <>Already have an account? <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginLeft: 4 }}>Sign in</button></>
+                            <>Already have an account? <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.secondary, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginLeft: 4, fontFamily: fontBody }}>Sign in</button></>
                         )}
                         {view === 'otp' && (
-                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginTop: 8 }}>Back to sign in</button>
+                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.secondary, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginTop: 8, fontFamily: fontBody }}>Back to sign in</button>
                         )}
                         {(view === 'forgot' || view === 'reset') && (
-                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.accent, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginTop: 8 }}>← Back to sign in</button>
+                            <button type="button" onClick={() => handleSwitchView('login')} style={{ background: 'none', border: 'none', color: colors.secondary, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', marginTop: 8, fontFamily: fontBody }}>← Back to sign in</button>
                         )}
                     </div>
 
