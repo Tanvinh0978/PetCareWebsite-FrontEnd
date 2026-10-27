@@ -335,7 +335,7 @@ export default function PawstayAuthPage() {
             <div style={{ flex: 1, padding: '24px 24px 24px 6vw', display: 'flex' }}>
                 <div style={{
                     width: '100%', height: '100%', minHeight: 'calc(100vh - 48px)', borderRadius: 24, overflow: 'hidden', position: 'relative',
-                    backgroundImage: 'url("https://images.unsplash.com/photo-1668180540678-e6ccd67d1c17?crop=entropy&cs=srgb&fm=jpg&ixlib=rb-4.1.0&q=85&w=1200")',
+                    backgroundImage: 'linear-gradient(to bottom, rgba(38, 24, 15, 0.06) 0%, rgba(38, 24, 15, 0.28) 100%), url("https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85")',
                     backgroundSize: 'cover', backgroundPosition: 'center',
                     boxShadow: '0 20px 40px -15px rgba(38, 24, 15, 0.25)'
                 }}>
