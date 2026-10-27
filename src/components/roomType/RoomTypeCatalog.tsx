@@ -107,7 +107,7 @@ export default function RoomTypeCatalog({ detailBase, showSignInHint }: RoomType
                   borderBottom: '1px solid #f1f5f9',
                 }}
               >
-                🏨
+                
               </div>
             )}
 

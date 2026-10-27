@@ -1,3 +1,5 @@
+import { PawIcon } from '@/components/common/PetIcons'
+import { HomeOutlined, ScissorOutlined, CoffeeOutlined, MedicineBoxOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
@@ -8,29 +10,29 @@ import { reviewService } from '@/services/review.service';
 import type { ReviewListItem } from '@/types/review.types';
 
 interface ServiceMeta {
-  icon: string;
+  icon: React.ReactNode;
   tagline: string;
   description: string;
 }
 
 const SERVICE_META: Record<ServiceType, ServiceMeta> = {
   Boarding: {
-    icon: '🏡',
+    icon: <HomeOutlined style={{ fontSize: '26px', color: 'var(--secondary)' }} />,
     tagline: 'Sanctuary Suites & Chambers',
     description: 'Comfortable, climate-controlled boarding suites with soft bedding and dedicated care for dogs and cats.',
   },
   Grooming: {
-    icon: '🛁',
+    icon: <ScissorOutlined style={{ fontSize: '26px', color: 'var(--secondary)' }} />,
     tagline: 'Botanical Spa & Styling',
     description: 'Gentle bathing, warm hand-blow drying, breed-specific styling, ear cleaning, and soothing paw treatments.',
   },
   Diet: {
-    icon: '🥗',
+    icon: <CoffeeOutlined style={{ fontSize: '26px', color: 'var(--secondary)' }} />,
     tagline: 'Artisanal Nutrition & Fresh Dining',
     description: 'Fresh, balanced meals and specialized nutrition plans tailored to your companion’s health profile.',
   },
   Care: {
-    icon: '🩺',
+    icon: <MedicineBoxOutlined style={{ fontSize: '26px', color: 'var(--secondary)' }} />,
     tagline: 'Attentive Clinical Wellness',
     description: 'Routine wellness observations, medication administration, health observation, and clinical care logs.',
   },
@@ -78,7 +80,7 @@ export default function HomePage() {
           {/* Left Text Column */}
           <div className="home-hero-content">
             <div className="hero-pill-badge">
-              <span>🐾</span> Cotswolds Country Retreat &amp; Luxury Spa
+              <PawIcon size={14} style={{ marginRight: 6, color: 'var(--secondary)' }} /> Cotswolds Country Retreat &amp; Luxury Spa
             </div>
             <h1>A Warm Retreat for Your Beloved Pets.</h1>
             <p>
@@ -87,10 +89,10 @@ export default function HomePage() {
 
             <div className="hero-cta-buttons">
               <Link to={roomTypesUrl} className="btn">
-                🏨 Explore Hotel Suites
+                Explore Hotel Suites
               </Link>
               <Link to={servicesUrl} className="btn btn-secondary">
-                ✨ Browse Care Services
+                Browse Care Services
               </Link>
             </div>
 
@@ -152,8 +154,8 @@ export default function HomePage() {
                   {roomType.imageUrl ? (
                     <img src={roomType.imageUrl} alt={roomType.name} />
                   ) : (
-                    <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', background: '#f8fafc' }}>
-                      🏨
+                    <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+                      <HomeOutlined style={{ fontSize: '2.5rem', color: 'var(--secondary)' }} />
                     </div>
                   )}
                   {roomType.totalRooms > 0 && (

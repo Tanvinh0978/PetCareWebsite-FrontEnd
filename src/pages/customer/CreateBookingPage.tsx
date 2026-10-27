@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { DogIcon, CatIcon } from '@/components/common/PetIcons'
+import { DogIcon, CatIcon, PawIcon } from '@/components/common/PetIcons'
 import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space, Alert } from 'antd';
-import { CalendarOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
+import { ScissorOutlined, HomeOutlined, LoginOutlined, LogoutOutlined, CalendarOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { petService } from '@/services/pet.service';
@@ -477,7 +477,7 @@ const CreateBookingPage: React.FC = () => {
         }
       }
 
-      message.success('Booking created successfully! 🎉');
+      message.success('Booking created successfully!');
       navigate('/customer/bookings');
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Failed to create booking';
@@ -509,7 +509,7 @@ const CreateBookingPage: React.FC = () => {
       <div className="booking-page-wrap">
         <div className="booking-hero-header">
           <div className="hero-pill-badge" style={{ margin: '0 auto 1rem' }}>
-            <span>🐾</span> Haven &amp; Hound · Sanctuary Concierge
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><PawIcon size={14} style={{ color: 'var(--primary)' }} /> Haven &amp; Hound · Sanctuary Concierge</span>
           </div>
           <h1 className="booking-page-title">Reserve a Sanctuary Experience</h1>
           <p className="booking-page-subtitle">
@@ -526,7 +526,7 @@ const CreateBookingPage: React.FC = () => {
               }}
               style={{ padding: '36px 30px', display: 'flex', flexDirection: 'column' }}
             >
-              <div className="booking-flow-icon">✂️</div>
+              <div className="booking-flow-icon"><ScissorOutlined style={{ fontSize: "32px", color: "var(--secondary)" }} /></div>
               <h2 className="booking-flow-title" style={{ textAlign: 'center' }}>Botanical Grooming &amp; Spa</h2>
               <Text type="secondary" style={{ fontSize: '15px', display: 'block', textAlign: 'center', color: 'var(--secondary)', fontWeight: 600, marginBottom: '20px' }}>
                 Bespoke styling and therapeutic bathing
@@ -551,7 +551,7 @@ const CreateBookingPage: React.FC = () => {
               }}
               style={{ padding: '36px 30px', display: 'flex', flexDirection: 'column' }}
             >
-              <div className="booking-flow-icon">🏨</div>
+              <div className="booking-flow-icon"><HomeOutlined style={{ fontSize: "32px", color: "var(--secondary)" }} /></div>
               <h2 className="booking-flow-title" style={{ textAlign: 'center' }}>Sanctuary Hotel Suites</h2>
               <Text type="secondary" style={{ fontSize: '15px', display: 'block', textAlign: 'center', color: 'var(--secondary)', fontWeight: 600, marginBottom: '20px' }}>
                 Overnight boarding with attentive hospitality
@@ -643,7 +643,7 @@ const CreateBookingPage: React.FC = () => {
                               alignItems: 'center', 
                               justifyContent: 'center' 
                             }}>
-                              {isCat ? '🐱' : '🐶'}
+                              {isCat ? <CatIcon size={32} style={{ color: '#7e22ce' }} /> : <DogIcon size={32} style={{ color: '#1d4ed8' }} />}
                             </div>
                           )}
                         </div>
@@ -705,10 +705,11 @@ const CreateBookingPage: React.FC = () => {
               return {
                 key: petId,
                 label: (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                    {isCat ? <CatIcon size={18} /> : <DogIcon size={18} />}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontWeight: 600 }}>{pet.name}</span>
-                    <span style={{ fontSize: '11px', color: 'var(--slate-500)' }}>({pet.weight}kg)</span>
+                    <Tag color={isCat ? 'purple' : 'blue'} style={{ fontSize: '11px', margin: 0, padding: '0 6px', borderRadius: 4, fontWeight: 500 }}>
+                      {isCat ? 'Cat' : 'Dog'} · {pet.weight}kg
+                    </Tag>
                     {isPetConfigured ? (
                       <span style={{
                         display: 'inline-flex',
@@ -743,7 +744,7 @@ const CreateBookingPage: React.FC = () => {
                     {bookingType === 'Grooming' && (
                       <div style={{ marginBottom: '24px' }}>
                         <Title level={4} style={{ color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span>✂️</span> Botanical Grooming &amp; Spa Treatments
+                          <ScissorOutlined style={{ color: 'var(--secondary)', fontSize: '20px' }} /> Botanical Grooming &amp; Spa Treatments
                         </Title>
 
                         <div style={{
@@ -759,7 +760,7 @@ const CreateBookingPage: React.FC = () => {
                           borderRadius: '10px'
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '1.25rem' }}>{isCat ? '🐱' : '🐶'}</span>
+                            <CheckCircleOutlined style={{ color: '#16a34a', fontSize: '16px' }} />
                             <span style={{ fontWeight: 600, color: isCat ? '#9d174d' : '#166534', fontSize: '0.92rem' }}>
                               {isCat ? 'Spa & grooming treatments suitable for Cats' : 'Spa & grooming treatments suitable for Dogs'}
                             </span>
@@ -810,8 +811,8 @@ const CreateBookingPage: React.FC = () => {
                                               style={{ width: 48, height: 48, borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--slate-200)', flexShrink: 0 }}
                                             />
                                           ) : (
-                                            <div style={{ width: 48, height: 48, borderRadius: '10px', backgroundColor: 'var(--primary-light)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
-                                              ✂️
+                                            <div style={{ width: 48, height: 48, borderRadius: '10px', backgroundColor: '#f5f3ff', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #ddd6fe' }}>
+                                              <ScissorOutlined style={{ fontSize: '20px' }} />
                                             </div>
                                           )}
                                           <div>
@@ -838,7 +839,7 @@ const CreateBookingPage: React.FC = () => {
                     {bookingType === 'Boarding' && (
                       <div>
                         <Title level={4} style={{ color: 'var(--slate-900)', fontFamily: 'var(--font-heading)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span>🏨</span> Sanctuary Suites &amp; Rooms
+                          <HomeOutlined style={{ color: 'var(--secondary)', fontSize: '20px' }} /> Sanctuary Suites &amp; Rooms
                         </Title>
 
                         {/* Species header banner */}
@@ -855,7 +856,7 @@ const CreateBookingPage: React.FC = () => {
                           borderRadius: '12px'
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '1.5rem' }}>{isCat ? '🐱' : '🐶'}</span>
+                            <CheckCircleOutlined style={{ color: '#16a34a', fontSize: '18px' }} />
                             <div>
                               <Text strong style={{ color: isCat ? '#9d174d' : '#166534', fontSize: '0.98rem' }}>
                                 {isCat ? 'Cat-Friendly Sanctuary Suites' : 'Dog-Friendly Resort & Suites'}
@@ -874,7 +875,7 @@ const CreateBookingPage: React.FC = () => {
 
                         {petBoardingOptions.length === 0 ? (
                           <div style={{ padding: '36px', textAlign: 'center', background: 'var(--slate-50)', borderRadius: '14px', border: '1px dashed var(--slate-300)' }}>
-                            <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '10px' }}>🏨</span>
+                            <HomeOutlined style={{ fontSize: '2.5rem', color: '#94a3b8', display: 'block', marginBottom: '10px' }} />
                             <Title level={4} style={{ color: 'var(--slate-800)', marginBottom: '8px' }}>
                               No boarding suites available for {isCat ? 'Cats' : 'Dogs'}
                             </Title>
@@ -975,7 +976,7 @@ const CreateBookingPage: React.FC = () => {
                                                 fontSize: '1.5rem',
                                                 flexShrink: 0
                                               }}>
-                                                {tier.icon}
+                                                <HomeOutlined style={{ fontSize: '22px' }} />
                                               </div>
                                             )}
                                             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1053,7 +1054,7 @@ const CreateBookingPage: React.FC = () => {
                                    }}
                                    style={{ padding: 0, fontWeight: 600, color: 'var(--danger)' }}
                                  >
-                                    ✕ Clear room selection
+                                    Clear room selection
                                  </Button>
                               </div>
                             )}
@@ -1061,7 +1062,7 @@ const CreateBookingPage: React.FC = () => {
                             {pServices.boardingId && petDietOptions.length > 0 && (
                               <div style={{ marginTop: '20px', padding: '16px 20px', background: 'var(--slate-50)', borderRadius: '12px', border: '1px solid var(--slate-200)' }}>
                                 <Text strong style={{ display: 'block', marginBottom: '12px', color: 'var(--slate-800)', fontSize: '14px' }}>
-                                  🥗 Additional Nutrition &amp; Diet Plan (Optional):
+                                  Additional Nutrition &amp; Diet Plan (Optional):
                                 </Text>
                                 <Radio.Group 
                                   style={{ width: '100%' }}
@@ -1099,7 +1100,7 @@ const CreateBookingPage: React.FC = () => {
                                     onClick={() => setPetServices(prev => ({ ...prev, [petId]: { ...prev[petId], dietId: undefined } }))}
                                     style={{ padding: 0, fontSize: '13px', color: 'var(--slate-600)' }}
                                   >
-                                    ✕ Remove diet plan
+                                    Remove diet plan
                                   </Button>
                                 </div>
                               </div>
@@ -1195,8 +1196,8 @@ const CreateBookingPage: React.FC = () => {
                     <span>Hotel Boarding Schedule Policy</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', color: '#64748b', fontSize: '13px' }}>
-                    <span>📥 Check-in: <strong>From 14:00</strong></span>
-                    <span>📤 Check-out: <strong>Before 12:00</strong></span>
+                    <span><LoginOutlined style={{ marginRight: 4, color: '#059669' }} />Check-in: <strong>From 14:00</strong></span>
+                    <span><LogoutOutlined style={{ marginRight: 4, color: '#2563eb' }} />Check-out: <strong>Before 12:00</strong></span>
                   </div>
                   <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px', fontStyle: 'italic' }}>
                     *Room is automatically allocated by pet weight &amp; tier. 12:00 - 14:00 window is reserved for daily sanitization.
@@ -1293,7 +1294,7 @@ const CreateBookingPage: React.FC = () => {
                             style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--slate-200)' }}
                           />
                         ) : (
-                          <span>{isCat ? '🐱' : '🐶'}</span>
+                          <Tag color={isCat ? 'purple' : 'blue'} style={{ fontSize: 11, margin: 0, borderRadius: 4 }}>{isCat ? 'Cat' : 'Dog'}</Tag>
                         )}
                         <span>{pet.name} ({pet.weight}kg):</span>
                       </Text>

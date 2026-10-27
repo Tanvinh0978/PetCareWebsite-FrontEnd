@@ -1,3 +1,4 @@
+import { PawIcon } from '@/components/common/PetIcons'
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Result, Button, Card, Descriptions, Spin, Typography, message, Tag, Space } from 'antd';
@@ -159,7 +160,7 @@ const PaymentResultPage: React.FC = () => {
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
           <div style={{ fontSize: '30px', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--slate-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-            <span>🐾</span> Haven &amp; Hound <small style={{ fontSize: '13px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>PetCare</small>
+            <PawIcon size={18} style={{ marginRight: 6, verticalAlign: 'middle', color: 'var(--primary)' }} /> Haven &amp; Hound <small style={{ fontSize: '13px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>PetCare</small>
           </div>
         </Link>
         <Text type="secondary" style={{ fontSize: '15px', color: 'var(--slate-600)' }}>Sanctuary Service Payment Status</Text>
