@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { DogIcon, CatIcon, PawIcon } from '@/components/common/PetIcons'
 import { Link, useNavigate } from 'react-router-dom'
 import { App, Modal } from 'antd'
 import { petService } from '@/services/pet.service'
@@ -79,7 +80,7 @@ const CustomerPetListPage: React.FC = () => {
               marginBottom: '0.5rem',
             }}
           >
-            🐾 My Pet Family
+            My Pet Family
           </div>
           <h1 style={{ margin: 0, fontSize: '1.85rem', color: '#0f172a' }}>
             My Pets
@@ -126,7 +127,7 @@ const CustomerPetListPage: React.FC = () => {
             margin: '2rem auto',
           }}
         >
-          <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🐶🐱</div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '1rem', color: '#6366f1' }}><DogIcon size={48} /><CatIcon size={48} /></div>
           <h2 style={{ fontSize: '1.35rem', color: '#1e293b', marginBottom: '0.5rem' }}>
             No Pets Registered Yet
           </h2>
@@ -148,7 +149,7 @@ const CustomerPetListPage: React.FC = () => {
           {pets.map((pet) => {
             const isPetCat = isCat(pet.species)
             const speciesLabel = isPetCat ? 'Cat' : 'Dog'
-            const speciesIcon = isPetCat ? '🐱' : '🐶'
+            const speciesIcon = isPetCat ? <CatIcon size={16} /> : <DogIcon size={16} />
 
             return (
               <div
@@ -244,7 +245,7 @@ const CustomerPetListPage: React.FC = () => {
                         fontSize: '0.85rem',
                       }}
                     >
-                      ⚖️ <strong>{pet.weight}</strong> kg
+                      Weight: <strong>{pet.weight}</strong> kg
                     </div>
 
                     {pet.age !== undefined && pet.age !== null && (
@@ -257,7 +258,7 @@ const CustomerPetListPage: React.FC = () => {
                           fontSize: '0.85rem',
                         }}
                       >
-                        🎂 <strong>{pet.age}</strong> years old
+                        Age: <strong>{pet.age}</strong> years old
                       </div>
                     )}
                   </div>

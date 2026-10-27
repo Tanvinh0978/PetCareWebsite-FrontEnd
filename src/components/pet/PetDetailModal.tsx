@@ -1,6 +1,7 @@
 import React from 'react'
 import type { PetDTO } from '@/types/pet.types'
-import { isCat, getPetSpeciesLabel, getPetSpeciesIcon } from '@/types/pet.types'
+import { isCat, getPetSpeciesLabel } from '@/types/pet.types'
+import { DogIcon, CatIcon, SpeciesBadge } from '@/components/common/PetIcons'
 
 interface PetDetailModalProps {
   pet: PetDTO | null
@@ -13,7 +14,7 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
 
   const isPetCat = isCat(pet.species)
   const speciesLabel = getPetSpeciesLabel(pet.species)
-  const speciesIcon = getPetSpeciesIcon(pet.species)
+  // speciesIcon removed
 
   return (
     <div
@@ -53,7 +54,20 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
               }}
             />
           ) : (
-            <span style={{ fontSize: '2.4rem', lineHeight: 1 }}>{speciesIcon}</span>
+            <div style={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                background: isPetCat ? '#faf5ff' : '#eff6ff',
+                color: isPetCat ? '#7e22ce' : '#1d4ed8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: isPetCat ? '2px solid #e9d5ff' : '2px solid #bfdbfe',
+                flexShrink: 0,
+              }}>
+                {isPetCat ? <CatIcon size={30} /> : <DogIcon size={30} />}
+              </div>
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
@@ -100,7 +114,7 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
                         color: isPetCat ? '#7e22ce' : '#0369a1',
                       }}
                     >
-                      {speciesIcon} {speciesLabel}
+                      {speciesLabel}
                     </span>
                   ),
                 },

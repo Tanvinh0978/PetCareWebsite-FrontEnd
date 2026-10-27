@@ -1,4 +1,5 @@
-﻿import { useCallback, useEffect, useState } from 'react'
+﻿import { DogIcon, CatIcon } from '@/components/common/PetIcons'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Alert, Avatar, Button, Card, Col, DatePicker, Descriptions, Empty, Input, Modal,
   Pagination, Row, Space, Spin, Statistic, Tag, Typography, message,
@@ -167,7 +168,7 @@ export default function BoardingTasksPage() {
                 <Col xs={24} xl={12} key={task.itemId}>
                   <Card className="boarding-task-card" title={<Space><HomeOutlined /><span>{task.roomName || 'Room not assigned'}</span></Space>} extra={<Tag color={status.color}>{status.label}</Tag>}>
                     <div className="boarding-pet-heading">
-                      <Avatar size={48} style={{ background: '#e6f4ec', color: '#16804a' }}>{speciesName(task.petSpecies) === 'Cat' ? '🐱' : '🐶'}</Avatar>
+                      <Avatar size={48} style={{ background: '#e6f4ec', color: '#16804a' }}>{speciesName(task.petSpecies) === 'Cat' ? <CatIcon size={24} /> : <DogIcon size={24} />}</Avatar>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Title level={4} style={{ margin: 0 }}>{task.petName}</Title>
                         <Text type="secondary">{speciesName(task.petSpecies)}{task.petBreed ? ` · ${task.petBreed}` : ''}{task.petWeight != null ? ` · ${task.petWeight} kg` : ''}</Text>
@@ -207,7 +208,7 @@ export default function BoardingTasksPage() {
                         }}
                       >
                         <Text strong style={{ color: '#c2410c' }}>
-                          🍲 Diet add-on:{' '}
+                          Diet add-on:{' '}
                         </Text>
                         <Text style={{ color: '#9a3412', fontWeight: 500 }}>
                           {task.dietServiceName}

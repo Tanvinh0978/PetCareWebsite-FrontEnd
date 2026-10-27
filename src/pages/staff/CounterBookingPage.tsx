@@ -166,7 +166,7 @@ export default function CounterBookingPage() {
               placeholder={selectedCustomerId ? 'Select this customer’s pet' : 'Select a customer first'}
               options={pets.map((pet) => {
                 const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
-                return { value: pet.id, label: `${isCat ? '🐱' : '🐶'} ${pet.name} (${isCat ? 'Cat' : 'Dog'}) · ${pet.weight} kg` };
+                return { value: pet.id, label: `${pet.name} (${isCat ? 'Cat' : 'Dog'}, ${pet.weight} kg)` };
               })}
             />
           </Form.Item>
@@ -179,7 +179,7 @@ export default function CounterBookingPage() {
               options={availableServices.map((service) => {
                 const isBoarding = String(service.serviceType).toLowerCase() === 'boarding';
                 const tier = getRoomTierInfo(service.roomTypeName, service.name);
-                const tag = isBoarding ? `[${tier.badgeText}]` : `[✂️ ${service.serviceType}]`;
+                const tag = isBoarding ? `[${tier.badgeText}]` : `[${service.serviceType}]`;
                 return { value: service.id, label: `${service.name} ${tag}` };
               })}
               onChange={() => form.setFieldsValue({ appointmentAt: undefined, boardingDates: undefined })}

@@ -29,11 +29,15 @@ import {
   PlusOutlined,
   SyncOutlined,
   StopOutlined,
+  ClockCircleOutlined,
+  HomeOutlined,
+  ScissorOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
 import BookingDetailModal from '@/components/admin/BookingDetailModal'
 import CheckoutBookingModal from '@/components/admin/CheckoutBookingModal'
+import { BookingStatusBadge, ServiceTypeBadge } from '@/components/common/PetIcons'
 import { useAuthStore } from '@/store/useAuthStore'
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
@@ -162,55 +166,13 @@ export default function BookingManagementPage() {
   }
 
   const getStatusBadge = (status: number | string, record?: BookingListItem) => {
-    const s = Number(status)
-    const isNoShow =
-      s === 4 ||
-      status === 'No_Show' ||
-      status === 'No-Show' ||
-      record?.isNoShow ||
-      (record?.cancellationReason && record.cancellationReason.toLowerCase().includes('no-show'))
-
-    if (isNoShow) {
-      return (
-        <Tooltip title={record?.cancellationReason || 'Customer did not show up (No-Show)'}>
-          <Tag color="purple" style={{ fontWeight: 600 }}>
-            No-Show
-          </Tag>
-        </Tooltip>
-      )
-    }
-
-    if (s === 0 || status === 'Pending') {
-      return (
-        <Tag color="warning" style={{ fontWeight: 600 }}>
-          Pending
-        </Tag>
-      )
-    }
-    if (s === 1 || status === 'Confirmed') {
-      return (
-        <Tag color="blue" style={{ fontWeight: 600 }}>
-          Confirmed
-        </Tag>
-      )
-    }
-    if (s === 2 || status === 'Completed') {
-      return (
-        <Tag color="success" style={{ fontWeight: 600 }}>
-          Completed
-        </Tag>
-      )
-    }
-    if (s === 3 || status === 'Cancelled') {
-      return (
-        <Tooltip title={record?.cancellationReason || undefined}>
-          <Tag color="error" style={{ fontWeight: 600 }}>
-            Cancelled
-          </Tag>
-        </Tooltip>
-      )
-    }
-    return <Tag>{status}</Tag>
+    return (
+      <BookingStatusBadge
+        status={status}
+        reason={record?.cancellationReason}
+        isNoShow={record?.isNoShow}
+      />
+    )
   }
 
   const columns = [
@@ -261,9 +223,7 @@ export default function BookingManagementPage() {
               <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
                 → Out: {endStr}
               </div>
-              <Tag color="cyan" style={{ fontSize: 11, marginTop: 4 }}>
-                🏨 Boarding Stay
-              </Tag>
+              <ServiceTypeBadge type="Boarding" style={{ marginTop: 4 }} />
             </div>
           );
         }
@@ -275,9 +235,7 @@ export default function BookingManagementPage() {
               <CalendarOutlined style={{ marginRight: 6, color: '#6366f1' }} />
               {apptStr}
             </div>
-            <Tag color="purple" style={{ fontSize: 11, marginTop: 4 }}>
-              ✂️ Grooming Appointment
-            </Tag>
+            <ServiceTypeBadge type="Grooming" style={{ marginTop: 4 }} />
           </div>
         );
       },
@@ -659,11 +617,26 @@ export default function BookingManagementPage() {
               size="middle"
             >
               <Radio.Button value={undefined}>All</Radio.Button>
-              <Radio.Button value={0}>⏳ Pending</Radio.Button>
-              <Radio.Button value={1}>🔵 Confirmed</Radio.Button>
-              <Radio.Button value={2}>✓ Completed</Radio.Button>
-              <Radio.Button value={3}>✕ Cancelled</Radio.Button>
-              <Radio.Button value={4}>🚫 No-Show</Radio.Button>
+              <Radio.Button value={0}>
+                <ClockCircleOutlined style={{ marginRight: 6 }} />
+                Pending
+              </Radio.Button>
+              <Radio.Button value={1}>
+                <CheckCircleOutlined style={{ marginRight: 6 }} />
+                Confirmed
+              </Radio.Button>
+              <Radio.Button value={2}>
+                <CheckOutlined style={{ marginRight: 6 }} />
+                Completed
+              </Radio.Button>
+              <Radio.Button value={3}>
+                <CloseCircleOutlined style={{ marginRight: 6 }} />
+                Cancelled
+              </Radio.Button>
+              <Radio.Button value={4}>
+                <StopOutlined style={{ marginRight: 6 }} />
+                No-Show
+              </Radio.Button>
             </Radio.Group>
 
             {serviceDate && (

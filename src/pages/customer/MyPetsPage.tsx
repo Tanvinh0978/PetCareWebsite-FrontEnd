@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { DogIcon, CatIcon } from '@/components/common/PetIcons'
 import { useNavigate, Link } from 'react-router-dom'
 import { petService } from '@/services/pet.service'
 import { isCat } from '@/types/pet.types'
@@ -107,7 +108,7 @@ const MyPetsPage: React.FC = () => {
         </div>
       ) : pets.length === 0 ? (
         <div className="table-empty-box" style={{ marginTop: '2rem' }}>
-          <span style={{ fontSize: '3rem' }}>🐾</span>
+          <DogIcon size={48} style={{ color: "var(--primary)" }} />
           <h3>No pets yet</h3>
           <p>You haven't added any pets to your account yet.</p>
           <button
@@ -130,7 +131,7 @@ const MyPetsPage: React.FC = () => {
           {pets.map((pet) => {
             const isPetCat = isCat(pet.species)
             const speciesLabel = isPetCat ? 'Cat' : 'Dog'
-            const speciesIcon = isPetCat ? '🐱' : '🐶'
+            const speciesIcon = isPetCat ? <CatIcon size={16} /> : <DogIcon size={16} />
 
             return (
               <div

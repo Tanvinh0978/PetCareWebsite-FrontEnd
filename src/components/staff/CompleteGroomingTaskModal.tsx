@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { DogIcon, CatIcon } from '@/components/common/PetIcons'
 import {
   Modal,
   Form,
@@ -176,7 +177,7 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '1.4rem' }}>{isDog ? '🐶' : '🐱'}</span>
+                {isDog ? <DogIcon size={24} /> : <CatIcon size={24} />}
                 <Text strong style={{ fontSize: 17, color: '#0f172a' }}>
                   {task.petName}
                 </Text>
@@ -266,7 +267,7 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
           {/* Images Section */}
           <div style={{ marginBottom: 20 }}>
             <Text strong style={{ fontSize: 14, color: '#1e293b', display: 'block', marginBottom: 8 }}>
-              📸 Pet Photos (Before & After Service)
+              Pet Photos (Before & After Service)
             </Text>
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12}>
@@ -395,7 +396,7 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
                 height: 40,
               }}
             >
-              ✓ Save & Notify Reception
+              Save & Notify Reception
             </Button>
           </div>
         </Form>

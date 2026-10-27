@@ -1,3 +1,4 @@
+import { DogIcon, CatIcon } from '@/components/common/PetIcons'
 import { useEffect, useState } from 'react'
 import { Link, useParams, useLocation } from 'react-router-dom'
 import { petService } from '@/services/pet.service'
@@ -91,7 +92,7 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
   }
 
   const isPetCat = isCat(pet.species)
-  const speciesIcon = getPetSpeciesIcon(pet.species)
+  const speciesIcon = isPetCat ? <CatIcon size={16} /> : <DogIcon size={16} />
   const speciesLabel = getPetSpeciesLabel(pet.species)
   const customerBase = isStaff ? '/staff/customers' : '/admin/customers'
 
@@ -111,7 +112,7 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
               borderColor: isPetCat ? '#e9d5ff' : '#bae6fd',
             }}
           >
-            {speciesIcon} {speciesLabel} Profile
+            {speciesLabel} Profile
           </span>
           <h1 style={{ marginTop: '0.5rem' }}>{pet.name}</h1>
         </div>
@@ -212,8 +213,8 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>
                   <span style={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a' }}>{ownerInfo.name || 'Customer'}</span>
-                  {ownerInfo.phone && <span style={{ marginLeft: '12px', color: '#64748b', fontSize: '0.9rem' }}>📞 {ownerInfo.phone}</span>}
-                  {ownerInfo.email && <span style={{ marginLeft: '12px', color: '#64748b', fontSize: '0.9rem' }}>✉️ {ownerInfo.email}</span>}
+                  {ownerInfo.phone && <span style={{ marginLeft: '12px', color: '#64748b', fontSize: '0.9rem' }}>Phone: {ownerInfo.phone}</span>}
+                  {ownerInfo.email && <span style={{ marginLeft: '12px', color: '#64748b', fontSize: '0.9rem' }}>Email: {ownerInfo.email}</span>}
                 </div>
                 {ownerInfo.id && !isCustomer && (
                   <Link to={`${customerBase}/${ownerInfo.id}`} className="btn-action view" style={{ textDecoration: 'none' }}>

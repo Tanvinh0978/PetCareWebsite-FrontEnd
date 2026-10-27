@@ -112,7 +112,7 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
       <div className="page-head">
         <div>
           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#785839', background: '#fdf9f3', padding: '0.2rem 0.75rem', borderRadius: '999px', border: '1px solid #e8ded6' }}>
-            🎟️ Promotion Voucher
+            Promotion Voucher
           </span>
           <h1 style={{ marginTop: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.05em' }}>{voucher.code}</h1>
         </div>

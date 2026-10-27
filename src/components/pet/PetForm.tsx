@@ -335,7 +335,7 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
                   checked={!isCat(species)}
                   onChange={() => setSpecies(PetSpecies.Dog)}
                 />
-                🐶 Dog
+                Dog
               </label>
               <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem' }}>
                 <input
@@ -345,7 +345,7 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
                   checked={isCat(species)}
                   onChange={() => setSpecies(PetSpecies.Cat)}
                 />
-                🐱 Cat
+                Cat
               </label>
             </div>
           </div>

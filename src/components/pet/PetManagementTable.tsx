@@ -1,3 +1,4 @@
+import { SpeciesBadge, DogIcon, CatIcon } from '@/components/common/PetIcons'
 import React, { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { petService } from '@/services/pet.service'
@@ -261,14 +262,14 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
             className={species === 'dog' ? 'chip on' : 'chip'}
             onClick={() => { setPage(1); setSpecies('dog') }}
           >
-            🐶 Dogs
+            Dogs
           </button>
           <button
             type="button"
             className={species === 'cat' ? 'chip on' : 'chip'}
             onClick={() => { setPage(1); setSpecies('cat') }}
           >
-            🐱 Cats
+            Cats
           </button>
         </div>
       </div>
@@ -342,7 +343,7 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
                   const rowNumber = (page - 1) * pageSize + idx + 1
                   const isPetCat = isCat(pet.species)
                   const speciesLabel = isPetCat ? 'Cat' : 'Dog'
-                  const speciesIcon = isPetCat ? '🐱' : '🐶'
+                  const speciesIcon = isPetCat ? <CatIcon size={16} /> : <DogIcon size={16} />
 
                   return (
                     <tr

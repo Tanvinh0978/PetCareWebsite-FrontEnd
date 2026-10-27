@@ -49,7 +49,7 @@ export default function RoomTypeCatalog({ detailBase, showSignInHint }: RoomType
         </div>
         {!showSignInHint && (
           <Link to="/customer/booking" className="btn">
-            🏨 Book a Stay
+            Book a Stay
           </Link>
         )}
       </div>
@@ -73,7 +73,7 @@ export default function RoomTypeCatalog({ detailBase, showSignInHint }: RoomType
       {error && <p className="msg error" role="alert">{error}</p>}
       {!loading && !error && shown.length === 0 && (
         <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', margin: '1.5rem 0' }}>
-          <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.75rem' }}>🏨</span>
+          
           <h3>No matching room types found</h3>
           <p style={{ color: '#64748b' }}>Try adjusting your search keyword.</p>
         </div>

@@ -221,7 +221,7 @@ const CustomerPetFormPage: React.FC = () => {
                   checked={!isCat(species)}
                   onChange={() => setSpecies(PetSpecies.Dog)}
                 />
-                🐶 Dog
+                Dog
               </label>
 
               <label
@@ -245,7 +245,7 @@ const CustomerPetFormPage: React.FC = () => {
                   checked={isCat(species)}
                   onChange={() => setSpecies(PetSpecies.Cat)}
                 />
-                🐱 Cat
+                Cat
               </label>
             </div>
           </label>

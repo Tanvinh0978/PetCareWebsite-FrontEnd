@@ -202,7 +202,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
                   </Text>{' '}
                   {receipt.pets.map((p: any, idx: number) => (
                     <Tag key={p.petId || idx} color="blue" style={{ fontSize: 12 }}>
-                      🐾 {p.name} ({p.species === 'Dog' ? 'Chó' : 'Mèo'} - {p.weight} kg)
+                      {p.name} ({p.species === 'Dog' ? 'Dog' : 'Cat'} - {p.weight} kg)
                     </Tag>
                   ))}
                 </div>

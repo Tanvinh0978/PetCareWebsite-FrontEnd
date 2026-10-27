@@ -487,7 +487,7 @@ const MyBookingsPage: React.FC = () => {
               }}
               onClick={() => handleOpenDetail(record.id)}
             >
-              Before & After 📸
+              Before & After Photos
             </Button>
           )}
           {(String(record.status).toLowerCase() === '2' || String(record.status).toLowerCase() === 'completed') && (
@@ -642,8 +642,8 @@ const MyBookingsPage: React.FC = () => {
                 style={{ width: 190 }}
                 options={[
                   { value: 'all', label: 'All Services' },
-                  { value: '0', label: '✂️ Grooming & Spa' },
-                  { value: '1', label: '🏨 Boarding' },
+                  { value: '0', label: 'Grooming & Spa' },
+                  { value: '1', label: 'Boarding' },
                 ]}
               />
             </div>
@@ -950,7 +950,7 @@ const MyBookingsPage: React.FC = () => {
                           <div style={{ marginTop: 8 }}>
                             <Tooltip title="Dịch vụ chỉ có thể đánh giá sau khi hoàn tất thanh toán & bàn giao thú cưng (Check-out hoàn tất).">
                               <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', cursor: 'help' }}>
-                                🔒 Đánh giá sau khi Check-out đơn
+                                Review available after Check-out
                               </Tag>
                             </Tooltip>
                           </div>
@@ -971,7 +971,7 @@ const MyBookingsPage: React.FC = () => {
                                   marginRight: 0,
                                 }}
                               >
-                                ✓ Reviewed
+                                Reviewed
                               </Tag>
                               <Button
                                 type="link"
@@ -1006,7 +1006,7 @@ const MyBookingsPage: React.FC = () => {
                         ) : (
                           <div style={{ marginTop: 8 }}>
                             <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1' }}>
-                              🔒 Available after service is completed
+                              Available after service is completed
                             </Tag>
                           </div>
                         )}
@@ -1080,7 +1080,7 @@ const MyBookingsPage: React.FC = () => {
                                   />
                                   <div style={{ marginTop: 4 }}>
                                     <Tag color="default" style={{ fontSize: 11, fontWeight: 600, borderRadius: 6, margin: 0 }}>
-                                      📷 Trước (Before)
+                                      Before
                                     </Tag>
                                   </div>
                                 </div>
@@ -1101,7 +1101,7 @@ const MyBookingsPage: React.FC = () => {
                                   />
                                   <div style={{ marginTop: 4 }}>
                                     <Tag color="success" style={{ fontSize: 11, fontWeight: 600, borderRadius: 6, margin: 0 }}>
-                                      ✨ Sau (After)
+                                      After
                                     </Tag>
                                   </div>
                                 </div>
@@ -1123,7 +1123,7 @@ const MyBookingsPage: React.FC = () => {
                             }}
                           >
                             <span style={{ fontWeight: 600, color: '#0f766e' }}>
-                              💬 Ghi chú hoàn thành {item.staffName ? `(${item.staffName})` : ''}:
+                              Service completion notes {item.staffName ? `(${item.staffName})` : ''}:
                             </span>{' '}
                             <span>{item.resultNote}</span>
                           </div>
@@ -1209,7 +1209,7 @@ const MyBookingsPage: React.FC = () => {
                   }}
                 >
                   <Tag color="default" style={{ marginBottom: 10, fontSize: 13, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
-                    📷 TRƯỚC KHI LÀM (BEFORE)
+                    BEFORE SERVICE
                   </Tag>
                   <div style={{ overflow: 'hidden', borderRadius: 8 }}>
                     <Image
@@ -1237,7 +1237,7 @@ const MyBookingsPage: React.FC = () => {
                   }}
                 >
                   <Tag color="success" style={{ marginBottom: 10, fontSize: 13, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
-                    ✨ SAU KHI LÀM ĐẸP (AFTER)
+                    AFTER SERVICE
                   </Tag>
                   <div style={{ overflow: 'hidden', borderRadius: 8 }}>
                     <Image
@@ -1267,7 +1267,7 @@ const MyBookingsPage: React.FC = () => {
                 }}
               >
                 <Text strong style={{ fontSize: 13, color: '#0f766e', display: 'block', marginBottom: 4 }}>
-                  💬 Ghi chú hoàn tất dịch vụ từ thợ {beforeAfterItem.staffName ? `(${beforeAfterItem.staffName})` : ''}:
+                  Staff service notes {beforeAfterItem.staffName ? `(${beforeAfterItem.staffName})` : ''}:
                 </Text>
                 <Text style={{ fontSize: 14, color: '#334155' }}>
                   {beforeAfterItem.resultNote}

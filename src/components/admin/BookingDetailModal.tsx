@@ -19,6 +19,9 @@ import {
 } from 'antd'
 import {
   CheckCircleOutlined,
+  CheckCircleFilled,
+  ClockCircleOutlined,
+  SyncOutlined,
   UserOutlined,
   PhoneOutlined,
   ShopOutlined,
@@ -27,6 +30,7 @@ import {
   PrinterOutlined,
   StopOutlined,
   CloseOutlined,
+  CloseCircleOutlined,
   CameraOutlined,
   CalendarOutlined,
 } from '@ant-design/icons'
@@ -39,6 +43,7 @@ import { staffService } from '@/services/staff.service'
 import type { StaffDTO } from '@/types/staff.types'
 import { roomService, type RoomDTO } from '@/services/room.service'
 import { ReceiptModal } from './ReceiptModal'
+import { BookingStatusBadge } from '@/components/common/PetIcons'
 import { useAuthStore } from '@/store/useAuthStore'
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
@@ -326,14 +331,56 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
   const getItemStatusTag = (status: number | string) => {
     const s = String(status).toLowerCase()
-    if (s === '0' || s === 'pending') return <Tag color="warning">Pending</Tag>
-    if (s === '1' || s === 'confirmed') return <Tag color="blue">Confirmed</Tag>
-    if (s === '2' || s === 'checked_in' || s === 'checkedin') return <Tag color="orange">Checked In</Tag>
-    if (s === '3' || s === 'in_progress' || s === 'inprogress') return <Tag color="processing">In Progress</Tag>
-    if (s === '4' || s === 'completed') return <Tag color="success">Completed</Tag>
-    if (s === '5' || s === 'cancelled') return <Tag color="error">Cancelled</Tag>
-    if (s === '6' || s === 'no_show' || s === 'noshow') return <Tag color="purple">No Show</Tag>
-    return <Tag>{status}</Tag>
+    if (s === '0' || s === 'pending') {
+      return (
+        <Tag icon={<ClockCircleOutlined />} style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a', color: '#b45309', fontWeight: 600, borderRadius: 6 }}>
+          Pending
+        </Tag>
+      )
+    }
+    if (s === '1' || s === 'confirmed') {
+      return (
+        <Tag icon={<CheckCircleOutlined />} style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontWeight: 600, borderRadius: 6 }}>
+          Confirmed
+        </Tag>
+      )
+    }
+    if (s === '2' || s === 'checked_in' || s === 'checkedin') {
+      return (
+        <Tag icon={<CheckCircleOutlined />} style={{ backgroundColor: '#fff7ed', borderColor: '#fed7aa', color: '#c2410c', fontWeight: 600, borderRadius: 6 }}>
+          Checked In
+        </Tag>
+      )
+    }
+    if (s === '3' || s === 'in_progress' || s === 'inprogress') {
+      return (
+        <Tag icon={<SyncOutlined spin />} style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', color: '#2563eb', fontWeight: 600, borderRadius: 6 }}>
+          In Progress
+        </Tag>
+      )
+    }
+    if (s === '4' || s === 'completed') {
+      return (
+        <Tag icon={<CheckCircleFilled />} style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', color: '#15803d', fontWeight: 600, borderRadius: 6 }}>
+          Completed
+        </Tag>
+      )
+    }
+    if (s === '5' || s === 'cancelled') {
+      return (
+        <Tag icon={<CloseCircleOutlined />} style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca', color: '#b91c1c', fontWeight: 600, borderRadius: 6 }}>
+          Cancelled
+        </Tag>
+      )
+    }
+    if (s === '6' || s === 'no_show' || s === 'noshow') {
+      return (
+        <Tag icon={<StopOutlined />} style={{ backgroundColor: '#f5f3ff', borderColor: '#ddd6fe', color: '#6d28d9', fontWeight: 600, borderRadius: 6 }}>
+          No-Show
+        </Tag>
+      )
+    }
+    return <Tag style={{ borderRadius: 6 }}>{status}</Tag>
   }
 
   const columns = [
@@ -742,22 +789,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </span>
               </Descriptions.Item>
               <Descriptions.Item label="Booking Status">
-                <Tag
-                  color={
-                    isCompleted
-                      ? 'success'
-                      : isNoShow
-                      ? 'purple'
-                      : isConfirmed
-                      ? 'blue'
-                      : isCancelled
-                      ? 'error'
-                      : 'warning'
-                  }
-                  style={{ fontWeight: 600 }}
-                >
-                  {isCompleted ? 'Completed' : isNoShow ? 'No-Show' : isConfirmed ? 'Confirmed' : isCancelled ? 'Cancelled' : 'Pending'}
-                </Tag>
+                <BookingStatusBadge status={detail.status} reason={detail.cancellationReason} isNoShow={isNoShow} />
               </Descriptions.Item>
               {detail.cancellationReason && (
                 <Descriptions.Item label={isNoShow ? 'No-Show Note' : 'Cancellation Reason'}>
@@ -873,7 +905,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                                 height={80}
                                 style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #10b981' }}
                               />
-                              <div style={{ fontSize: 11, color: '#059669', fontWeight: 600, marginTop: 2 }}>After ⭐</div>
+                              <div style={{ fontSize: 11, color: '#059669', fontWeight: 600, marginTop: 2 }}>After Service</div>
                             </div>
                           )}
                         </Image.PreviewGroup>

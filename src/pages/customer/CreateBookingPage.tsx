@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { DogIcon, CatIcon } from '@/components/common/PetIcons'
 import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space, Alert } from 'antd';
 import { CalendarOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -705,7 +706,7 @@ const CreateBookingPage: React.FC = () => {
                 key: petId,
                 label: (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                    <span>{isCat ? '🐱' : '🐶'}</span>
+                    {isCat ? <CatIcon size={18} /> : <DogIcon size={18} />}
                     <span style={{ fontWeight: 600 }}>{pet.name}</span>
                     <span style={{ fontSize: '11px', color: 'var(--slate-500)' }}>({pet.weight}kg)</span>
                     {isPetConfigured ? (
@@ -1477,7 +1478,7 @@ const CreateBookingPage: React.FC = () => {
           <LeftOutlined style={{ fontSize: '11px' }} /> Switch between Spa / Hotel
         </button>
         <div className="customer-role-badge">
-          {bookingType === 'Grooming' ? '✂️ Botanical Grooming & Spa' : '🏨 Sanctuary Hotel Suites'}
+          {bookingType === 'Grooming' ? 'Botanical Grooming & Spa' : 'Sanctuary Hotel Suites'}
         </div>
       </div>
 

@@ -183,8 +183,8 @@ const PetFormPage: React.FC = () => {
               <label style={labelStyle}>
                 <span>Species <span style={{ color: '#e11d48' }}>*</span></span>
                 <select value={species} onChange={(e) => setSpecies(e.target.value)} style={inputStyle}>
-                  <option value="Dog">🐶 Dog</option>
-                  <option value="Cat">🐱 Cat</option>
+                  <option value="Dog">Dog</option>
+                  <option value="Cat">Cat</option>
                 </select>
               </label>
             </div>

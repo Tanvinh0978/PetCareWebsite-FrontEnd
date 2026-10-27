@@ -19,6 +19,8 @@ import {
   CheckCircleFilled,
   CreditCardOutlined,
   DollarCircleOutlined,
+  InfoCircleOutlined,
+  CheckCircleOutlined,
   BankOutlined,
   UserOutlined,
   PhoneOutlined,
@@ -128,8 +130,8 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               </Tag>
             )}
             {record.resultNote && (
-              <Tag color="orange" style={{ fontSize: 11, margin: 0 }}>
-                ⚠️ {record.resultNote}
+              <Tag color="orange" icon={<InfoCircleOutlined />} style={{ fontSize: 11, margin: 0, borderRadius: 4 }}>
+                {record.resultNote}
               </Tag>
             )}
           </div>
@@ -370,7 +372,7 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
                 }}
               >
                 <div style={{ fontWeight: 600, color: '#92400e', marginBottom: 10, fontSize: 14 }}>
-                  💵 Payment Collection Options
+                  <DollarCircleOutlined style={{ marginRight: 6 }} />Payment Collection Options
                 </div>
 
                 <div style={{ marginBottom: 12 }}>
@@ -457,7 +459,7 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               >
                 {isFullyPaid
                   ? 'Check-out'
-                  : `✓ Collect ${vnd.format(summary.remainingAmount)} & Check-out`}
+                  : `Collect ${vnd.format(summary.remainingAmount)} & Check-out`}
               </Button>
             </div>
           </div>

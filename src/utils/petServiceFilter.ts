@@ -74,12 +74,12 @@ export function getRoomTierInfo(roomTypeName?: string, serviceName?: string): Ro
     return {
       tier: 'VIP',
       label: 'VIP Suite / Villa',
-      badgeText: '👑 VIP Villa',
+      badgeText: 'VIP Villa',
       badgeColor: '#b45309',
       badgeBg: '#fef3c7',
       badgeBorder: '#fde68a',
       accentColor: '#d97706',
-      icon: '👑',
+      icon: 'VIP',
       features: ['24/7 Webcam Live', 'Air Conditioning', 'Private Play Area', 'Daily Wellness Check']
     };
   }
@@ -88,12 +88,12 @@ export function getRoomTierInfo(roomTypeName?: string, serviceName?: string): Ro
     return {
       tier: 'Suite',
       label: 'Deluxe Suite',
-      badgeText: '✨ Deluxe Suite',
+      badgeText: 'Deluxe Suite',
       badgeColor: '#6d28d9',
       badgeBg: '#f3e8ff',
       badgeBorder: '#e9d5ff',
       accentColor: '#8b5cf6',
-      icon: '✨',
+      icon: 'Suite',
       features: ['Extra Spacious', 'Soft Plush Bedding', 'Scheduled Playtime', 'Climate Controlled']
     };
   }
@@ -101,12 +101,12 @@ export function getRoomTierInfo(roomTypeName?: string, serviceName?: string): Ro
   return {
     tier: 'Standard',
     label: 'Standard Cozy',
-    badgeText: '🌿 Standard Room',
+    badgeText: 'Standard Room',
     badgeColor: '#0369a1',
     badgeBg: '#e0f2fe',
     badgeBorder: '#bae6fd',
     accentColor: '#0284c7',
-    icon: '🌿',
+    icon: 'Standard',
     features: ['Comfortable Cabin', 'Fresh Water & Meal', 'Daily Sanitization', 'Caring Supervision']
   };
 }

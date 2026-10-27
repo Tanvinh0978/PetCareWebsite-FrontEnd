@@ -52,7 +52,7 @@ export default function RoomTypeDetail({ backTo, guest }: RoomTypeDetailProps) {
       <div className="page-head">
         <div>
           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#b45309', background: '#fef3c7', padding: '0.2rem 0.75rem', borderRadius: '999px', border: '1px solid #fde68a' }}>
-            🏨 Pet Hotel Suite
+            Pet Hotel Suite
           </span>
           <h1 style={{ marginTop: '0.5rem' }}>{roomType.name}</h1>
         </div>
