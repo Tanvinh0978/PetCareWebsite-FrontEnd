@@ -469,9 +469,9 @@ const MyBookingsPage: React.FC = () => {
             icon={<EyeOutlined />}
             onClick={() => handleOpenDetail(record.id)}
             style={{
-              backgroundColor: '#f8fafc',
-              borderColor: '#e2e8f0',
-              color: '#334155',
+              backgroundColor: 'var(--paper, #fdf9f3)',
+              borderColor: '#e8ded6',
+              color: '#3d2d23',
               fontWeight: 600,
               borderRadius: 8,
               fontSize: 12,
@@ -578,7 +578,7 @@ const MyBookingsPage: React.FC = () => {
     <div
       style={{
         minHeight: 'calc(100vh - 120px)',
-        backgroundColor: '#f8fafc',
+        backgroundColor: 'var(--paper)',
         padding: '32px 16px 64px',
       }}
     >
@@ -620,8 +620,9 @@ const MyBookingsPage: React.FC = () => {
       <Card
         style={{
           borderRadius: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-          border: '1px solid #e2e8f0',
+          boxShadow: 'var(--shadow-xs)',
+          border: '1px solid #e8ded6',
+          backgroundColor: 'var(--paper-card, #ffffff)',
           marginBottom: 20,
         }}
         bodyStyle={{ padding: '16px 20px' }}
@@ -764,8 +765,10 @@ const MyBookingsPage: React.FC = () => {
       <Card
         style={{
           borderRadius: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-          border: '1px solid #e2e8f0',
+          boxShadow: 'var(--shadow-xs)',
+          border: '1px solid #e8ded6',
+          backgroundColor: 'var(--paper-card, #ffffff)',
+          overflow: 'hidden',
         }}
         bodyStyle={{ padding: 0 }}
       >
@@ -916,8 +919,8 @@ const MyBookingsPage: React.FC = () => {
                     size="small"
                     style={{
                       borderRadius: 8,
-                      border: '1px solid #e2e8f0',
-                      background: '#f8fafc',
+                      border: '1px solid #e8ded6',
+                      background: 'var(--paper, #fdf9f3)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
@@ -1142,7 +1145,7 @@ const MyBookingsPage: React.FC = () => {
                             style={{
                               marginTop: (item.beforeImageUrl || item.resultImageUrl) ? 10 : 0,
                               padding: '8px 12px',
-                              background: '#f8fafc',
+                              background: 'var(--paper, #fdf9f3)',
                               borderLeft: '3px solid #0d9488',
                               borderRadius: '0 6px 6px 0',
                               fontSize: 13,
@@ -1228,10 +1231,10 @@ const MyBookingsPage: React.FC = () => {
               {beforeAfterItem.beforeImageUrl && (
                 <div
                   style={{
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid #e8ded6',
                     borderRadius: 12,
                     padding: 12,
-                    background: '#f8fafc',
+                    background: 'var(--paper, #fdf9f3)',
                     textAlign: 'center',
                   }}
                 >
@@ -1285,8 +1288,8 @@ const MyBookingsPage: React.FC = () => {
             {beforeAfterItem.resultNote && (
               <div
                 style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
+                  background: 'var(--paper, #fdf9f3)',
+                  border: '1px solid #e8ded6',
                   borderLeft: '4px solid #0d9488',
                   borderRadius: 8,
                   padding: '14px 16px',
@@ -1418,8 +1421,8 @@ const MyBookingsPage: React.FC = () => {
           <div style={{ padding: '8px 0' }}>
             <div
               style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
+                background: 'var(--paper, #fdf9f3)',
+                border: '1px solid #e8ded6',
                 borderRadius: 12,
                 padding: '12px 16px',
                 marginBottom: 16,
@@ -1489,8 +1492,8 @@ const MyBookingsPage: React.FC = () => {
               </Text>
               <div
                 style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
+                  background: 'var(--paper, #fdf9f3)',
+                  border: '1px solid #e8ded6',
                   borderRadius: 8,
                   padding: '14px 16px',
                   color: '#1e293b',

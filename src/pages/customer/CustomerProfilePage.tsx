@@ -150,19 +150,17 @@ const CustomerProfilePage: React.FC = () => {
     }
   };
 
-  const pawBg = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23244c3c' fill-opacity='0.05' d='M12,2C10.5,2 9,3 9,4.5C9,5 9,6.5 12,9C15,6.5 15,5 15,4.5C15,3 13.5,2 12,2M6,6C4.5,6 3,7 3,8.5C3,9 3,10.5 6,13C9,10.5 9,9 9,8.5C9,7 7.5,6 6,6M18,6C16.5,6 15,7 15,8.5C15,9 15,10.5 18,13C21,10.5 21,9 21,8.5C21,7 19.5,6 18,6M12,11.5C9,11.5 5,14.5 5,19C5,21.5 8.5,22 12,22C15.5,22 19,21.5 19,19C19,14.5 15,11.5 12,11.5Z'/%3E%3C/svg%3E")`;
-
   return (
     <div
       style={{
         minHeight: 'calc(100vh - 120px)',
-        backgroundColor: '#f8fafc',
+        backgroundColor: 'var(--paper)',
         padding: '36px 16px 64px',
       }}
     >
       <div style={{ maxWidth: 850, margin: '0 auto' }}>
         <div style={{ marginBottom: 28, textAlign: 'center' }}>
-          <Title level={2} style={{ margin: 0, color: '#0f172a' }}>
+          <Title level={2} style={{ margin: 0, color: 'var(--slate-900, #0f172a)' }}>
             Account Settings
           </Title>
           <Text type="secondary" style={{ fontSize: 15 }}>
@@ -173,13 +171,11 @@ const CustomerProfilePage: React.FC = () => {
         <Card
           style={{
             borderRadius: 16,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-            border: '1px solid #e2e8f0',
-            backgroundColor: '#ffffff',
-            backgroundImage: pawBg,
-            backgroundSize: '48px 48px',
+            boxShadow: 'var(--shadow-md)',
+            border: '1px solid #e8ded6',
+            backgroundColor: 'var(--paper-card, #ffffff)',
           }}
-          bodyStyle={{ padding: '28px 36px', background: 'transparent' }}
+          bodyStyle={{ padding: '28px 36px' }}
         >
         <Tabs
           activeKey={activeTab}
@@ -288,7 +284,7 @@ const CustomerProfilePage: React.FC = () => {
                                 prefix={<MailOutlined style={{ color: '#94a3b8' }} />}
                                 disabled
                                 size="large"
-                                style={{ borderRadius: 8, backgroundColor: '#f1f5f9' }}
+                                style={{ borderRadius: 8, backgroundColor: 'var(--paper, #fdf9f3)' }}
                                 suffix={<SafetyCertificateOutlined style={{ color: '#c69f7b' }} />}
                               />
                             </Form.Item>
