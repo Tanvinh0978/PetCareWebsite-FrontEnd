@@ -463,80 +463,107 @@ const MyBookingsPage: React.FC = () => {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: BookingListItem) => (
-        <Space size="small">
+        <Space size={8} wrap={false} align="center">
           <Button
-            type="primary"
             size="small"
             icon={<EyeOutlined />}
-            style={{ backgroundColor: '#3d2d23', borderRadius: 6 }}
             onClick={() => handleOpenDetail(record.id)}
+            style={{
+              backgroundColor: '#f8fafc',
+              borderColor: '#e2e8f0',
+              color: '#334155',
+              fontWeight: 600,
+              borderRadius: 8,
+              fontSize: 12,
+              height: 32,
+              padding: '0 12px',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}
           >
-            Details
+            View
           </Button>
-          {record.hasPhotos && (
-            <Button
-              type="default"
-              size="small"
-              icon={<CameraOutlined style={{ color: '#0d9488' }} />}
-              style={{
-                borderColor: '#14b8a6',
-                color: '#0f766e',
-                borderRadius: 6,
-                fontWeight: 600,
-                backgroundColor: '#f0fdfa',
-              }}
-              onClick={() => handleOpenDetail(record.id)}
-            >
-              Before & After Photos
-            </Button>
-          )}
-          {(String(record.status).toLowerCase() === '2' || String(record.status).toLowerCase() === 'completed') && (
-            <Button
-              type="default"
-              size="small"
-              icon={<StarFilled style={{ color: '#f59e0b' }} />}
-              style={{
-                borderColor: '#f59e0b',
-                color: '#b45309',
-                borderRadius: 6,
-                fontWeight: 600,
-                backgroundColor: '#fffbeb',
-              }}
-              onClick={() => handleOpenDetail(record.id)}
-            >
-              Review
-            </Button>
-          )}
+
           {isPending(record.status) && isVnpayBooking(record) && (
-            <Space direction="vertical" size={4}>
+            <Tooltip title={vnpayWarning}>
               <Button
                 type="default"
                 size="small"
                 icon={<CreditCardOutlined style={{ color: '#ca8a04' }} />}
                 loading={payingBookingId === record.id}
                 style={{
-                  borderColor: '#f59e0b',
-                  color: '#b45309',
                   backgroundColor: '#fffbeb',
-                  borderRadius: 6,
+                  borderColor: '#fde68a',
+                  color: '#b45309',
                   fontWeight: 600,
+                  borderRadius: 8,
+                  fontSize: 12,
+                  height: 32,
+                  padding: '0 12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
                 }}
                 onClick={() => handlePayVnpay(record.id)}
               >
-                Pay Again
+                Pay Now
               </Button>
-              <Text type="warning" style={{ maxWidth: 220, fontSize: 11, lineHeight: 1.3 }}>{vnpayWarning}</Text>
-            </Space>
+            </Tooltip>
           )}
+
           {isPending(record.status) && isCounterPaymentBooking(record) && (
-            <Tag color="blue">Pay at counter</Tag>
+            <Tag
+              color="blue"
+              style={{
+                borderRadius: 6,
+                fontWeight: 500,
+                margin: 0,
+                padding: '2px 8px',
+                fontSize: 11,
+              }}
+            >
+              Pay at counter
+            </Tag>
           )}
+
+          {(String(record.status).toLowerCase() === '2' || String(record.status).toLowerCase() === 'completed') && (
+            <Button
+              size="small"
+              icon={<StarFilled style={{ color: '#f59e0b' }} />}
+              style={{
+                backgroundColor: '#fffbeb',
+                borderColor: '#fde68a',
+                color: '#b45309',
+                fontWeight: 600,
+                borderRadius: 8,
+                fontSize: 12,
+                height: 32,
+                padding: '0 12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
+              onClick={() => handleOpenDetail(record.id)}
+            >
+              Review
+            </Button>
+          )}
+
           {isCancellable(record.status) && (
             <Button
-              danger
               size="small"
+              danger
               icon={<CloseCircleOutlined />}
-              style={{ borderRadius: 6 }}
+              style={{
+                backgroundColor: '#fff1f2',
+                borderColor: '#fecdd3',
+                color: '#e11d48',
+                fontWeight: 600,
+                borderRadius: 8,
+                fontSize: 12,
+                height: 32,
+                padding: '0 12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
               onClick={() => handleOpenCancel(record.id)}
             >
               Cancel
@@ -1037,7 +1064,7 @@ const MyBookingsPage: React.FC = () => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <CameraOutlined style={{ color: '#0d9488', fontSize: 16 }} />
                             <Text strong style={{ fontSize: 13, color: '#0f766e' }}>
-                              Hình ảnh & Kết quả chăm sóc (Before & After)
+                              Care Results & Photos (Before & After)
                             </Text>
                           </div>
                           {(item.beforeImageUrl || item.resultImageUrl) && (
@@ -1048,7 +1075,7 @@ const MyBookingsPage: React.FC = () => {
                               style={{ color: '#0284c7', padding: 0, fontSize: 12, fontWeight: 600 }}
                               onClick={() => setBeforeAfterItem(item)}
                             >
-                              Xem so sánh chi tiết
+                              View comparison detail
                             </Button>
                           )}
                         </div>

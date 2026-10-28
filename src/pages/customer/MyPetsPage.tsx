@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { DogIcon, CatIcon } from '@/components/common/PetIcons'
+import { EyeOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { useNavigate, Link } from 'react-router-dom'
 import { petService } from '@/services/pet.service'
 import { isCat } from '@/types/pet.types'
@@ -170,7 +171,9 @@ const MyPetsPage: React.FC = () => {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (
-                    <span style={{ fontSize: '4rem' }}>{speciesIcon}</span>
+                    <div style={{ color: isPetCat ? '#7e22ce' : '#0369a1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isPetCat ? <CatIcon size={56} /> : <DogIcon size={56} />}
+                    </div>
                   )}
                   <span
                     style={{
@@ -212,7 +215,7 @@ const MyPetsPage: React.FC = () => {
                 {/* Card Actions */}
                 <div
                   style={{
-                    padding: '10px 16px',
+                    padding: '10px 14px',
                     borderTop: '1px solid #f1f5f9',
                     display: 'flex',
                     gap: 8,
@@ -221,26 +224,45 @@ const MyPetsPage: React.FC = () => {
                   <Link
                     to={`/customer/pets/${pet.id}`}
                     className="btn-action view"
-                    style={{ flex: 1, justifyContent: 'center' }}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
                     title="View Details"
                   >
-                    View
+                    <EyeOutlined /> View
                   </Link>
                   <Link
                     to={`/customer/pets/${pet.id}/edit`}
                     className="btn-action edit"
-                    style={{ flex: 1, justifyContent: 'center' }}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
                     title="Edit"
                   >
-                    Edit
+                    <EditOutlined /> Edit
                   </Link>
                   <button
                     type="button"
                     className="btn-action danger"
                     onClick={() => handleDelete(pet)}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
                     title="Delete"
                   >
-                    🗑
+                    <DeleteOutlined /> Delete
                   </button>
                 </div>
               </div>
@@ -253,7 +275,9 @@ const MyPetsPage: React.FC = () => {
       {petToDelete && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">
-            <div className="confirm-icon danger">🗑</div>
+            <div className="confirm-icon danger" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <DeleteOutlined style={{ fontSize: '28px', color: '#e11d48' }} />
+            </div>
             <h3>Remove Pet?</h3>
             <p>
               Are you sure you want to remove{' '}

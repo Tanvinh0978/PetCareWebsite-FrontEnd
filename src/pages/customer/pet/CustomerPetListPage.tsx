@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { DogIcon, CatIcon, PawIcon } from '@/components/common/PetIcons'
 import { Link, useNavigate } from 'react-router-dom'
+import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { App, Modal } from 'antd'
 import { petService } from '@/services/pet.service'
 import type { PetDTO } from '@/types/pet.types'
@@ -295,25 +296,25 @@ const CustomerPetListPage: React.FC = () => {
                   <Link
                     to={`/customer/pets/${pet.id}`}
                     className="btn-action view"
-                    style={{ flex: 1, justifyContent: 'center' }}
+                    style={{ flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                   >
-                    Details
+                    <EyeOutlined /> View
                   </Link>
                   <Link
                     to={`/customer/pets/${pet.id}/edit`}
                     className="btn-action edit"
-                    style={{ flex: 1, justifyContent: 'center' }}
+                    style={{ flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                   >
-                    Edit
+                    <EditOutlined /> Edit
                   </Link>
                   <button
                     type="button"
                     className="btn-action danger"
-                    style={{ justifyContent: 'center', padding: '0.4rem 0.75rem' }}
+                    style={{ flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                     onClick={() => setPetToDelete(pet)}
-                    title="Remove pet"
+                    title="Delete pet"
                   >
-                    Delete
+                    <DeleteOutlined /> Delete
                   </button>
                 </div>
               </div>
