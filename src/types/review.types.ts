@@ -8,6 +8,7 @@ export interface ReviewListItem {
   rating: number
   comment?: string | null
   createdAt: string
+  updatedAt?: string | null
 }
 
 export interface ReviewDetail {

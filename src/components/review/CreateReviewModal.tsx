@@ -34,11 +34,11 @@ interface CreateReviewModalProps {
 }
 
 const ratingDescriptions: Record<number, { text: string; color: string; desc: string }> = {
-  1: { text: 'Very Poor', color: '#ef4444', desc: 'Service did not meet expectations' },
-  2: { text: 'Dissatisfied', color: '#f97316', desc: 'Needs improvement in several areas' },
-  3: { text: 'Average', color: '#eab308', desc: 'Service was acceptable, as promised' },
-  4: { text: 'Satisfied', color: '#06b6d4', desc: 'Pet was well cared for and happy' },
-  5: { text: 'Excellent!', color: '#10b981', desc: 'Outstanding quality, exceeded expectations!' },
+  1: { text: 'Very Poor', color: '#dc2626', desc: 'Service did not meet expectations' },
+  2: { text: 'Dissatisfied', color: '#ea580c', desc: 'Needs improvement in several areas' },
+  3: { text: 'Average', color: '#d97706', desc: 'Service was acceptable, as promised' },
+  4: { text: 'Satisfied', color: '#b45309', desc: 'Pet was well cared for and happy' },
+  5: { text: 'Excellent!', color: '#785839', desc: 'Outstanding quality, exceeded expectations!' },
 }
 
 const quickTags = [
@@ -179,11 +179,12 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
               width: 36,
               height: 36,
               borderRadius: '50%',
-              background: '#fef3c7',
+              background: '#fdf6ee',
+              border: '1px solid #ebd9c8',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#d97706',
+              color: '#c69f7b',
             }}
           >
             <StarFilled style={{ fontSize: 20 }} />
@@ -203,8 +204,8 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
         {/* Service & Pet Info Box */}
         <div
           style={{
-            background: '#f8fafc',
-            border: '1px solid #e2e8f0',
+            background: 'var(--paper, #fdf9f3)',
+            border: '1px solid #e8ded6',
             borderRadius: 12,
             padding: '12px 16px',
             marginBottom: 20,
@@ -223,7 +224,7 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
             {petName && (
               <div style={{ marginTop: 2 }}>
                 <Text type="secondary" style={{ fontSize: 13 }}>
-                  Pet: <strong style={{ color: '#059669' }}>{petName}</strong>
+                  Pet: <strong style={{ color: '#3d2d23' }}>{petName}</strong>
                 </Text>
               </div>
             )}
@@ -255,9 +256,9 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
             style={{
               textAlign: 'center',
               padding: '16px 0',
-              background: '#fffbeb',
-              borderRadius: 12,
-              border: '1px solid #fef3c7',
+              background: '#faf6f0',
+              borderRadius: 14,
+              border: '1px solid #ebd9c8',
               marginBottom: 20,
             }}
           >
@@ -266,7 +267,7 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
             </Text>
             <Form.Item name="rating" noStyle rules={[{ required: true, message: 'Please select a rating!' }]}>
               <Rate
-                style={{ fontSize: 36, color: '#f59e0b' }}
+                style={{ fontSize: 34, color: '#c69f7b' }}
                 value={ratingValue}
                 onChange={(val) => setRatingValue(val)}
               />
@@ -304,9 +305,11 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
                     cursor: 'pointer',
                     borderRadius: 12,
                     padding: '3px 10px',
-                    backgroundColor: '#f1f5f9',
-                    border: '1px solid #cbd5e1',
+                    backgroundColor: 'var(--paper, #fdf9f3)',
+                    border: '1px solid #e8ded6',
+                    color: '#785839',
                     fontSize: 12,
+                    fontWeight: 500,
                   }}
                   onClick={() => handleTagClick(tag)}
                 >
@@ -341,13 +344,16 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
               type="primary"
               htmlType="submit"
               loading={submitting}
-              icon={<HeartFilled />}
+              icon={<StarFilled style={{ color: '#c69f7b' }} />}
               style={{
                 borderRadius: 8,
-                backgroundColor: '#059669',
-                borderColor: '#059669',
+                backgroundColor: '#3d2d23',
+                borderColor: '#3d2d23',
+                color: '#ffffff',
                 fontWeight: 600,
                 padding: '0 24px',
+                height: 38,
+                boxShadow: '0 2px 8px rgba(61,45,35,0.2)',
               }}
             >
               {isEditing ? 'Update Review' : 'Submit Review'}

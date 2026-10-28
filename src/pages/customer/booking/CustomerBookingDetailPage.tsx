@@ -8,6 +8,7 @@ import {
   Spin,
   Alert,
   Modal,
+  Popconfirm,
   Input,
   message,
   Image,
@@ -26,6 +27,8 @@ import {
   CameraOutlined,
   StarFilled,
   EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
   UserOutlined,
   HomeOutlined,
   ScissorOutlined,
@@ -133,12 +136,23 @@ export default function CustomerBookingDetailPage() {
   });
 
   const [viewingReview, setViewingReview] = useState<{
+    id?: string;
+    bookingItemId: string;
     serviceName: string;
     petName: string;
     rating: number;
     comment: string;
     createdAt?: string;
+    updatedAt?: string | null;
   } | null>(null);
+
+  const [editingInitialReview, setEditingInitialReview] = useState<{
+    id: string;
+    rating: number;
+    comment?: string | null;
+  } | undefined>(undefined);
+
+  const [deletingReview, setDeletingReview] = useState(false);
 
   // Boarding Care History Modal
   const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
@@ -283,7 +297,7 @@ export default function CustomerBookingDetailPage() {
     }
     setReviewModalOpen(false);
     setReviewingItem(null);
-    message.success('Thank you! Your review has been submitted.');
+    message.success('Thank you! Your review has been saved.');
   };
 
   const handleViewReview = async (item: BookingDetailItem) => {
@@ -295,11 +309,14 @@ export default function CustomerBookingDetailPage() {
             const detailRes = await reviewService.getById(rItem.id);
             if (detailRes?.isSuccess && detailRes.result?.bookingItemId === item.id) {
               setViewingReview({
+                id: detailRes.result.id,
+                bookingItemId: item.id,
                 serviceName: item.serviceName,
                 petName: item.petName,
                 rating: detailRes.result.rating,
                 comment: detailRes.result.comment || '(No written comment provided)',
                 createdAt: detailRes.result.createdAt,
+                updatedAt: (detailRes.result as any).updatedAt || null,
               });
               return;
             }
@@ -309,12 +326,57 @@ export default function CustomerBookingDetailPage() {
     } catch {}
 
     setViewingReview({
+      bookingItemId: item.id,
       serviceName: item.serviceName,
       petName: item.petName,
       rating: 5,
       comment: 'Service has been completed and verified.',
       createdAt: dayjs().toISOString(),
     });
+  };
+
+  const handleStartEditReview = () => {
+    if (!viewingReview) return;
+    if (viewingReview.id) {
+      setEditingInitialReview({
+        id: viewingReview.id,
+        rating: viewingReview.rating,
+        comment: viewingReview.comment === '(No written comment provided)' ? '' : viewingReview.comment,
+      });
+    } else {
+      setEditingInitialReview(undefined);
+    }
+    setReviewingItem({
+      id: viewingReview.bookingItemId,
+      serviceName: viewingReview.serviceName,
+      petName: viewingReview.petName,
+    });
+    setViewingReview(null);
+    setReviewModalOpen(true);
+  };
+
+  const handleDeleteReview = async (reviewId?: string, bookingItemId?: string) => {
+    if (!reviewId) return;
+    try {
+      setDeletingReview(true);
+      message.loading({ content: 'Deleting review...', key: 'del-rev' });
+      await reviewService.delete(reviewId);
+      message.success({ content: 'Review deleted successfully', key: 'del-rev' });
+
+      if (bookingItemId) {
+        const updated = new Set(reviewedItemIds);
+        updated.delete(bookingItemId);
+        setReviewedItemIds(updated);
+        try {
+          localStorage.setItem('petcare_reviewed_items', JSON.stringify([...updated]));
+        } catch {}
+      }
+      setViewingReview(null);
+    } catch (err: any) {
+      message.error({ content: getApiErrorMessage(err, 'Failed to delete review'), key: 'del-rev' });
+    } finally {
+      setDeletingReview(false);
+    }
   };
 
   if (loading) {
@@ -813,49 +875,48 @@ export default function CustomerBookingDetailPage() {
                               </Tooltip>
                             ) : itemStatus.label === 'Completed' ? (
                               ((item as any).isReviewed || reviewedItemIds.has(item.id)) ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                  <Tag
-                                    color="success"
-                                    icon={<CheckCircleFilled style={{ color: '#785839' }} />}
-                                    style={{
-                                      borderRadius: 6,
-                                      padding: '3px 8px',
-                                      fontWeight: 600,
-                                      background: '#fdf6ee',
-                                      borderColor: '#e8ded6',
-                                      color: '#785839',
-                                      fontSize: 12,
-                                      marginRight: 0,
-                                    }}
-                                  >
-                                    Reviewed
-                                  </Tag>
-                                  <Button
-                                    type="link"
-                                    size="small"
-                                    icon={<EyeOutlined />}
-                                    style={{ color: '#0ea5e9', padding: '0 4px', fontWeight: 600, fontSize: 12 }}
-                                    onClick={() => handleViewReview(item)}
-                                  >
-                                    View Review
-                                  </Button>
-                                </div>
+                                <Button
+                                  size="small"
+                                  icon={<EyeOutlined style={{ color: '#785839', fontSize: 13 }} />}
+                                  style={{
+                                    backgroundColor: 'var(--paper, #fdf9f3)',
+                                    borderColor: '#e8ded6',
+                                    color: '#3d2d23',
+                                    fontWeight: 600,
+                                    borderRadius: 8,
+                                    fontSize: 12.5,
+                                    padding: '0 14px',
+                                    height: 32,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    boxShadow: '0 1px 3px rgba(61,45,35,0.04)',
+                                  }}
+                                  onClick={() => handleViewReview(item)}
+                                >
+                                  View Review
+                                </Button>
                               ) : (
                                 <Button
-                                  type="primary"
                                   size="small"
-                                  icon={<StarFilled style={{ color: '#fff' }} />}
+                                  icon={<StarFilled style={{ color: '#c69f7b', fontSize: 13 }} />}
                                   style={{
-                                    backgroundColor: '#f59e0b',
-                                    borderColor: '#f59e0b',
-                                    color: '#fff',
-                                    borderRadius: 6,
+                                    backgroundColor: '#fffbf5',
+                                    borderColor: '#e8ded6',
+                                    color: '#785839',
+                                    borderRadius: 8,
                                     fontWeight: 600,
-                                    boxShadow: '0 2px 6px rgba(245, 158, 11, 0.25)',
+                                    fontSize: 12.5,
+                                    padding: '0 14px',
+                                    height: 32,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    boxShadow: '0 1px 3px rgba(61,45,35,0.06)',
                                   }}
                                   onClick={() => handleOpenReview(item)}
                                 >
-                                  ⭐ Review Service
+                                  Review Service
                                 </Button>
                               )
                             ) : (
@@ -991,60 +1052,153 @@ export default function CustomerBookingDetailPage() {
         </div>
       )}
 
-      {/* Review Service Modal */}
+      {/* Review Service Modal (Supports Create & Edit) */}
       {reviewingItem && (
         <CreateReviewModal
           open={reviewModalOpen}
           onClose={() => {
             setReviewModalOpen(false);
             setReviewingItem(null);
+            setEditingInitialReview(undefined);
           }}
-          onSuccess={handleReviewSuccess}
+          onSuccess={() => {
+            handleReviewSuccess();
+            setEditingInitialReview(undefined);
+          }}
           bookingItemId={reviewingItem.id}
           serviceName={reviewingItem.serviceName}
           petName={reviewingItem.petName}
+          initialReview={editingInitialReview}
         />
       )}
 
-      {/* View Submitted Review Modal */}
+      {/* View Submitted Review Modal (with Edit & Delete, Enforcing 1-Time Edit Limit) */}
       <Modal
         open={Boolean(viewingReview)}
         onCancel={() => setViewingReview(null)}
         footer={[
-          <Button key="close" type="primary" onClick={() => setViewingReview(null)} style={{ borderRadius: 8 }}>
+          viewingReview?.id ? (
+            <Popconfirm
+              key="delete"
+              title="Delete this review?"
+              description="Are you sure you want to remove your review? You can submit a new review anytime."
+              onConfirm={() => handleDeleteReview(viewingReview.id, viewingReview.bookingItemId)}
+              okText="Delete"
+              cancelText="Cancel"
+              okButtonProps={{ danger: true, loading: deletingReview }}
+            >
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                loading={deletingReview}
+                style={{ borderRadius: 8 }}
+              >
+                Delete Review
+              </Button>
+            </Popconfirm>
+          ) : null,
+          Boolean(viewingReview?.updatedAt) ? (
+            <Tooltip
+              key="edit-disabled"
+              title="You have already edited this review once (maximum 1 edit allowed). To change your feedback, you can delete this review and submit a fresh one."
+            >
+              <Button
+                disabled
+                icon={<EditOutlined />}
+                style={{
+                  borderRadius: 8,
+                  color: '#94a3b8',
+                  backgroundColor: '#f1f5f9',
+                  borderColor: '#e2e8f0',
+                  fontWeight: 600,
+                  cursor: 'not-allowed',
+                }}
+              >
+                Edit Used (1/1)
+              </Button>
+            </Tooltip>
+          ) : (
+            <Tooltip key="edit-active" title="You are allowed to edit your review once">
+              <Button
+                icon={<EditOutlined style={{ color: '#785839' }} />}
+                onClick={handleStartEditReview}
+                style={{
+                  borderRadius: 8,
+                  backgroundColor: '#fffbf5',
+                  borderColor: '#e8ded6',
+                  color: '#785839',
+                  fontWeight: 600,
+                }}
+              >
+                Edit Review
+              </Button>
+            </Tooltip>
+          ),
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setViewingReview(null)}
+            style={{ borderRadius: 8, backgroundColor: '#3d2d23', borderColor: '#3d2d23' }}
+          >
             Close
           </Button>,
         ]}
-        width={480}
+        width={520}
         centered
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <StarFilled style={{ color: '#f59e0b', fontSize: 18 }} />
-            <span>Customer Review</span>
+            <StarFilled style={{ color: '#c69f7b', fontSize: 18 }} />
+            <span style={{ fontWeight: 700, color: '#3d2d23' }}>Customer Review</span>
           </div>
         }
       >
         {viewingReview && (
           <div style={{ padding: '12px 0' }}>
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>{viewingReview.serviceName}</div>
-              <div style={{ fontSize: 13, color: '#64748b' }}>Companion: {viewingReview.petName}</div>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a' }}>{viewingReview.serviceName}</div>
+              <div style={{ fontSize: 13, color: '#785839', marginTop: 2 }}>
+                Companion: <strong>{viewingReview.petName}</strong>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <span style={{ fontSize: 20, color: '#f59e0b' }}>{'★'.repeat(viewingReview.rating)}{'☆'.repeat(5 - viewingReview.rating)}</span>
-              <Tag color="gold" style={{ fontWeight: 700 }}>{viewingReview.rating} / 5 Stars</Tag>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 20, color: '#c69f7b' }}>{'★'.repeat(viewingReview.rating)}{'☆'.repeat(5 - viewingReview.rating)}</span>
+                <Tag style={{ fontWeight: 700, borderRadius: 6, background: '#fdf6ee', borderColor: '#ebd9c8', color: '#785839' }}>
+                  {viewingReview.rating} / 5 Stars
+                </Tag>
+              </div>
+
+              {viewingReview.updatedAt ? (
+                <Tag color="orange" style={{ borderRadius: 6, fontWeight: 600, margin: 0 }}>
+                  Edited (1/1)
+                </Tag>
+              ) : (
+                <Tag color="blue" style={{ borderRadius: 6, fontWeight: 500, margin: 0 }}>
+                  1 edit remaining
+                </Tag>
+              )}
             </div>
 
-            <div style={{ background: 'var(--paper, #fdf9f3)', border: '1px solid #e8ded6', borderRadius: 8, padding: '12px 14px', fontSize: 13.5, color: '#334155', fontStyle: 'italic', marginBottom: 12 }}>
+            <div style={{ background: 'var(--paper, #fdf9f3)', border: '1px solid #e8ded6', borderRadius: 10, padding: '14px 16px', fontSize: 14, color: '#334155', fontStyle: 'italic', lineHeight: 1.6, marginBottom: 14 }}>
               "{viewingReview.comment}"
             </div>
 
-            {viewingReview.createdAt && (
-              <div style={{ fontSize: 12, color: '#94a3b8', textAlign: 'right' }}>
-                Reviewed on {dayjs(viewingReview.createdAt).format('DD/MM/YYYY [at] HH:mm')}
-              </div>
-            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#94a3b8' }}>
+              <span>
+                {viewingReview.updatedAt ? (
+                  <span>Last edited: {dayjs(viewingReview.updatedAt).format('DD/MM/YYYY [at] HH:mm')}</span>
+                ) : (
+                  <span>Submitted on: {dayjs(viewingReview.createdAt).format('DD/MM/YYYY [at] HH:mm')}</span>
+                )}
+              </span>
+
+              {viewingReview.updatedAt && (
+                <span style={{ fontStyle: 'italic', color: '#b45309' }}>
+                  *Maximum 1 edit reached
+                </span>
+              )}
+            </div>
           </div>
         )}
       </Modal>
