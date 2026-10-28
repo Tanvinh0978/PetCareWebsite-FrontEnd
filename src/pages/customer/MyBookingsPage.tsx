@@ -199,7 +199,7 @@ const MyBookingsPage: React.FC = () => {
       String(selectedBooking?.status).toLowerCase() === 'completed';
 
     if (!isBookingCompleted) {
-      message.warning('Bạn chỉ có thể đánh giá dịch vụ sau khi đơn đặt lịch đã hoàn tất (Check-out xong)!');
+      message.warning('You can only review services once your booking has been completed (after check-out)!');
       return;
     }
 
@@ -978,7 +978,7 @@ const MyBookingsPage: React.FC = () => {
                         )}
                         {!isBookingCompleted ? (
                           <div style={{ marginTop: 8 }}>
-                            <Tooltip title="Dịch vụ chỉ có thể đánh giá sau khi hoàn tất thanh toán & bàn giao thú cưng (Check-out hoàn tất).">
+                            <Tooltip title="Reviews can only be submitted after check-out and pet handover are complete.">
                               <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', cursor: 'help' }}>
                                 Review available after Check-out
                               </Tag>
@@ -1098,7 +1098,7 @@ const MyBookingsPage: React.FC = () => {
                                 <div style={{ textAlign: 'center' }}>
                                   <Image
                                     src={item.beforeImageUrl}
-                                    alt="Trước khi làm (Before)"
+                                    alt="Before Service"
                                     width={100}
                                     height={100}
                                     style={{
@@ -1119,7 +1119,7 @@ const MyBookingsPage: React.FC = () => {
                                 <div style={{ textAlign: 'center' }}>
                                   <Image
                                     src={item.resultImageUrl}
-                                    alt="Sau khi làm (After)"
+                                    alt="After Service"
                                     width={100}
                                     height={100}
                                     style={{
@@ -1186,7 +1186,7 @@ const MyBookingsPage: React.FC = () => {
             onClick={() => setBeforeAfterItem(null)}
             style={{ borderRadius: 8, backgroundColor: '#3d2d23', borderColor: '#3d2d23', padding: '0 20px', fontWeight: 600 }}
           >
-            Đóng
+            Close
           </Button>,
         ]}
         width={760}
@@ -1209,7 +1209,7 @@ const MyBookingsPage: React.FC = () => {
             </div>
             <div>
               <Typography.Title level={4} style={{ margin: 0, color: '#0f172a' }}>
-                Ảnh So Sánh Trước & Sau Khi Chăm Sóc
+                Before & After Service Showcase
               </Typography.Title>
               <Text type="secondary" style={{ fontSize: 13 }}>
                 {beforeAfterItem?.petName} • {beforeAfterItem?.serviceName}
@@ -1306,8 +1306,8 @@ const MyBookingsPage: React.FC = () => {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#94a3b8', padding: '0 4px' }}>
-              <span>Thú cưng: <strong style={{ color: '#475569' }}>{beforeAfterItem.petName}</strong> ({beforeAfterItem.petWeight}kg)</span>
-              <span>Kỹ thuật viên: <strong style={{ color: '#475569' }}>{beforeAfterItem.staffName || 'Chuyên viên Salon'}</strong></span>
+              <span>Pet: <strong style={{ color: '#475569' }}>{beforeAfterItem.petName}</strong> ({beforeAfterItem.petWeight}kg)</span>
+              <span>Specialist: <strong style={{ color: '#475569' }}>{beforeAfterItem.staffName || 'Sanctuary Specialist'}</strong></span>
             </div>
           </div>
         )}

@@ -43,6 +43,7 @@ export interface PetDTO {
   species: string | number | PetSpecies
   breed?: string
   weight: number
+  gender?: string
   age?: number
   healthNotes?: string
   imageUrl?: string

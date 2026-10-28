@@ -284,8 +284,8 @@ const CreateBookingPage: React.FC = () => {
         const petNames = unconfiguredPets.map(p => `"${p.name}"`).join(', ');
         return message.warning(
           bookingType === 'Boarding'
-            ? `Vui lòng chọn phòng lưu trú cho ${petNames} trước khi tiếp tục.`
-            : `Vui lòng chọn ít nhất 1 dịch vụ chăm sóc cho ${petNames} trước khi tiếp tục.`
+            ? `Please select a boarding room for ${petNames} before proceeding.`
+            : `Please select at least 1 care service for ${petNames} before proceeding.`
         );
       }
 
@@ -370,7 +370,7 @@ const CreateBookingPage: React.FC = () => {
   const onFinish = async (values: any) => {
     if (hasMissingPetServices) {
       const petNames = unconfiguredPets.map(p => `"${p?.name}"`).join(', ');
-      message.error(`Vui lòng chọn dịch vụ cho ${petNames} trước khi xác nhận đặt lịch.`);
+      message.error(`Please select services for ${petNames} before confirming your booking.`);
       setCurrentStep(1);
       if (unconfiguredPets[0]) setActivePetTab(unconfiguredPets[0].id);
       return;
@@ -722,7 +722,7 @@ const CreateBookingPage: React.FC = () => {
                         color: '#16a34a',
                         fontSize: '11px',
                         marginLeft: '4px'
-                      }} title="Đã chọn dịch vụ">✓</span>
+                      }} title="Service configured">✓</span>
                     ) : (
                       <span style={{
                         display: 'inline-flex',
@@ -734,7 +734,7 @@ const CreateBookingPage: React.FC = () => {
                         fontSize: '10.5px',
                         fontWeight: 700,
                         marginLeft: '4px'
-                      }} title="Chưa chọn dịch vụ">Chưa chọn</span>
+                      }} title="Pending configuration">Not selected</span>
                     )}
                   </span>
                 ),
