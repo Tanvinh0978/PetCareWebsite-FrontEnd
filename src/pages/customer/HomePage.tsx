@@ -158,11 +158,7 @@ export default function HomePage() {
                       <HomeOutlined style={{ fontSize: '2.5rem', color: 'var(--secondary)' }} />
                     </div>
                   )}
-                  {roomType.totalRooms > 0 && (
-                    <span className="suite-tag">
-                      {roomType.totalRooms} {roomType.totalRooms === 1 ? 'room' : 'rooms'}
-                    </span>
-                  )}
+                  
                 </div>
                 <div className="suite-body">
                   <h3>{roomType.name}</h3>

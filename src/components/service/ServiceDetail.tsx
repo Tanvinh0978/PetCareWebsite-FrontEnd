@@ -4,7 +4,7 @@ import { getServiceById } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
 import { useAuthStore } from '@/store/useAuthStore';
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
-import { PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL, type ServiceDetail as Detail } from '@/types/service';
+import { PRICING_UNIT_LABEL, SERVICE_TYPE_LABEL, SERVICE_TYPE_BADGE_CONFIG, type ServiceDetail as Detail } from '@/types/service';
 import ServiceReviewsSection from '@/components/review/ServiceReviewsSection';
 
 const vnd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND' });
@@ -38,7 +38,7 @@ export default function ServiceDetail({ backTo, editTo }: { backTo: string; edit
         {canManage && editTo && <Link to={editTo(service.id)} className="btn">Edit</Link>}
       </div>
       {service.imageUrl && (
-        <div style={{ marginBottom: '1.5rem', borderRadius: '12px', overflow: 'hidden', maxHeight: '320px', border: '1px solid var(--slate-200)', backgroundColor: '#f8fafc' }}>
+        <div style={{ marginBottom: '1.5rem', borderRadius: '12px', overflow: 'hidden', maxHeight: '320px', border: '1px solid var(--slate-200)', backgroundColor: 'var(--paper, #fdf9f3)', borderColor: '#e8ded6' }}>
           <img
             src={service.imageUrl}
             alt={service.name}
@@ -47,7 +47,31 @@ export default function ServiceDetail({ backTo, editTo }: { backTo: string; edit
         </div>
       )}
       <p>
-        <span className="tag">{SERVICE_TYPE_LABEL[service.serviceType]}</span>
+        {(() => {
+          const badge = SERVICE_TYPE_BADGE_CONFIG[service.serviceType] || {
+            label: SERVICE_TYPE_LABEL[service.serviceType] || service.serviceType,
+            bg: '#f8fafc',
+            color: '#475569',
+            border: '#e2e8f0',
+          };
+          return (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                padding: '0.25rem 0.85rem',
+                borderRadius: '999px',
+                backgroundColor: badge.bg,
+                color: badge.color,
+                border: `1px solid ${badge.border}`,
+              }}
+            >
+              {badge.label}
+            </span>
+          );
+        })()}
         {!service.isActive && <span className="tag off-tag">Inactive</span>}
       </p>
       <p>{service.description || 'No description.'}</p>

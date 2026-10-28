@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Input } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { PawIcon } from '@/components/common/PetIcons';
 import { roomTypeService, type RoomTypeDTO } from '@/services/roomType.service';
 import { getApiErrorMessage } from '@/utils/apiError';
 
@@ -60,12 +63,29 @@ export default function RoomTypeCatalog({ detailBase, showSignInHint }: RoomType
         </p>
       )}
 
-      <div className="toolbar" style={{ margin: '1.5rem 0 1.25rem' }}>
-        <input
-          placeholder="Search room types by name or amenities..."
+      <div
+        style={{
+          background: 'var(--paper-card, #ffffff)',
+          border: '1px solid #e8ded6',
+          borderRadius: 14,
+          padding: '14px 18px',
+          boxShadow: 'var(--shadow-xs)',
+          marginBottom: '24px',
+        }}
+      >
+        <Input
+          prefix={<SearchOutlined style={{ color: '#8c7b6f', fontSize: 16, marginRight: 4 }} />}
+          placeholder="Search room suites by name, features, or amenities..."
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          aria-label="Keyword"
+          allowClear
+          size="large"
+          style={{
+            borderRadius: 10,
+            borderColor: '#e8ded6',
+            backgroundColor: 'var(--paper, #fdf9f3)',
+            fontSize: '0.95rem',
+          }}
         />
       </div>
 
@@ -97,30 +117,36 @@ export default function RoomTypeCatalog({ detailBase, showSignInHint }: RoomType
             ) : (
               <div
                 style={{
-                  height: 140,
+                  height: 160,
                   width: '100%',
-                  backgroundColor: '#f8fafc',
+                  backgroundColor: 'var(--paper, #fdf9f3)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '2.5rem',
-                  borderBottom: '1px solid #f1f5f9',
+                  borderBottom: '1px solid #e8ded6',
                 }}
               >
-                
+                <PawIcon size={36} style={{ color: '#c69f7b', opacity: 0.8 }} />
               </div>
             )}
 
             <div style={{ padding: '1.25rem 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', flex: 1, gap: '0.65rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <span className="tag" style={{ background: '#fef3c7', color: '#b45309', borderColor: '#fde68a' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    padding: '0.22rem 0.75rem',
+                    borderRadius: '999px',
+                    backgroundColor: '#fffbeb',
+                    color: '#b45309',
+                    border: '1px solid #fde68a',
+                  }}
+                >
                   Pet Hotel Suite
                 </span>
-                {r.totalRooms > 0 && (
-                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#059669', background: '#ecfdf5', padding: '0.2rem 0.65rem', borderRadius: '999px', border: '1px solid #a7f3d0' }}>
-                    {r.totalRooms} {r.totalRooms === 1 ? 'room' : 'rooms'}
-                  </span>
-                )}
               </div>
 
               <h2 style={{ fontSize: '1.3rem', margin: '0.25rem 0 0' }}>{r.name}</h2>
