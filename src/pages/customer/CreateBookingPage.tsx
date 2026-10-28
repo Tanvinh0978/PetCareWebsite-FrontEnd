@@ -579,6 +579,55 @@ const CreateBookingPage: React.FC = () => {
   const boardingOptions = services.filter(s => String(s.serviceType || '').toLowerCase() === 'boarding');
   const dietOptions = services.filter(s => String(s.serviceType || '').toLowerCase() === 'diet');
 
+
+  // Sanctuary Spa operating hours: 08:00 - 20:00 (8 AM to 8 PM)
+  const disabledGroomingTime = (selectedDate: Dayjs | null) => {
+    const now = dayjs();
+    const OPEN_HOUR = 8;
+    const CLOSE_HOUR = 20;
+
+    const offHours: number[] = [];
+    for (let h = 0; h < 24; h++) {
+      if (h < OPEN_HOUR || h > CLOSE_HOUR) {
+        offHours.push(h);
+      }
+    }
+
+    if (!selectedDate || !selectedDate.isSame(now, 'day')) {
+      return {
+        disabledHours: () => offHours,
+        disabledMinutes: () => [],
+      };
+    }
+
+    // Today: only future hours & minutes
+    const currentHour = now.hour();
+    const currentMinute = now.minute();
+    const disabledHoursList = new Set(offHours);
+
+    for (let h = 0; h < currentHour; h++) {
+      disabledHoursList.add(h);
+    }
+    // If we are past 45 minutes of current hour, disable current hour
+    if (currentMinute > 45) {
+      disabledHoursList.add(currentHour);
+    }
+
+    return {
+      disabledHours: () => Array.from(disabledHoursList).sort((a, b) => a - b),
+      disabledMinutes: (selectedHour: number) => {
+        if (selectedHour === currentHour) {
+          const disabledMins: number[] = [];
+          for (let m = 0; m <= currentMinute; m += 15) {
+            if (m < 60) disabledMins.push(m);
+          }
+          return disabledMins;
+        }
+        return [];
+      },
+    };
+  };
+
   const steps = [
     {
       title: 'Choose Pets',
@@ -718,8 +767,9 @@ const CreateBookingPage: React.FC = () => {
                         width: '18px',
                         height: '18px',
                         borderRadius: '50%',
-                        background: '#dcfce7',
-                        color: '#16a34a',
+                        background: '#faf2e9',
+                        color: '#785839',
+                        border: '1px solid #eeddc8',
                         fontSize: '11px',
                         marginLeft: '4px'
                       }} title="Service configured">✓</span>
@@ -755,17 +805,24 @@ const CreateBookingPage: React.FC = () => {
                           gap: '10px',
                           marginBottom: '16px',
                           padding: '10px 14px',
-                          background: isCat ? 'linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%)' : 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
-                          border: `1px solid ${isCat ? '#fbcfe8' : '#bbf7d0'}`,
+                          background: isCat ? '#faf5ff' : '#fdf9f3',
+                          border: `1px solid ${isCat ? '#e9d5ff' : '#eeddc8'}`,
                           borderRadius: '10px'
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <CheckCircleOutlined style={{ color: '#16a34a', fontSize: '16px' }} />
-                            <span style={{ fontWeight: 600, color: isCat ? '#9d174d' : '#166534', fontSize: '0.92rem' }}>
-                              {isCat ? 'Spa & grooming treatments suitable for Cats' : 'Spa & grooming treatments suitable for Dogs'}
+                            <CheckCircleFilled style={{ color: isCat ? '#7e22ce' : '#c69f7b', fontSize: '16px' }} />
+                            <span style={{ fontWeight: 600, color: isCat ? '#7e22ce' : '#785839', fontSize: '0.92rem' }}>
+                              {isCat ? 'Spa & grooming treatments tailored for Cats' : 'Spa & grooming treatments tailored for Dogs'}
                             </span>
                           </div>
-                          <Tag color={isCat ? 'magenta' : 'green'} style={{ fontWeight: 600, borderRadius: '6px', margin: 0 }}>
+                          <Tag style={{ 
+                            fontWeight: 600, 
+                            borderRadius: '6px', 
+                            margin: 0,
+                            background: isCat ? '#faf5ff' : '#faf2e9',
+                            borderColor: isCat ? '#e9d5ff' : '#eeddc8',
+                            color: isCat ? '#7e22ce' : '#785839'
+                          }}>
                             {isCat ? 'Cat' : 'Dog'} • {pet.weight} kg
                           </Tag>
                         </div>
@@ -790,41 +847,44 @@ const CreateBookingPage: React.FC = () => {
                                   <Col span={24} key={srv.id}>
                                     <Checkbox 
                                       value={srv.id} 
+                                      className="treatment-checkbox"
                                       style={{ 
                                         display: 'flex', 
                                         alignItems: 'center', 
-                                        padding: '14px 16px', 
+                                        padding: '16px 18px', 
                                         border: `1.5px solid ${isItemChecked ? 'var(--secondary)' : 'var(--slate-200)'}`, 
-                                        borderRadius: '12px', 
+                                        borderRadius: '14px', 
                                         background: isItemChecked ? 'var(--primary-light)' : 'var(--paper-card)',
                                         transition: 'all 0.2s ease',
                                         width: '100%',
-                                        boxShadow: isItemChecked ? 'var(--shadow-xs)' : 'none',
+                                        boxShadow: isItemChecked ? '0 2px 8px rgba(120,88,57,0.08)' : 'none',
                                       }}
                                     >
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: '10px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '16px', marginLeft: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 auto', minWidth: 0 }}>
                                           {srv.imageUrl ? (
                                             <img
                                               src={srv.imageUrl}
                                               alt={srv.name}
-                                              style={{ width: 48, height: 48, borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--slate-200)', flexShrink: 0 }}
+                                              style={{ width: 56, height: 56, borderRadius: '12px', objectFit: 'cover', border: '1.5px solid #eeddc8', flexShrink: 0 }}
                                             />
                                           ) : (
-                                            <div style={{ width: 48, height: 48, borderRadius: '10px', backgroundColor: '#f5f3ff', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #ddd6fe' }}>
-                                              <ScissorOutlined style={{ fontSize: '20px' }} />
+                                            <div style={{ width: 56, height: 56, borderRadius: '12px', backgroundColor: '#faf2e9', color: '#785839', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1.5px solid #eeddc8' }}>
+                                              <ScissorOutlined style={{ fontSize: '24px' }} />
                                             </div>
                                           )}
-                                          <div>
-                                            <Text strong style={{ fontSize: '1rem', color: 'var(--slate-900)' }}>{srv.name}</Text>
+                                          <div style={{ flex: 1, minWidth: 0 }}>
+                                            <Text strong style={{ fontSize: '1.02rem', color: '#3d2d23', display: 'block', lineHeight: 1.3 }}>{srv.name}</Text>
                                             {srv.description && (
-                                              <div style={{ fontSize: '13px', color: 'var(--slate-600)', marginTop: 2 }}>{srv.description}</div>
+                                              <div style={{ fontSize: '13px', color: '#64748b', marginTop: 3, lineHeight: 1.4 }}>{srv.description}</div>
                                             )}
                                           </div>
                                         </div>
-                                        <Text strong style={{ color: 'var(--secondary)', fontSize: '1.05rem', fontWeight: 700, whiteSpace: 'nowrap', marginLeft: '12px' }}>
-                                          {price.toLocaleString()} VND
-                                        </Text>
+                                        <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap', marginLeft: 'auto', paddingLeft: '8px' }}>
+                                          <Text strong style={{ color: 'var(--secondary)', fontSize: '1.1rem', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                                            {price.toLocaleString()} VND
+                                          </Text>
+                                        </div>
                                       </div>
                                     </Checkbox>
                                   </Col>
@@ -851,14 +911,14 @@ const CreateBookingPage: React.FC = () => {
                           gap: '12px',
                           marginBottom: '20px',
                           padding: '12px 18px',
-                          background: isCat ? 'linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%)' : 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
-                          border: `1.5px solid ${isCat ? '#fbcfe8' : '#bbf7d0'}`,
+                          background: isCat ? '#faf5ff' : '#fdf9f3',
+                          border: `1.5px solid ${isCat ? '#e9d5ff' : '#eeddc8'}`,
                           borderRadius: '12px'
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <CheckCircleOutlined style={{ color: '#16a34a', fontSize: '18px' }} />
+                            <CheckCircleFilled style={{ color: isCat ? '#7e22ce' : '#c69f7b', fontSize: '18px' }} />
                             <div>
-                              <Text strong style={{ color: isCat ? '#9d174d' : '#166534', fontSize: '0.98rem' }}>
+                              <Text strong style={{ color: isCat ? '#7e22ce' : '#785839', fontSize: '0.98rem' }}>
                                 {isCat ? 'Cat-Friendly Sanctuary Suites' : 'Dog-Friendly Resort & Suites'}
                               </Text>
                               <div style={{ fontSize: '12.5px', color: 'var(--slate-600)' }}>
@@ -868,7 +928,16 @@ const CreateBookingPage: React.FC = () => {
                               </div>
                             </div>
                           </div>
-                          <Tag color={isCat ? 'magenta' : 'green'} style={{ fontWeight: 600, padding: '4px 12px', borderRadius: '8px', fontSize: '12px', margin: 0 }}>
+                          <Tag style={{ 
+                            fontWeight: 600, 
+                            padding: '4px 12px', 
+                            borderRadius: '8px', 
+                            fontSize: '12px', 
+                            margin: 0,
+                            background: isCat ? '#faf5ff' : '#faf2e9',
+                            borderColor: isCat ? '#e9d5ff' : '#eeddc8',
+                            color: isCat ? '#7e22ce' : '#785839'
+                          }}>
                             {isCat ? 'Feline Resident' : 'Canine Resident'} • {pet.weight} kg
                           </Tag>
                         </div>
@@ -1157,11 +1226,17 @@ const CreateBookingPage: React.FC = () => {
                 <Form.Item name="groomingDate" rules={[{ required: true, message: 'Please select an appointment date and time' }]} style={{ marginBottom: '16px' }}>
                   <DatePicker 
                     style={{ width: '100%', padding: '10px 14px', fontSize: '15px', borderRadius: '10px', borderColor: 'var(--slate-300)' }} 
-                    showTime={{ format: 'HH:mm', minuteStep: 15 }} 
+                    showTime={{ 
+                      format: 'HH:mm', 
+                      minuteStep: 15, 
+                      hideDisabledOptions: true,
+                      defaultValue: dayjs('08:00', 'HH:mm')
+                    }} 
                     format="MMM DD, YYYY - HH:mm" 
                     disabledDate={(current) => current && current < dayjs().startOf('day')}
+                    disabledTime={disabledGroomingTime}
                     size="large"
-                    placeholder="Select arrival date & time"
+                    placeholder="Select arrival date & time (08:00 - 20:00)"
                   />
                 </Form.Item>
               </div>
@@ -1196,7 +1271,7 @@ const CreateBookingPage: React.FC = () => {
                     <span>Hotel Boarding Schedule Policy</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', color: '#64748b', fontSize: '13px' }}>
-                    <span><LoginOutlined style={{ marginRight: 4, color: '#059669' }} />Check-in: <strong>From 14:00</strong></span>
+                    <span><LoginOutlined style={{ marginRight: 4, color: '#785839' }} />Check-in: <strong>From 14:00</strong></span>
                     <span><LogoutOutlined style={{ marginRight: 4, color: '#2563eb' }} />Check-out: <strong>Before 12:00</strong></span>
                   </div>
                   <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px', fontStyle: 'italic' }}>
@@ -1267,7 +1342,7 @@ const CreateBookingPage: React.FC = () => {
           </div>
 
           <Row gutter={20}>
-            <Col xs={24} md={14}>
+            <Col xs={24} md={15}>
               <div style={{ background: 'var(--paper-card)', borderRadius: '16px', padding: '24px', border: '1px solid var(--slate-200)', boxShadow: 'var(--shadow-xs)', marginBottom: '16px' }}>
                 <Title level={4} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', fontFamily: 'var(--font-heading)', color: 'var(--slate-900)' }}>
                   <ShopOutlined style={{ color: 'var(--secondary)' }} /> Booking Summary
@@ -1285,64 +1360,194 @@ const CreateBookingPage: React.FC = () => {
                   }
 
                   return (
-                    <div key={petId} style={{ marginBottom: '18px', paddingBottom: '16px', borderBottom: '1px dashed var(--slate-300)' }}>
-                      <Text strong style={{ fontSize: '16px', color: 'var(--slate-900)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <div key={petId} style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px dashed #eeddc8' }}>
+                      {/* Prominent Pet Dossier Header */}
+                      <div 
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '16px', 
+                          marginBottom: '16px', 
+                          background: isCat ? 'linear-gradient(135deg, #faf5ff 0%, #ffffff 100%)' : 'linear-gradient(135deg, #fdf9f3 0%, #ffffff 100%)', 
+                          padding: '14px 18px', 
+                          borderRadius: '16px', 
+                          border: `1.5px solid ${isCat ? '#e9d5ff' : '#eeddc8'}`,
+                          boxShadow: '0 2px 8px rgba(61,45,35,0.04)'
+                        }}
+                      >
                         {pet.imageUrl ? (
                           <img
                             src={pet.imageUrl}
                             alt={pet.name}
-                            style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--slate-200)' }}
+                            style={{ 
+                              width: 68, 
+                              height: 68, 
+                              borderRadius: '50%', 
+                              objectFit: 'cover', 
+                              border: `3px solid ${isCat ? '#e9d5ff' : '#eeddc8'}`, 
+                              flexShrink: 0, 
+                              boxShadow: '0 3px 10px rgba(61,45,35,0.12)' 
+                            }}
                           />
                         ) : (
-                          <Tag color={isCat ? 'purple' : 'blue'} style={{ fontSize: 11, margin: 0, borderRadius: 4 }}>{isCat ? 'Cat' : 'Dog'}</Tag>
+                          <div 
+                            style={{ 
+                              width: 68, 
+                              height: 68, 
+                              borderRadius: '50%', 
+                              background: isCat ? '#f3e8ff' : '#faf2e9', 
+                              color: isCat ? '#7e22ce' : '#785839', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              flexShrink: 0, 
+                              border: `3px solid ${isCat ? '#e9d5ff' : '#eeddc8'}`,
+                              boxShadow: '0 3px 10px rgba(61,45,35,0.12)' 
+                            }}
+                          >
+                            {isCat ? <CatIcon size={36} /> : <DogIcon size={36} />}
+                          </div>
                         )}
-                        <span>{pet.name} ({pet.weight}kg):</span>
-                      </Text>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#3d2d23', lineHeight: 1.2 }}>
+                            {pet.name}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <Tag style={{ 
+                              borderRadius: '6px', 
+                              margin: 0, 
+                              background: isCat ? '#faf5ff' : '#faf2e9', 
+                              borderColor: isCat ? '#e9d5ff' : '#eeddc8', 
+                              color: isCat ? '#7e22ce' : '#785839', 
+                              fontWeight: 700,
+                              fontSize: '12px',
+                              padding: '2px 9px' 
+                            }}>
+                              {isCat ? 'Feline Guest' : 'Canine Guest'} • {pet.weight} kg
+                            </Tag>
+                            {pet.breed && (
+                              <span style={{ fontSize: '13px', color: '#8c7662' }}>
+                                Breed: <strong style={{ color: '#3d2d23' }}>{pet.breed}</strong>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                       
-                      <div style={{ paddingLeft: '28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {/* Booked Services Cards with 72x72 images & fixed right price */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {bookingType === 'Grooming' && srvs.groomingIds?.map((gId: string) => {
                           const s = services.find(x => x.id === gId);
                           if (!s) return null;
                           const price = getPriceForPet(s, pet.weight);
                           return (
-                            <div key={gId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                {s.imageUrl && (
+                            <div 
+                              key={gId} 
+                              style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between', 
+                                gap: '16px', 
+                                padding: '14px 18px', 
+                                background: '#ffffff', 
+                                borderRadius: '14px', 
+                                border: '1px solid #eeddc8',
+                                boxShadow: '0 2px 6px rgba(61,45,35,0.04)' 
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 auto', minWidth: 0 }}>
+                                {s.imageUrl ? (
                                   <img
                                     src={s.imageUrl}
                                     alt={s.name}
-                                    style={{ width: 26, height: 26, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--slate-200)' }}
+                                    style={{ 
+                                      width: 60, 
+                                      height: 60, 
+                                      borderRadius: 12, 
+                                      objectFit: 'cover', 
+                                      border: '1.5px solid #eeddc8', 
+                                      flexShrink: 0,
+                                      boxShadow: '0 2px 6px rgba(61,45,35,0.06)' 
+                                    }}
                                   />
+                                ) : (
+                                  <div style={{ width: 60, height: 60, borderRadius: 12, backgroundColor: '#faf2e9', color: '#785839', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1.5px solid #eeddc8' }}>
+                                    <ScissorOutlined style={{ fontSize: '28px' }} />
+                                  </div>
                                 )}
-                                <Text style={{ color: 'var(--slate-800)' }}>
-                                  {s.name} <Text type="secondary">({groomingDate?.format('DD/MM HH:mm')})</Text>
-                                </Text>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ color: '#3d2d23', fontWeight: 700, fontSize: '1.02rem', lineHeight: 1.35, marginBottom: 4 }}>
+                                    {s.name}
+                                  </div>
+                                  <div style={{ color: '#8c7662', fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                                    <CalendarOutlined style={{ color: '#c69f7b', fontSize: '14px', flexShrink: 0 }} />
+                                    <span>Schedule: <strong style={{ color: '#3d2d23' }}>{groomingDate?.format('DD/MM/YYYY - HH:mm')}</strong></span>
+                                  </div>
+                                </div>
                               </div>
-                              <Text strong style={{ color: 'var(--secondary)', fontSize: '0.98rem' }}>{price.toLocaleString()} VND</Text>
+                              <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap', marginLeft: 'auto', paddingLeft: '8px' }}>
+                                <span style={{ color: '#785839', fontSize: '1.12rem', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                                  {price.toLocaleString()} VND
+                                </span>
+                              </div>
                             </div>
                           );
                         })}
                         
                         {bookingType === 'Boarding' && srvs.boardingId && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div 
+                            style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'space-between', 
+                              gap: '16px', 
+                              padding: '14px 18px', 
+                              background: '#ffffff', 
+                              borderRadius: '14px', 
+                              border: '1px solid #eeddc8',
+                              boxShadow: '0 2px 6px rgba(61,45,35,0.04)' 
+                            }}
+                          >
                             {(() => {
                                const s = services.find(x => x.id === srvs.boardingId);
                                const price = s ? getPriceForPet(s, pet.weight) * boardingDays : 0;
                                return (
                                  <>
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                     {s?.imageUrl && (
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 auto', minWidth: 0 }}>
+                                     {s?.imageUrl ? (
                                        <img
                                          src={s.imageUrl}
                                          alt={s.name}
-                                         style={{ width: 26, height: 26, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--slate-200)' }}
+                                         style={{ 
+                                           width: 60, 
+                                           height: 60, 
+                                           borderRadius: 12, 
+                                           objectFit: 'cover', 
+                                           border: '1.5px solid #eeddc8', 
+                                           flexShrink: 0,
+                                           boxShadow: '0 2px 6px rgba(61,45,35,0.06)' 
+                                         }}
                                        />
+                                     ) : (
+                                       <div style={{ width: 60, height: 60, borderRadius: 12, backgroundColor: '#faf2e9', color: '#785839', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1.5px solid #eeddc8' }}>
+                                         <HomeOutlined style={{ fontSize: '28px' }} />
+                                       </div>
                                      )}
-                                     <Text style={{ color: 'var(--slate-800)' }}>
-                                       {s?.name} <Text type="secondary">({boardingDateRange?.[0]?.format('DD/MM')} - {boardingDateRange?.[1]?.format('DD/MM')} · {boardingDays} day{boardingDays > 1 ? 's' : ''})</Text>
-                                     </Text>
+                                     <div style={{ flex: 1, minWidth: 0 }}>
+                                       <div style={{ color: '#3d2d23', fontWeight: 700, fontSize: '1.02rem', lineHeight: 1.35, marginBottom: 4 }}>
+                                         {s?.name}
+                                       </div>
+                                       <div style={{ color: '#8c7662', fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                                         <CalendarOutlined style={{ color: '#c69f7b', fontSize: '14px', flexShrink: 0 }} />
+                                         <span>{boardingDateRange?.[0]?.format('DD/MM/YYYY')} - {boardingDateRange?.[1]?.format('DD/MM/YYYY')} (<strong>{boardingDays} day{boardingDays > 1 ? 's' : ''}</strong>)</span>
+                                       </div>
+                                     </div>
                                    </div>
-                                   <Text strong style={{ color: 'var(--secondary)', fontSize: '0.98rem' }}>{price.toLocaleString()} VND</Text>
+                                   <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap', marginLeft: 'auto', paddingLeft: '8px' }}>
+                                     <span style={{ color: '#785839', fontSize: '1.12rem', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                                       {price.toLocaleString()} VND
+                                     </span>
+                                   </div>
                                  </>
                                )
                             })()}
@@ -1350,25 +1555,58 @@ const CreateBookingPage: React.FC = () => {
                         )}
 
                         {bookingType === 'Boarding' && srvs.dietId && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div 
+                            style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'space-between', 
+                              gap: '16px', 
+                              padding: '14px 18px', 
+                              background: '#ffffff', 
+                              borderRadius: '14px', 
+                              border: '1px solid #eeddc8',
+                              boxShadow: '0 2px 6px rgba(61,45,35,0.04)' 
+                            }}
+                          >
                             {(() => {
                                const s = services.find(x => x.id === srvs.dietId);
                                const price = s ? getPriceForPet(s, pet.weight) * boardingDays : 0;
                                return (
                                  <>
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                     {s?.imageUrl && (
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 auto', minWidth: 0 }}>
+                                     {s?.imageUrl ? (
                                        <img
                                          src={s.imageUrl}
                                          alt={s.name}
-                                         style={{ width: 26, height: 26, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--slate-200)' }}
+                                         style={{ 
+                                           width: 60, 
+                                           height: 60, 
+                                           borderRadius: 12, 
+                                           objectFit: 'cover', 
+                                           border: '1.5px solid #eeddc8', 
+                                           flexShrink: 0,
+                                           boxShadow: '0 2px 6px rgba(61,45,35,0.06)' 
+                                         }}
                                        />
+                                     ) : (
+                                       <div style={{ width: 60, height: 60, borderRadius: 12, backgroundColor: '#faf2e9', color: '#785839', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1.5px solid #eeddc8' }}>
+                                         <ShopOutlined style={{ fontSize: '28px' }} />
+                                       </div>
                                      )}
-                                     <Text style={{ color: 'var(--slate-800)' }}>
-                                       {s?.name} <Text type="secondary">(Diet plan · {boardingDays} day{boardingDays > 1 ? 's' : ''})</Text>
-                                     </Text>
+                                     <div style={{ flex: 1, minWidth: 0 }}>
+                                       <div style={{ color: '#3d2d23', fontWeight: 700, fontSize: '1.02rem', lineHeight: 1.35, marginBottom: 4 }}>
+                                         {s?.name}
+                                       </div>
+                                       <div style={{ color: '#8c7662', fontSize: '0.84rem' }}>
+                                         Nutrition Diet Plan • <strong>{boardingDays} day{boardingDays > 1 ? 's' : ''}</strong>
+                                       </div>
+                                     </div>
                                    </div>
-                                   <Text strong style={{ color: 'var(--secondary)', fontSize: '0.98rem' }}>{price.toLocaleString()} VND</Text>
+                                   <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap', marginLeft: 'auto', paddingLeft: '8px' }}>
+                                     <span style={{ color: '#785839', fontSize: '1.12rem', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                                       {price.toLocaleString()} VND
+                                     </span>
+                                   </div>
                                  </>
                                )
                             })()}
@@ -1382,7 +1620,7 @@ const CreateBookingPage: React.FC = () => {
               </div>
             </Col>
 
-            <Col xs={24} md={10}>
+            <Col xs={24} md={9}>
               <div style={{ background: 'var(--slate-50)', borderRadius: '16px', padding: '24px', border: '1px solid var(--slate-200)', display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <Title level={4} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', fontFamily: 'var(--font-heading)', color: 'var(--slate-900)' }}>
                   <GiftOutlined style={{ color: 'var(--secondary)' }} /> Privileges &amp; Payment
@@ -1531,9 +1769,17 @@ const CreateBookingPage: React.FC = () => {
                 disabled={currentStep === 2 && bookingType === 'Boarding' && (checkingAvailability || (rangeAvailability !== null && !rangeAvailability.isAvailable))}
                 loading={currentStep === 2 && bookingType === 'Boarding' && checkingAvailability}
                 style={{ 
-                  backgroundColor: (currentStep === 2 && bookingType === 'Boarding' && (checkingAvailability || (rangeAvailability !== null && !rangeAvailability.isAvailable))) ? undefined : '#059669', 
-                  borderRadius: '8px', 
-                  padding: '0 32px' 
+                  background: (currentStep === 2 && bookingType === 'Boarding' && (checkingAvailability || (rangeAvailability !== null && !rangeAvailability.isAvailable))) 
+                    ? undefined 
+                    : 'linear-gradient(135deg, #785839 0%, #3d2d23 100%)', 
+                  borderColor: '#3d2d23',
+                  color: '#ffffff',
+                  borderRadius: 999, 
+                  padding: '0 34px',
+                  height: 44,
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  boxShadow: '0 4px 14px rgba(61, 45, 35, 0.22)',
                 }}
               >
                 Continue <RightOutlined style={{ fontSize: '12px' }}/>
@@ -1563,6 +1809,21 @@ const CreateBookingPage: React.FC = () => {
       <style>{`
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Ensure Checkbox spans 100% and label inner flexes full card width */
+        .treatment-checkbox.ant-checkbox-wrapper {
+          width: 100% !important;
+          display: flex !important;
+          align-items: center !important;
+          box-sizing: border-box !important;
+        }
+        .treatment-checkbox.ant-checkbox-wrapper > span:last-child {
+          flex: 1 1 0% !important;
+          width: 100% !important;
+          min-width: 0 !important;
+          display: flex !important;
+          box-sizing: border-box !important;
+        }
       `}</style>
     </div>
   );
