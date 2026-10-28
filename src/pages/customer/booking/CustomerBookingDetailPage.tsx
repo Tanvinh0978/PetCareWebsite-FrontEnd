@@ -1097,27 +1097,8 @@ export default function CustomerBookingDetailPage() {
               </Button>
             </Popconfirm>
           ) : null,
-          Boolean(viewingReview?.updatedAt) ? (
-            <Tooltip
-              key="edit-disabled"
-              title="You have already edited this review once (maximum 1 edit allowed). To change your feedback, you can delete this review and submit a fresh one."
-            >
-              <Button
-                disabled
-                icon={<EditOutlined />}
-                style={{
-                  borderRadius: 8,
-                  color: '#94a3b8',
-                  backgroundColor: '#f1f5f9',
-                  borderColor: '#e2e8f0',
-                  fontWeight: 600,
-                  cursor: 'not-allowed',
-                }}
-              >
-                Edit Used (1/1)
-              </Button>
-            </Tooltip>
-          ) : (
+          /* Hide edit button if already edited once */
+          !viewingReview?.updatedAt ? (
             <Tooltip key="edit-active" title="You are allowed to edit your review once">
               <Button
                 icon={<EditOutlined style={{ color: '#785839' }} />}
@@ -1133,7 +1114,7 @@ export default function CustomerBookingDetailPage() {
                 Edit Review
               </Button>
             </Tooltip>
-          ),
+          ) : null,
           <Button
             key="close"
             type="primary"
