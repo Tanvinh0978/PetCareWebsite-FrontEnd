@@ -39,6 +39,7 @@ import CreateBookingPage from "@/pages/customer/CreateBookingPage";
 import MyPetsPage from "@/pages/customer/MyPetsPage";
 import PetFormPage from "@/pages/customer/PetFormPage";
 import MyBookingsPage from "@/pages/customer/MyBookingsPage";
+import CustomerBookingDetailPage from "@/pages/customer/booking/CustomerBookingDetailPage";
 import CustomerProfilePage from "@/pages/customer/CustomerProfilePage";
 import ReviewManagementPage from "@/pages/admin/review/ReviewManagementPage";
 import PaymentResultPage from "@/pages/customer/PaymentResultPage";
@@ -165,6 +166,7 @@ export default function AppRoutes() {
         { path: "pets/:id/edit", element: <PetFormPage /> },
         { path: "booking", element: <CreateBookingPage /> },
         { path: "bookings", element: <MyBookingsPage /> },
+        { path: "bookings/:id", element: <CustomerBookingDetailPage /> },
         { path: "payment-result", element: <PaymentResultPage /> },
         { path: "profile", element: <CustomerProfilePage /> },
         notFound,

@@ -36,7 +36,7 @@ import {
   CameraOutlined,
   ZoomInOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import {
@@ -110,9 +110,9 @@ const MyBookingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   // Detail Modal state
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<BookingDetail | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  // detailModalOpen removed
+  // selectedBooking removed
+  // detailLoading removed
   const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
   const [beforeAfterItem, setBeforeAfterItem] = useState<BookingDetailItem | null>(null);
 
@@ -194,14 +194,7 @@ const MyBookingsPage: React.FC = () => {
   }, [syncReviewedItems]);
 
   const handleOpenReview = (item: BookingDetailItem) => {
-    const isBookingCompleted =
-      String(selectedBooking?.status).toLowerCase() === '2' ||
-      String(selectedBooking?.status).toLowerCase() === 'completed';
-
-    if (!isBookingCompleted) {
-      message.warning('You can only review services once your booking has been completed (after check-out)!');
-      return;
-    }
+    // Handled in BookingDetailPage
 
     if ((item as any).isReviewed || reviewedItemIds.has(item.id)) {
       message.info('This service has already been reviewed.');
@@ -330,18 +323,8 @@ const MyBookingsPage: React.FC = () => {
     fetchBookings();
   }, [fetchBookings]);
 
-  const handleOpenDetail = async (id: string) => {
-    setDetailModalOpen(true);
-    setDetailLoading(true);
-    try {
-      const detail = await bookingService.fetchById(id);
-      setSelectedBooking(detail);
-    } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Failed to load booking details');
-      setDetailModalOpen(false);
-    } finally {
-      setDetailLoading(false);
-    }
+  const handleOpenDetail = (id: string) => {
+    navigate(`/customer/bookings/${id}`);
   };
 
   const handleOpenCancel = (id: string) => {
@@ -359,9 +342,7 @@ const MyBookingsPage: React.FC = () => {
       setCancelModalOpen(false);
       setCancellingBookingId(null);
       fetchBookings();
-      if (detailModalOpen && selectedBooking?.id === cancellingBookingId) {
-        setDetailModalOpen(false);
-      }
+      
     } catch (error: any) {
       message.error(error?.response?.data?.message || 'Failed to cancel booking');
     } finally {
@@ -807,367 +788,6 @@ const MyBookingsPage: React.FC = () => {
         />
       </Card>
 
-      {/* Booking Details Modal */}
-      <Modal
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CalendarOutlined style={{ color: '#785839' }} />
-            <span>Booking Details</span>
-            {selectedBooking && (() => {
-              const cfg = getBookingStatusConfig(selectedBooking.status);
-              return (
-                <Tag color={cfg.color} icon={cfg.icon} style={{ marginLeft: 8 }}>
-                  {cfg.label}
-                </Tag>
-              );
-            })()}
-          </div>
-        }
-        open={detailModalOpen}
-        onCancel={() => setDetailModalOpen(false)}
-        footer={[
-          selectedBooking && isPending(selectedBooking.status) && isVnpayBooking(selectedBooking) && (
-            <Button
-              key="vnpay"
-              type="primary"
-              icon={<CreditCardOutlined />}
-              loading={payingBookingId === selectedBooking.id}
-              style={{ backgroundColor: '#f59e0b', borderColor: '#f59e0b', color: '#ffffff', fontWeight: 600 }}
-              onClick={() => handlePayVnpay(selectedBooking.id)}
-            >
-              Pay Again
-            </Button>
-          ),
-          selectedBooking && isCancellable(selectedBooking.status) && (
-            <Button
-              key="cancel"
-              danger
-              onClick={() => handleOpenCancel(selectedBooking.id)}
-            >
-              Cancel Booking
-            </Button>
-          ),
-          <Button key="close" onClick={() => setDetailModalOpen(false)}>
-            Close
-          </Button>,
-        ]}
-        width={750}
-        destroyOnClose
-      >
-        {detailLoading ? (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <Spin size="large" />
-          </div>
-        ) : selectedBooking ? (
-          <div>
-            {isPending(selectedBooking.status) && isVnpayBooking(selectedBooking) && (
-              <Alert type="warning" showIcon message={vnpayWarning} style={{ marginBottom: 16 }} />
-            )}
-            {isPending(selectedBooking.status) && isCounterPaymentBooking(selectedBooking) && (
-              <div style={{ marginBottom: 16 }}><Tag color="blue">Pay at counter</Tag></div>
-            )}
-            <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }} style={{ marginBottom: 20 }}>
-              <Descriptions.Item label="Booking Code">
-                <Text strong style={{ fontFamily: 'monospace', color: '#785839' }}>
-                  #{selectedBooking.id.slice(0, 8).toUpperCase()}
-                </Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Booking Date">
-                {dayjs(selectedBooking.createdAt).format('DD/MM/YYYY HH:mm')}
-              </Descriptions.Item>
-              <Descriptions.Item label="Customer">
-                {selectedBooking.customerName}
-              </Descriptions.Item>
-              <Descriptions.Item label="Phone">
-                {selectedBooking.customerPhone || 'N/A'}
-              </Descriptions.Item>
-              {selectedBooking.voucherCode && (
-                <>
-                  <Descriptions.Item label="Voucher Applied">
-                    <Tag color="purple">{selectedBooking.voucherCode}</Tag>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Discount">
-                    -{selectedBooking.discountAmount.toLocaleString()} VND
-                  </Descriptions.Item>
-                </>
-              )}
-              <Descriptions.Item label="Total Amount" span={2}>
-                <Text strong style={{ fontSize: 17, color: '#785839' }}>
-                  {selectedBooking.totalPrice.toLocaleString()} VND
-                </Text>
-              </Descriptions.Item>
-              {selectedBooking.cancellationReason && (
-                <Descriptions.Item label="Cancellation Reason" span={2}>
-                  <Text type="danger">{selectedBooking.cancellationReason}</Text>
-                </Descriptions.Item>
-              )}
-            </Descriptions>
-
-            <Title level={5} style={{ marginBottom: 12 }}>
-              Booked Services ({selectedBooking.bookingItems?.length || 0})
-            </Title>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {selectedBooking.bookingItems?.map((item) => {
-                const itemStatus = getItemStatusConfig(item.status);
-                const isBoarding = String(item.serviceType) === '1' || String(item.serviceType).toLowerCase() === 'boarding';
-                const isBookingCompleted =
-                  String(selectedBooking.status).toLowerCase() === '2' ||
-                  String(selectedBooking.status).toLowerCase() === 'completed';
-                return (
-                  <Card
-                    key={item.id}
-                    size="small"
-                    style={{
-                      borderRadius: 8,
-                      border: '1px solid #e8ded6',
-                      background: 'var(--paper, #fdf9f3)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Text strong style={{ fontSize: 15, color: '#0f172a' }}>
-                            {item.serviceName}
-                          </Text>
-                          <Tag color="cyan">
-                            {isBoarding
-                              ? 'Boarding / Hotel'
-                              : 'Grooming & Spa'}
-                          </Tag>
-                          <Tag color={itemStatus.color}>{itemStatus.label}</Tag>
-                        </div>
-                        <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
-                          Pet: <strong>{item.petName}</strong> ({item.petWeight}kg)
-                        </div>
-                        <div style={{ color: '#64748b', fontSize: 13 }}>
-                          Schedule: <strong>{dayjs(item.scheduledStartAt).format('DD/MM/YYYY HH:mm')}</strong>
-                          {item.scheduledEndAt && (
-                            <> - <strong>{dayjs(item.scheduledEndAt).format('DD/MM/YYYY HH:mm')}</strong></>
-                          )}
-                        </div>
-                        {item.roomName && (
-                          <div style={{ color: '#64748b', fontSize: 13 }}>
-                            Assigned Room: <strong>{item.roomName}</strong>
-                          </div>
-                        )}
-                        {item.staffName && (
-                          <div style={{ color: '#64748b', fontSize: 13 }}>
-                            Assigned Staff: <strong>{item.staffName}</strong>
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        {isBoarding && (
-                          <Button
-                            type="link"
-                            size="small"
-                            icon={<EyeOutlined />}
-                            onClick={() => setCareHistoryItem({ id: item.id, petName: item.petName })}
-                            style={{ padding: 0, marginBottom: 6 }}
-                          >
-                            Care history
-                          </Button>
-                        )}
-                        <div style={{ fontSize: 15, fontWeight: 600, color: '#785839' }}>
-                          {item.assignedPrice?.toLocaleString()} VND
-                        </div>
-                        {item.quantity > 1 && (
-                          <div style={{ fontSize: 12, color: '#94a3b8' }}>
-                            Qty: {item.quantity} x {item.unitPrice?.toLocaleString()} VND
-                          </div>
-                        )}
-                        {!isBookingCompleted ? (
-                          <div style={{ marginTop: 8 }}>
-                            <Tooltip title="Reviews can only be submitted after check-out and pet handover are complete.">
-                              <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', cursor: 'help' }}>
-                                Review available after Check-out
-                              </Tag>
-                            </Tooltip>
-                          </div>
-                        ) : itemStatus.label === 'Completed' ? (
-                          ((item as any).isReviewed || reviewedItemIds.has(item.id)) ? (
-                            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
-                              <Tag
-                                color="success"
-                                icon={<CheckCircleFilled style={{ color: '#785839' }} />}
-                                style={{
-                                  borderRadius: 6,
-                                  padding: '3px 8px',
-                                  fontWeight: 600,
-                                  background: '#fdf6ee',
-                                  borderColor: '#e8ded6',
-                                  color: '#785839',
-                                  fontSize: 12,
-                                  marginRight: 0,
-                                }}
-                              >
-                                Reviewed
-                              </Tag>
-                              <Button
-                                type="link"
-                                size="small"
-                                icon={<EyeOutlined />}
-                                style={{ color: '#0ea5e9', padding: '0 4px', fontWeight: 600, fontSize: 12 }}
-                                onClick={() => handleViewReview(item)}
-                              >
-                                View
-                              </Button>
-                            </div>
-                          ) : (
-                            <div style={{ marginTop: 8 }}>
-                              <Button
-                                type="primary"
-                                size="small"
-                                icon={<StarFilled style={{ color: '#fff' }} />}
-                                style={{
-                                  backgroundColor: '#f59e0b',
-                                  borderColor: '#f59e0b',
-                                  color: '#fff',
-                                  borderRadius: 6,
-                                  fontWeight: 600,
-                                  boxShadow: '0 2px 6px rgba(245, 158, 11, 0.25)',
-                                }}
-                                onClick={() => handleOpenReview(item)}
-                              >
-                                ⭐ Review Service
-                              </Button>
-                            </div>
-                          )
-                        ) : (
-                          <div style={{ marginTop: 8 }}>
-                            <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1' }}>
-                              Available after service is completed
-                            </Tag>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Grooming Outcome & Before / After Photos Section */}
-                    {(item.beforeImageUrl || item.resultImageUrl || item.resultNote) && (
-                      <div
-                        style={{
-                          marginTop: 14,
-                          padding: '12px 14px',
-                          background: '#ffffff',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: 8,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: 10,
-                            flexWrap: 'wrap',
-                            gap: 6,
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <CameraOutlined style={{ color: '#0d9488', fontSize: 16 }} />
-                            <Text strong style={{ fontSize: 13, color: '#0f766e' }}>
-                              Care Results & Photos (Before & After)
-                            </Text>
-                          </div>
-                          {(item.beforeImageUrl || item.resultImageUrl) && (
-                            <Button
-                              type="link"
-                              size="small"
-                              icon={<ZoomInOutlined />}
-                              style={{ color: '#0284c7', padding: 0, fontSize: 12, fontWeight: 600 }}
-                              onClick={() => setBeforeAfterItem(item)}
-                            >
-                              View comparison detail
-                            </Button>
-                          )}
-                        </div>
-
-                        {(item.beforeImageUrl || item.resultImageUrl) && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              gap: 16,
-                              alignItems: 'center',
-                              flexWrap: 'wrap',
-                              marginBottom: item.resultNote ? 10 : 0,
-                            }}
-                          >
-                            <Image.PreviewGroup>
-                              {item.beforeImageUrl && (
-                                <div style={{ textAlign: 'center' }}>
-                                  <Image
-                                    src={item.beforeImageUrl}
-                                    alt="Before Service"
-                                    width={100}
-                                    height={100}
-                                    style={{
-                                      objectFit: 'cover',
-                                      borderRadius: 8,
-                                      border: '2px solid #cbd5e1',
-                                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                                    }}
-                                  />
-                                  <div style={{ marginTop: 4 }}>
-                                    <Tag color="default" style={{ fontSize: 11, fontWeight: 600, borderRadius: 6, margin: 0 }}>
-                                      Before
-                                    </Tag>
-                                  </div>
-                                </div>
-                              )}
-                              {item.resultImageUrl && (
-                                <div style={{ textAlign: 'center' }}>
-                                  <Image
-                                    src={item.resultImageUrl}
-                                    alt="After Service"
-                                    width={100}
-                                    height={100}
-                                    style={{
-                                      objectFit: 'cover',
-                                      borderRadius: 8,
-                                      border: '2px solid #c69f7b',
-                                      boxShadow: '0 2px 8px rgba(198,159,123,0.25)',
-                                    }}
-                                  />
-                                  <div style={{ marginTop: 4 }}>
-                                    <Tag color="success" style={{ fontSize: 11, fontWeight: 600, borderRadius: 6, margin: 0 }}>
-                                      After
-                                    </Tag>
-                                  </div>
-                                </div>
-                              )}
-                            </Image.PreviewGroup>
-                          </div>
-                        )}
-
-                        {item.resultNote && (
-                          <div
-                            style={{
-                              marginTop: (item.beforeImageUrl || item.resultImageUrl) ? 10 : 0,
-                              padding: '8px 12px',
-                              background: 'var(--paper, #fdf9f3)',
-                              borderLeft: '3px solid #0d9488',
-                              borderRadius: '0 6px 6px 0',
-                              fontSize: 13,
-                              color: '#334155',
-                            }}
-                          >
-                            <span style={{ fontWeight: 600, color: '#0f766e' }}>
-                              Service completion notes {item.staffName ? `(${item.staffName})` : ''}:
-                            </span>{' '}
-                            <span>{item.resultNote}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
-      </Modal>
-
       <CareRecordTimelineModal
         open={Boolean(careHistoryItem)}
         bookingItemId={careHistoryItem?.id}
@@ -1364,9 +984,7 @@ const MyBookingsPage: React.FC = () => {
           onSuccess={() => {
             syncReviewedItems();
             fetchBookings();
-            if (selectedBooking) {
-              handleOpenDetail(selectedBooking.id);
-            }
+            
           }}
           bookingItemId={reviewingItem.id}
           serviceName={reviewingItem.serviceName}
