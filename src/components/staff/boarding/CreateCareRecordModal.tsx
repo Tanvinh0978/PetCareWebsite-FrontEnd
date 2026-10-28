@@ -70,7 +70,7 @@ export default function CreateCareRecordModal({ open, task, onClose, onSuccess }
           }}
         >
           <Text strong style={{ color: '#c2410c' }}>
-            🍲 Diet add-on:{' '}
+            Diet add-on:{' '}
           </Text>
           <Text style={{ color: '#9a3412', fontWeight: 500 }}>
             {task.dietServiceName}

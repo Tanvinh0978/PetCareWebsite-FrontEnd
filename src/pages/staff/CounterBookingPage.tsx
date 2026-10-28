@@ -107,8 +107,8 @@ export default function CounterBookingPage() {
         bookingItems: [{
           petId: values.petId,
           serviceId: values.serviceId,
-          scheduledStartAt: start.toISOString(),
-          scheduledEndAt: end?.toISOString() ?? null,
+          scheduledStartAt: start.format('YYYY-MM-DDTHH:mm:ss'),
+          scheduledEndAt: end ? end.format('YYYY-MM-DDTHH:mm:ss') : null,
           quantity,
         }],
       })
@@ -127,8 +127,8 @@ export default function CounterBookingPage() {
     <section className="page narrow counter-booking-page">
       <div className="page-head">
         <div>
-          <Title level={2} style={{ margin: 0 }}>Walk-in Booking</Title>
-          <Text type="secondary">Create a counter booking for a customer who arrived in person.</Text>
+          <h1>Add New Booking</h1>
+          <p className="page-subtitle">Create a booking reservation for a walk-in or phone customer.</p>
         </div>
         <Link to={base} className="btn btn-secondary"><ArrowLeftOutlined /> Back to bookings</Link>
       </div>
@@ -139,8 +139,8 @@ export default function CounterBookingPage() {
             type="error"
             showIcon
             style={{ marginBottom: 16 }}
-            message="Không có quyền thao tác"
-            description="Tài khoản của bạn chưa được cấp quyền Tạo đơn đặt lịch tại quầy (BOOKING_CREATE). Vui lòng liên hệ Quản trị viên để được cấp quyền."
+            message="Permission Denied"
+            description="Your account is not granted permission to create bookings (BOOKING_CREATE). Please contact your administrator."
           />
         )}
         <Form form={form} layout="vertical" onFinish={submit}>
@@ -166,7 +166,7 @@ export default function CounterBookingPage() {
               placeholder={selectedCustomerId ? 'Select this customer’s pet' : 'Select a customer first'}
               options={pets.map((pet) => {
                 const isCat = pet.species === 1 || String(pet.species).toLowerCase() === 'cat';
-                return { value: pet.id, label: `${isCat ? '🐱' : '🐶'} ${pet.name} (${isCat ? 'Cat' : 'Dog'}) · ${pet.weight} kg` };
+                return { value: pet.id, label: `${pet.name} (${isCat ? 'Cat' : 'Dog'}, ${pet.weight} kg)` };
               })}
             />
           </Form.Item>
@@ -179,7 +179,7 @@ export default function CounterBookingPage() {
               options={availableServices.map((service) => {
                 const isBoarding = String(service.serviceType).toLowerCase() === 'boarding';
                 const tier = getRoomTierInfo(service.roomTypeName, service.name);
-                const tag = isBoarding ? `[${tier.badgeText}]` : `[✂️ ${service.serviceType}]`;
+                const tag = isBoarding ? `[${tier.badgeText}]` : `[${service.serviceType}]`;
                 return { value: service.id, label: `${service.name} ${tag}` };
               })}
               onChange={() => form.setFieldsValue({ appointmentAt: undefined, boardingDates: undefined })}

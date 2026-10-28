@@ -1,3 +1,4 @@
+import { SpeciesBadge, DogIcon, CatIcon } from '@/components/common/PetIcons'
 import { useEffect, useState } from 'react'
 import { Link, useParams, useLocation } from 'react-router-dom'
 import { customerService } from '@/services/customer.service'
@@ -79,7 +80,7 @@ export default function CustomerDetail({ backTo, editTo }: CustomerDetailProps) 
       <div className="page-head">
         <div>
           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0369a1', background: '#e0f2fe', padding: '0.2rem 0.75rem', borderRadius: '999px', border: '1px solid #bae6fd' }}>
-            👤 Customer Profile
+            Customer Profile
           </span>
           <h1 style={{ marginTop: '0.5rem' }}>{customer.fullName}</h1>
         </div>
@@ -173,7 +174,7 @@ export default function CustomerDetail({ backTo, editTo }: CustomerDetailProps) 
               <tbody>
                 {pets.map((p) => {
                   const isPetCat = isCat(p.species)
-                  const speciesIcon = getPetSpeciesIcon(p.species)
+                  const speciesIcon = isPetCat ? <CatIcon size={16} /> : <DogIcon size={16} />
                   const speciesLabel = getPetSpeciesLabel(p.species)
 
                   return (
@@ -200,7 +201,7 @@ export default function CustomerDetail({ backTo, editTo }: CustomerDetailProps) 
                           background: isPetCat ? '#f3e8ff' : '#e0f2fe',
                           color: isPetCat ? '#7e22ce' : '#0369a1',
                         }}>
-                          {speciesIcon} {speciesLabel}
+                          {speciesLabel}
                         </span>
                       </td>
                       <td>{p.breed || '—'}</td>

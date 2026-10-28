@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { Modal } from 'antd'
+import { DogIcon, CatIcon } from '@/components/common/PetIcons'
+import { EyeOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { useNavigate, Link } from 'react-router-dom'
 import { petService } from '@/services/pet.service'
 import { isCat } from '@/types/pet.types'
@@ -107,7 +110,7 @@ const MyPetsPage: React.FC = () => {
         </div>
       ) : pets.length === 0 ? (
         <div className="table-empty-box" style={{ marginTop: '2rem' }}>
-          <span style={{ fontSize: '3rem' }}>🐾</span>
+          <DogIcon size={48} style={{ color: "var(--primary)" }} />
           <h3>No pets yet</h3>
           <p>You haven't added any pets to your account yet.</p>
           <button
@@ -130,7 +133,7 @@ const MyPetsPage: React.FC = () => {
           {pets.map((pet) => {
             const isPetCat = isCat(pet.species)
             const speciesLabel = isPetCat ? 'Cat' : 'Dog'
-            const speciesIcon = isPetCat ? '🐱' : '🐶'
+            const speciesIcon = isPetCat ? <CatIcon size={16} /> : <DogIcon size={16} />
 
             return (
               <div
@@ -169,7 +172,9 @@ const MyPetsPage: React.FC = () => {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (
-                    <span style={{ fontSize: '4rem' }}>{speciesIcon}</span>
+                    <div style={{ color: isPetCat ? '#7e22ce' : '#0369a1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isPetCat ? <CatIcon size={56} /> : <DogIcon size={56} />}
+                    </div>
                   )}
                   <span
                     style={{
@@ -211,7 +216,7 @@ const MyPetsPage: React.FC = () => {
                 {/* Card Actions */}
                 <div
                   style={{
-                    padding: '10px 16px',
+                    padding: '10px 14px',
                     borderTop: '1px solid #f1f5f9',
                     display: 'flex',
                     gap: 8,
@@ -220,26 +225,45 @@ const MyPetsPage: React.FC = () => {
                   <Link
                     to={`/customer/pets/${pet.id}`}
                     className="btn-action view"
-                    style={{ flex: 1, justifyContent: 'center' }}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
                     title="View Details"
                   >
-                    View
+                    <EyeOutlined /> View
                   </Link>
                   <Link
                     to={`/customer/pets/${pet.id}/edit`}
                     className="btn-action edit"
-                    style={{ flex: 1, justifyContent: 'center' }}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
                     title="Edit"
                   >
-                    Edit
+                    <EditOutlined /> Edit
                   </Link>
                   <button
                     type="button"
                     className="btn-action danger"
                     onClick={() => handleDelete(pet)}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
                     title="Delete"
                   >
-                    🗑
+                    <DeleteOutlined /> Delete
                   </button>
                 </div>
               </div>
@@ -248,38 +272,81 @@ const MyPetsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation */}
-      {petToDelete && (
-        <div className="confirm-backdrop">
-          <div className="confirm-dialog" role="dialog" aria-modal="true">
-            <div className="confirm-icon danger">🗑</div>
-            <h3>Remove Pet?</h3>
-            <p>
-              Are you sure you want to remove{' '}
-              <strong>"{petToDelete.name}"</strong> from your account?
-            </p>
-            <div className="confirm-actions">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                disabled={deleting}
-                onClick={() => setPetToDelete(null)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-action danger"
-                disabled={deleting}
-                onClick={confirmDelete}
-                style={{ padding: '0.65rem 1.4rem', color: '#fff' }}
-              >
-                {deleting ? 'Removing...' : 'Yes, Remove'}
-              </button>
-            </div>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={Boolean(petToDelete)}
+        onCancel={() => setPetToDelete(null)}
+        footer={null}
+        centered
+        width={420}
+        destroyOnClose
+        className="luxury-modal"
+      >
+        <div style={{ textAlign: 'center', padding: '16px 8px 8px' }}>
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              backgroundColor: '#fef2f2',
+              color: '#dc2626',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 26,
+              margin: '0 auto 16px',
+              border: '1px solid #fecaca',
+            }}
+          >
+            <DeleteOutlined />
+          </div>
+          <h3 style={{ margin: '0 0 8px', fontSize: '1.25rem', fontWeight: 700, color: '#3d2d23' }}>
+            Remove Pet?
+          </h3>
+          <p style={{ margin: '0 0 24px', color: '#6b5a4e', fontSize: '0.92rem', lineHeight: 1.5 }}>
+            Are you sure you want to remove <strong>"{petToDelete?.name}"</strong> from your account?
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={deleting}
+              onClick={() => setPetToDelete(null)}
+              style={{
+                flex: 1,
+                padding: '0.6rem 1.2rem',
+                borderRadius: 8,
+                backgroundColor: 'var(--paper, #fdf9f3)',
+                borderColor: '#e8ded6',
+                color: '#3d2d23',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn"
+              disabled={deleting}
+              onClick={confirmDelete}
+              style={{
+                flex: 1,
+                padding: '0.6rem 1.2rem',
+                borderRadius: 8,
+                backgroundColor: '#dc2626',
+                borderColor: '#dc2626',
+                color: '#ffffff',
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(220,38,38,0.25)',
+              }}
+            >
+              {deleting ? 'Removing...' : 'Yes, Remove'}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </section>
   )
 }

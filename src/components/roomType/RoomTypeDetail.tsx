@@ -52,7 +52,7 @@ export default function RoomTypeDetail({ backTo, guest }: RoomTypeDetailProps) {
       <div className="page-head">
         <div>
           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#b45309', background: '#fef3c7', padding: '0.2rem 0.75rem', borderRadius: '999px', border: '1px solid #fde68a' }}>
-            🏨 Pet Hotel Suite
+            Pet Hotel Suite
           </span>
           <h1 style={{ marginTop: '0.5rem' }}>{roomType.name}</h1>
         </div>
@@ -93,21 +93,21 @@ export default function RoomTypeDetail({ backTo, guest }: RoomTypeDetailProps) {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span style={{ fontSize: '1.3rem' }}>🛡️</span>
+            
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Sanitized & Safe</div>
               <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Clean and hygienic suites</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span style={{ fontSize: '1.3rem' }}>❄️</span>
+            
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Climate Controlled</div>
               <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Ventilated and comfortable</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span style={{ fontSize: '1.3rem' }}>📋</span>
+            
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Daily Care Logs</div>
               <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Care notes & status updates</div>

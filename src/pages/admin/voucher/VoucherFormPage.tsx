@@ -2,6 +2,8 @@ import React, { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { App } from 'antd'
 import { voucherService } from '@/services/voucher.service'
+import { useAuthStore } from '@/store/useAuthStore'
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
@@ -31,6 +33,8 @@ const AdminVoucherFormPage: React.FC = () => {
   const backPath = location.pathname.startsWith('/staff') ? '/staff/vouchers' : '/admin/vouchers'
   const { message } = App.useApp()
   const editing = Boolean(id)
+  const user = useAuthStore((s) => s.user)
+  const canManage = hasPermission(user, PERMISSIONS.VOUCHER_MANAGE)
 
   const [loading, setLoading] = useState(editing)
   const [saving, setSaving] = useState(false)
@@ -126,6 +130,15 @@ const AdminVoucherFormPage: React.FC = () => {
     } finally {
       setSaving(false)
     }
+  }
+
+  if (!canManage) {
+    return (
+      <section className="page" style={{ maxWidth: '680px' }}>
+        <p className="msg error" role="alert">You do not have permission to manage vouchers.</p>
+        <Link to={backPath} className="btn btn-secondary">← Back to vouchers</Link>
+      </section>
+    )
   }
 
   return (

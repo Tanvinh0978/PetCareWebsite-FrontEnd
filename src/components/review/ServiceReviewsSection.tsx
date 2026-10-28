@@ -203,20 +203,17 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
               size="large"
               loading={checkingBooking}
               style={{
-                backgroundColor: '#059669',
-                borderColor: '#059669',
+                backgroundColor: '#3d2d23', borderColor: '#3d2d23',
                 borderRadius: 8,
                 fontWeight: 600,
-                boxShadow: '0 2px 6px rgba(5, 150, 105, 0.25)',
+                boxShadow: '0 2px 6px rgba(61, 45, 35, 0.25)',
               }}
               onClick={handleWriteReviewClick}
             >
               Write a Review
             </Button>
             <div style={{ marginTop: 4 }}>
-              <Text type="secondary" style={{ fontSize: 11, color: '#64748b' }}>
-                ✓ Only available for customers with completed appointments
-              </Text>
+              <Text type="secondary" style={{ fontSize: 11, color: "#8c7662" }}>• Only available for customers with completed appointments</Text>
             </div>
           </div>
         )}
@@ -225,10 +222,7 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
       {/* Rating Overview Summary */}
       <div
         style={{
-          background: '#f8fafc',
-          borderRadius: 16,
-          padding: '24px',
-          border: '1px solid #f1f5f9',
+          background: 'var(--paper, #fdf9f3)', borderRadius: 16, padding: '24px', border: '1px solid #eeddc8',
           marginBottom: 28,
         }}
       >
@@ -274,7 +268,7 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
                     </Space>
                     <Progress
                       percent={percent}
-                      strokeColor={star >= 4 ? '#10b981' : star === 3 ? '#f59e0b' : '#ef4444'}
+                      strokeColor={star >= 4 ? '#c69f7b' : star === 3 ? '#d97706' : '#e11d48'}
                       showInfo={false}
                       style={{ flex: 1, margin: 0 }}
                     />
@@ -299,11 +293,11 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
           }}
           options={[
             { label: 'All Reviews', value: 'all' },
-            { label: '⭐⭐⭐⭐⭐ 5 Stars', value: '5' },
-            { label: '⭐⭐⭐⭐ 4 Stars', value: '4' },
-            { label: '⭐⭐⭐ 3 Stars', value: '3' },
-            { label: '⭐⭐ 2 Stars', value: '2' },
-            { label: '⭐ 1 Star', value: '1' },
+            { label: '★ 5 Stars', value: '5' },
+            { label: '★ 4 Stars', value: '4' },
+            { label: '★ 3 Stars', value: '3' },
+            { label: '★ 2 Stars', value: '2' },
+            { label: '★ 1 Star', value: '1' },
           ]}
           style={{ padding: 4 }}
         />
@@ -346,8 +340,7 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
                     <Avatar
                       src={rev.customerAvatarUrl}
                       icon={<UserOutlined />}
-                      size={44}
-                      style={{ backgroundColor: '#059669', flexShrink: 0 }}
+                      size={44} style={{ backgroundColor: '#785839', flexShrink: 0 }}
                     />
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -355,60 +348,82 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
                           {rev.customerName || 'Customer'}
                         </Text>
                         <Tag
-                          icon={<CheckCircleFilled style={{ color: '#10b981' }} />}
+                          icon={<CheckCircleFilled style={{ color: '#c69f7b' }} />}
                           style={{
                             borderRadius: 12,
-                            background: '#ecfdf5',
-                            borderColor: '#a7f3d0',
-                            color: '#065f46',
+                            background: '#f5efe8',
+                            borderColor: '#e8ded4',
+                            color: '#785839',
                             fontSize: 11,
                           }}
                         >
                           Verified Customer
                         </Tag>
                         {isOwner && (
-                          <Tag color="gold" style={{ borderRadius: 8, fontSize: 11 }}>
+                          <Tag
+                            style={{
+                              borderRadius: 8,
+                              fontSize: 11,
+                              background: '#faf2e9',
+                              borderColor: '#c69f7b',
+                              color: '#3d2d23',
+                              fontWeight: 600,
+                            }}
+                          >
                             Your Review
                           </Tag>
                         )}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
                         <Rate disabled value={rev.rating} style={{ fontSize: 13, color: '#f59e0b' }} />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
+                        <Text type="secondary" style={{ fontSize: 12, color: '#8c7662' }}>
                           {dayjs(rev.createdAt).format('DD/MM/YYYY HH:mm')} ({dayjs(rev.createdAt).fromNow()})
                         </Text>
+                        {rev.updatedAt && (
+                          <Tag style={{ borderRadius: 6, fontSize: 10, background: '#f5efe8', borderColor: '#e8ded6', color: '#8c7662', margin: 0 }}>
+                            Edited
+                          </Tag>
+                        )}
                       </div>
                     </div>
                   </Space>
 
                   {(isOwner || isAdmin) && (
-                    <Space size="small">
-                      {isOwner && (
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<EditOutlined />}
-                          style={{ color: '#0ea5e9' }}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      {/* Only show Edit if user is owner and has NOT edited yet */}
+                      {isOwner && !rev.updatedAt && (
+                        <button
+                          type="button"
+                          className="btn-action edit"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
                           onClick={() => {
                             setEditingReview(rev)
                             setEditModalOpen(true)
                           }}
+                          title="Edit your review (allowed once)"
                         >
-                          Edit
-                        </Button>
+                          <EditOutlined /> Edit
+                        </button>
                       )}
                       <Popconfirm
                         title="Delete this review?"
+                        description="Are you sure you want to permanently delete this review? You can write a new one afterwards."
                         onConfirm={() => handleDelete(rev.id)}
                         okText="Delete"
                         cancelText="Cancel"
-                        okButtonProps={{ danger: true }}
+                        okButtonProps={{ danger: true, style: { borderRadius: 6 } }}
+                        cancelButtonProps={{ style: { borderRadius: 6 } }}
                       >
-                        <Button type="text" danger size="small" icon={<DeleteOutlined />}>
-                          Delete
-                        </Button>
+                        <button
+                          type="button"
+                          className="btn-action danger"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+                          title="Delete review"
+                        >
+                          <DeleteOutlined /> Delete
+                        </button>
                       </Popconfirm>
-                    </Space>
+                    </div>
                   )}
                 </div>
 
@@ -504,7 +519,7 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
           <Button
             key="book"
             type="primary"
-            style={{ backgroundColor: '#059669', borderColor: '#059669' }}
+            style={{ backgroundColor: '#3d2d23', borderColor: '#3d2d23' }}
             onClick={() => {
               setNotEligibleModalOpen(false)
               navigate('/customer/booking')

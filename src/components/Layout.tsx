@@ -1,3 +1,5 @@
+import { PhoneOutlined, EnvironmentOutlined, MailOutlined } from '@ant-design/icons'
+import { PawIcon } from '@/components/common/PetIcons'
 import { useEffect } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Dropdown, type MenuProps } from "antd";
@@ -100,7 +102,7 @@ export default function Layout({ role }: { role: Role }) {
       <div className="shell">
         <aside className="sidebar">
           <Link to={base || "/"} className="brand">
-            <span>🐾</span> PetCare <span style={{ fontSize: '0.75rem', background: '#334155', color: '#94a3b8', padding: '0.15rem 0.5rem', borderRadius: '4px', textTransform: 'uppercase' }}>{role === 'staff' && user?.roles?.[0] ? user.roles[0] : role}</span>
+            <PawIcon size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} /> PetCare <span style={{ fontSize: '0.75rem', background: '#334155', color: '#94a3b8', padding: '0.15rem 0.5rem', borderRadius: '4px', textTransform: 'uppercase' }}>{role === 'staff' && user?.roles?.[0] ? user.roles[0] : role}</span>
           </Link>
           <nav aria-label="Admin and Staff menu">
             <NavLink to={base || "/"} end>
@@ -265,14 +267,14 @@ export default function Layout({ role }: { role: Role }) {
     <div className="customer-shell">
       {/* Top Luxury Announcement Bar */}
       <div className="customer-top-announcement">
-        <span>🐾 <strong>Haven &amp; Hound · PetCare</strong> — Professional Pet Sanctuary &amp; Hotel</span>
-        <span>📞 Hotline: <a href="tel:02839397387">(028) 3939-PETS</a></span>
+        <span><PawIcon size={13} style={{ marginRight: 6, verticalAlign: 'middle', color: '#c69f7b' }} /> <strong>Haven &amp; Hound · PetCare</strong> — Professional Pet Sanctuary &amp; Hotel</span>
+        <span><PhoneOutlined style={{ marginRight: 4 }} /> Hotline: <a href="tel:02839397387">(028) 3939-PETS</a></span>
       </div>
 
       <header className="customer-header">
         <div className="customer-header-inner">
           <Link to={base || "/"} className="brand-logo">
-            🐾 <span>Haven &amp; Hound</span>
+            <PawIcon size={18} style={{ marginRight: 6, verticalAlign: 'middle', color: 'var(--primary)' }} /> <span>Haven &amp; Hound</span>
             <small style={{ fontSize: '0.72rem', fontWeight: 600, color: '#8c7b6f', textTransform: 'uppercase', letterSpacing: '0.08em', marginLeft: '4px' }}>
               PetCare
             </small>
@@ -360,7 +362,7 @@ export default function Layout({ role }: { role: Role }) {
       <footer className="customer-footer">
         <div className="customer-footer-inner">
           <div className="footer-col">
-            <div className="footer-brand">🐾 Haven &amp; Hound</div>
+            <div className="footer-brand"><PawIcon size={18} style={{ marginRight: 6, verticalAlign: 'middle', color: '#c69f7b' }} /> Haven &amp; Hound</div>
             <p style={{ color: '#c69f7b', fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.5rem' }}>
               Boutique Pet Sanctuary &amp; Care
             </p>
@@ -395,9 +397,9 @@ export default function Layout({ role }: { role: Role }) {
           </div>
           <div className="footer-col">
             <h4>Concierge</h4>
-            <p>📍 123 Cotswolds Way, Pet Sanctuary</p>
-            <p>📞 Hotline: (028) 3939-PETS</p>
-            <p>✉️ concierge@havenandhound.com</p>
+            <p><EnvironmentOutlined style={{ marginRight: 6 }} /> 123 Cotswolds Way, Pet Sanctuary</p>
+            <p><PhoneOutlined style={{ marginRight: 6 }} /> Hotline: (028) 3939-PETS</p>
+            <p><MailOutlined style={{ marginRight: 6 }} /> concierge@havenandhound.com</p>
           </div>
         </div>
         <div className="footer-bottom">

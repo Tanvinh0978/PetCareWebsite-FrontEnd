@@ -2018,44 +2018,60 @@ legend {
   justify-content: center;
   overflow: hidden;
   position: relative;
-  border: 1.5px dashed #a8c9b8;
-  background: #f7fbf8;
+  border: 1.5px dashed #c69f7b;
+  background: var(--paper, #fdf9f3);
   transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
 }
 .image-upload-preview:not(.has-image):hover {
-  border-color: var(--primary);
-  background: #effaf3;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, .08);
+  border-color: #785839;
+  background: #fbf5ee;
+  box-shadow: 0 0 0 3px rgba(120, 88, 57, 0.08);
 }
-.image-upload-preview.is-circle:not(.has-image) { background: #f7fbf8; }
+.image-upload-preview.is-circle:not(.has-image) { background: var(--paper, #fdf9f3); }
 .image-upload-placeholder { display: grid; justify-items: center; gap: 5px; padding: 8px; }
-.image-upload-placeholder .anticon { color: #059669 !important; font-size: 27px; }
-.image-upload-title { color: #34443b; font-weight: 650; line-height: 1.35; }
+.image-upload-placeholder .anticon { color: #785839 !important; font-size: 27px; }
+.image-upload-title { color: #3d2d23; font-weight: 650; line-height: 1.35; }
 .image-upload-controls { display: flex; flex-direction: column; gap: 6px; }
 .image-upload-controls .ant-btn {
   border-radius: 9px;
   font-weight: 600;
-  background: #f1f8f3;
-  border-color: #d7e8dc;
-  color: #286044;
+  background: var(--paper, #fdf9f3);
+  border-color: #e8ded6;
+  color: #3d2d23;
   box-shadow: none;
 }
-.image-upload-controls .ant-btn:hover { background: #e7f4eb; border-color: #9bc9aa; color: #17613d; }
-.image-upload-controls .ant-typography { color: #718078; line-height: 1.45; }
+.image-upload-controls .ant-btn:hover { background: #f5efe6; border-color: #c69f7b; color: #26180f; }
+.image-upload-controls .ant-typography { color: #8c7b6f; line-height: 1.45; }
 :root[data-theme="dark"] .image-upload-preview {
-  border-color: #586576;
-  background: #2c3745;
+  border-color: #523e30;
+  background: #241913;
 }
-:root[data-theme="dark"] .image-upload-preview:not(.has-image):hover { background: #344355; border-color: #10b981; }
-:root[data-theme="dark"] .image-upload-placeholder .anticon { color: #34d399 !important; }
-:root[data-theme="dark"] .image-upload-title { color: #e2e8f0; }
-:root[data-theme="dark"] .image-upload-controls .ant-typography { color: #a8b4c5; }
+:root[data-theme="dark"] .image-upload-preview:not(.has-image):hover { background: #2f2119; border-color: #c69f7b; }
+:root[data-theme="dark"] .image-upload-placeholder .anticon { color: #c69f7b !important; }
+:root[data-theme="dark"] .image-upload-title { color: #e8ded6; }
+:root[data-theme="dark"] .image-upload-controls .ant-typography { color: #a89a8f; }
 :root[data-theme="dark"] .image-upload-controls .ant-btn {
-  background: #172b29;
-  border-color: #35564b;
-  color: #c5ead4;
+  background: #241913;
+  border-color: #4a382b;
+  color: #e8ded6;
 }
-:root[data-theme="dark"] .image-upload-controls .ant-btn:hover { background: #1b3930; border-color: #10b981; color: #d9fbe5; }
+:root[data-theme="dark"] .image-upload-controls .ant-btn:hover { background: #32231b; border-color: #c69f7b; color: #ffffff; }
+
+/* Luxury Select & Input */
+.luxury-select .ant-select-selector {
+  border-radius: 10px !important;
+  border-color: #e8ded6 !important;
+  background-color: #ffffff !important;
+  font-size: 0.95rem !important;
+  box-shadow: 0 1px 2px rgba(38, 24, 15, 0.03) !important;
+}
+.luxury-select:hover .ant-select-selector {
+  border-color: #c69f7b !important;
+}
+.luxury-select.ant-select-focused .ant-select-selector {
+  border-color: #785839 !important;
+  box-shadow: 0 0 0 2px rgba(120, 88, 57, 0.15) !important;
+}
 
 .boarding-tasks-page { padding-bottom: 48px; }
 .boarding-summary-row {
@@ -2124,7 +2140,7 @@ legend {
    ========================================================================== */
 .booking-page-wrap {
   padding: 2.5rem 1.25rem 4rem;
-  max-width: 900px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 .booking-hero-header {
@@ -2319,3 +2335,119 @@ legend {
   color: var(--accent) !important;
 }
 
+
+/* ==========================================================================
+   Custom Confirmation Dialogs & Backdrops
+   ========================================================================== */
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(24, 15, 10, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeInConfirmBackdrop 0.2s ease-out;
+}
+
+.confirm-dialog {
+  background: var(--paper-card, #ffffff);
+  border: 1px solid var(--slate-200, #e8ded6);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px -10px rgba(38, 24, 15, 0.25);
+  width: 100%;
+  max-width: 440px;
+  padding: 24px 28px;
+  text-align: center;
+  position: relative;
+  animation: scaleInConfirmDialog 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.confirm-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 16px;
+}
+
+.confirm-icon.danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.confirm-icon.warning {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.confirm-icon.info {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.confirm-dialog h3 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--slate-900, #26180f);
+}
+
+.confirm-dialog p {
+  margin: 0 0 20px;
+  color: var(--slate-600, #6b5a4e);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.confirm-actions .btn {
+  flex: 1;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-actions .btn.btn-action.danger {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
+.confirm-actions .btn.btn-action.danger:hover {
+  background-color: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+@keyframes fadeInConfirmBackdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleInConfirmDialog {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

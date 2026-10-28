@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import dayjs from 'dayjs'
 import {
   Modal,
   Spin,
@@ -18,6 +19,9 @@ import {
 } from 'antd'
 import {
   CheckCircleOutlined,
+  CheckCircleFilled,
+  ClockCircleOutlined,
+  SyncOutlined,
   UserOutlined,
   PhoneOutlined,
   ShopOutlined,
@@ -26,7 +30,9 @@ import {
   PrinterOutlined,
   StopOutlined,
   CloseOutlined,
+  CloseCircleOutlined,
   CameraOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons'
 import {
   bookingService,
@@ -37,6 +43,7 @@ import { staffService } from '@/services/staff.service'
 import type { StaffDTO } from '@/types/staff.types'
 import { roomService, type RoomDTO } from '@/services/room.service'
 import { ReceiptModal } from './ReceiptModal'
+import { BookingStatusBadge } from '@/components/common/PetIcons'
 import { useAuthStore } from '@/store/useAuthStore'
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
@@ -174,11 +181,11 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     setConfirmLoading(true)
     try {
       await bookingService.updateBookingStatus(bookingId, { status: 1 })
-      message.success('Đã xác nhận đơn đặt lịch thành công! Bây giờ bạn có thể phân công nhân viên.')
+      message.success('Booking confirmed successfully! You can now assign staff and rooms.')
       if (onUpdated) onUpdated()
       await loadData(bookingId)
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Không thể xác nhận đơn đặt lịch.'
+      const msg = err?.response?.data?.message || err?.message || 'Failed to confirm booking.'
       message.error(msg)
     } finally {
       setConfirmLoading(false)
@@ -206,11 +213,11 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     setNoShowLoading(true)
     try {
       await bookingService.markNoShow(bookingId)
-      message.success('Đã đánh dấu khách không đến (No-Show). Lịch hẹn và phòng đã được giải phóng.')
+      message.success('Marked as No-Show. Scheduled room and staff resources released.')
       if (onUpdated) onUpdated()
       await loadData(bookingId)
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Không thể đánh dấu No-Show.'
+      const msg = err?.response?.data?.message || err?.message || 'Failed to mark as No-Show.'
       message.error(msg)
     } finally {
       setNoShowLoading(false)
@@ -221,14 +228,14 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     if (!bookingId) return
     setCancelLoading(true)
     try {
-      await bookingService.cancelBooking(bookingId, cancellationReason.trim() || 'Khách liên hệ xin hủy hẹn')
-      message.success('Đơn đặt lịch đã được hủy thành công.')
+      await bookingService.cancelBooking(bookingId, cancellationReason.trim() || 'Customer requested cancellation')
+      message.success('Booking has been successfully cancelled.')
       setCancelModalOpen(false)
       setCancellationReason('')
       if (onUpdated) onUpdated()
       await loadData(bookingId)
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Không thể hủy đơn đặt lịch.'
+      const msg = err?.response?.data?.message || err?.message || 'Failed to cancel booking.'
       message.error(msg)
     } finally {
       setCancelLoading(false)
@@ -324,14 +331,56 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
   const getItemStatusTag = (status: number | string) => {
     const s = String(status).toLowerCase()
-    if (s === '0' || s === 'pending') return <Tag color="warning">Pending</Tag>
-    if (s === '1' || s === 'confirmed') return <Tag color="blue">Confirmed</Tag>
-    if (s === '2' || s === 'checked_in' || s === 'checkedin') return <Tag color="orange">Checked In</Tag>
-    if (s === '3' || s === 'in_progress' || s === 'inprogress') return <Tag color="processing">In Progress</Tag>
-    if (s === '4' || s === 'completed') return <Tag color="success">Completed</Tag>
-    if (s === '5' || s === 'cancelled') return <Tag color="error">Cancelled</Tag>
-    if (s === '6' || s === 'no_show' || s === 'noshow') return <Tag color="purple">No Show</Tag>
-    return <Tag>{status}</Tag>
+    if (s === '0' || s === 'pending') {
+      return (
+        <Tag icon={<ClockCircleOutlined />} style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a', color: '#b45309', fontWeight: 600, borderRadius: 6 }}>
+          Pending
+        </Tag>
+      )
+    }
+    if (s === '1' || s === 'confirmed') {
+      return (
+        <Tag icon={<CheckCircleOutlined />} style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontWeight: 600, borderRadius: 6 }}>
+          Confirmed
+        </Tag>
+      )
+    }
+    if (s === '2' || s === 'checked_in' || s === 'checkedin') {
+      return (
+        <Tag icon={<CheckCircleOutlined />} style={{ backgroundColor: '#fff7ed', borderColor: '#fed7aa', color: '#c2410c', fontWeight: 600, borderRadius: 6 }}>
+          Checked In
+        </Tag>
+      )
+    }
+    if (s === '3' || s === 'in_progress' || s === 'inprogress') {
+      return (
+        <Tag icon={<SyncOutlined spin />} style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', color: '#2563eb', fontWeight: 600, borderRadius: 6 }}>
+          In Progress
+        </Tag>
+      )
+    }
+    if (s === '4' || s === 'completed') {
+      return (
+        <Tag icon={<CheckCircleFilled />} style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', color: '#15803d', fontWeight: 600, borderRadius: 6 }}>
+          Completed
+        </Tag>
+      )
+    }
+    if (s === '5' || s === 'cancelled') {
+      return (
+        <Tag icon={<CloseCircleOutlined />} style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca', color: '#b91c1c', fontWeight: 600, borderRadius: 6 }}>
+          Cancelled
+        </Tag>
+      )
+    }
+    if (s === '6' || s === 'no_show' || s === 'noshow') {
+      return (
+        <Tag icon={<StopOutlined />} style={{ backgroundColor: '#f5f3ff', borderColor: '#ddd6fe', color: '#6d28d9', fontWeight: 600, borderRadius: 6 }}>
+          No-Show
+        </Tag>
+      )
+    }
+    return <Tag style={{ borderRadius: 6 }}>{status}</Tag>
   }
 
   const columns = [
@@ -339,13 +388,35 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       title: 'Pet',
       dataIndex: 'petName',
       key: 'petName',
-      width: 140,
+      width: 130,
       render: (text: string, r: BookingDetailItem) => (
         <div>
           <Text strong>{text}</Text>
           <div style={{ fontSize: 11, color: '#64748b' }}>{r.petWeight} kg</div>
         </div>
       ),
+    },
+    {
+      title: 'Scheduled Time',
+      key: 'itemScheduledTime',
+      width: 170,
+      render: (_: any, r: BookingDetailItem) => {
+        const start = r.scheduledStartAt ? dayjs(r.scheduledStartAt).format('DD/MM/YYYY HH:mm') : '—';
+        const end = r.scheduledEndAt ? dayjs(r.scheduledEndAt).format('DD/MM/YYYY HH:mm') : null;
+        return (
+          <div style={{ fontSize: 12 }}>
+            <div style={{ fontWeight: 600, color: '#1e293b' }}>
+              <CalendarOutlined style={{ marginRight: 4, color: '#6366f1' }} />
+              {start}
+            </div>
+            {end && (
+              <div style={{ color: '#64748b', marginTop: 2 }}>
+                To: {end}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: 'Service & Room Assignment',
@@ -433,8 +504,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         const isStaffDisabled = isReadOnly || !isConfirmed
         const filteredOptions = getFilteredStaffOptions(r)
         const placeholder = !isConfirmed
-          ? 'Chỉ phân công khi đã Xác nhận'
-          : (isBoarding ? 'Chọn nhân viên Boarding' : 'Chọn nhân viên Grooming')
+          ? 'Available after Confirmation'
+          : (isBoarding ? 'Select Boarding Staff' : 'Select Grooming Staff')
 
         return (
           <div>
@@ -531,18 +602,18 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  Xác nhận đơn (Confirm Booking)
+                  Confirm
                 </Button>
                 <Button
                   danger
                   icon={<CloseOutlined />}
                   onClick={() => {
-                    setCancellationReason('Khách liên hệ xin hủy hẹn')
+                    setCancellationReason('Customer requested cancellation')
                     setCancelModalOpen(true)
                   }}
                   style={{ borderRadius: 8 }}
                 >
-                  Hủy đơn (Cancel)
+                  Cancel
                 </Button>
               </>
             )}
@@ -563,19 +634,19 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         fontWeight: 600,
                       }}
                     >
-                      Check-in Pet at Front Desk
+                      Check-in
                     </Button>
                   ) : (
-                    <Tooltip title="Vui lòng phân công nhân viên và xếp phòng đầy đủ trước khi Check-in.">
+                    <Tooltip title="Please assign staff and room for all services before Check-in.">
                       <Button disabled style={{ borderRadius: 8 }}>
-                        Check-in Pet at Front Desk
+                        Check-in
                       </Button>
                     </Tooltip>
                   )
                 ) : (
-                  <Tooltip title="Bạn không có quyền Check-in (Yêu cầu quyền BOOKING_CHECKIN).">
+                  <Tooltip title="You do not have permission to Check-in (Requires BOOKING_CHECKIN).">
                     <Button disabled style={{ borderRadius: 8 }}>
-                      Check-in Pet at Front Desk
+                      Check-in
                     </Button>
                   </Tooltip>
                 )}
@@ -585,21 +656,21 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     danger
                     icon={<CloseOutlined />}
                     onClick={() => {
-                      setCancellationReason('Khách liên hệ xin hủy hẹn')
+                      setCancellationReason('Customer requested cancellation')
                       setCancelModalOpen(true)
                     }}
                     style={{ borderRadius: 8 }}
                   >
-                    Hủy đơn (Cancel)
+                    Cancel
                   </Button>
                 )}
 
                 {canCancelPerm && (
                   <Popconfirm
-                    title="Đánh dấu khách không đến (No-Show)?"
-                    description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
-                    okText="Xác nhận No-Show"
-                    cancelText="Bỏ qua"
+                    title="Mark customer as No-Show?"
+                    description="Customer missed the appointment. Room and staff assignments will be released."
+                    okText="Mark No-Show"
+                    cancelText="Dismiss"
                     okButtonProps={{ danger: true }}
                     onConfirm={handleNoShow}
                   >
@@ -614,7 +685,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         fontWeight: 600,
                       }}
                     >
-                      Đánh dấu No-Show
+                      No-Show
                     </Button>
                   </Popconfirm>
                 )}
@@ -642,12 +713,12 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  Check-out at Counter
+                  Check-out
                 </Button>
               ) : (
                 <Tooltip title="All service items must be completed by staff before check-out.">
                   <Button disabled style={{ borderRadius: 8 }}>
-                    Check-out at Counter
+                    Check-out
                   </Button>
                 </Tooltip>
               )
@@ -664,7 +735,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   fontWeight: 600,
                 }}
               >
-                In Hóa đơn / Biên lai
+                Print Receipt
               </Button>
             )}
           </Space>
@@ -699,29 +770,29 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   {detail.customerPhone}
                 </a>
               </Descriptions.Item>
+              <Descriptions.Item label="Scheduled Time">
+                <div style={{ fontWeight: 600, color: '#0f172a' }}>
+                  <CalendarOutlined style={{ marginRight: 6, color: '#6366f1' }} />
+                  {detail.bookingItems && detail.bookingItems.length > 0 && detail.bookingItems[0].scheduledStartAt
+                    ? dayjs(detail.bookingItems[0].scheduledStartAt).format('DD/MM/YYYY HH:mm')
+                    : '—'}
+                  {detail.bookingItems && detail.bookingItems.length > 0 && detail.bookingItems[0].scheduledEndAt ? (
+                    <span style={{ color: '#64748b', fontWeight: 400 }}>
+                      {' '}→ Out: {dayjs(detail.bookingItems[0].scheduledEndAt).format('DD/MM/YYYY HH:mm')}
+                    </span>
+                  ) : null}
+                </div>
+              </Descriptions.Item>
               <Descriptions.Item label="Created At">
-                {new Date(detail.createdAt).toLocaleString()}
+                <span style={{ color: '#64748b' }}>
+                  {dayjs(detail.createdAt).format('DD/MM/YYYY HH:mm')}
+                </span>
               </Descriptions.Item>
               <Descriptions.Item label="Booking Status">
-                <Tag
-                  color={
-                    isCompleted
-                      ? 'success'
-                      : isNoShow
-                      ? 'purple'
-                      : isConfirmed
-                      ? 'blue'
-                      : isCancelled
-                      ? 'error'
-                      : 'warning'
-                  }
-                  style={{ fontWeight: 600 }}
-                >
-                  {isCompleted ? 'Completed' : isNoShow ? 'No-Show' : isConfirmed ? 'Confirmed' : isCancelled ? 'Cancelled' : 'Pending'}
-                </Tag>
+                <BookingStatusBadge status={detail.status} reason={detail.cancellationReason} isNoShow={isNoShow} />
               </Descriptions.Item>
               {detail.cancellationReason && (
-                <Descriptions.Item label={isNoShow ? 'Ghi chú No-Show' : 'Lý do hủy'}>
+                <Descriptions.Item label={isNoShow ? 'No-Show Note' : 'Cancellation Reason'}>
                   <Text type="danger">{detail.cancellationReason}</Text>
                 </Descriptions.Item>
               )}
@@ -745,8 +816,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <Alert
                 type="warning"
                 showIcon
-                message="Đơn đặt lịch đang chờ xác nhận (Pending)"
-                description="Hệ thống chỉ cho phép phân công nhân viên sau khi đơn đã được Xác nhận (Confirmed). Vui lòng nhấn nút 'Xác nhận đơn (Confirm Booking)' ở phía dưới góc trái để duyệt đơn."
+                message="Booking Pending Confirmation"
+                description="Staff assignment is available after confirming the booking. Click 'Confirm' below to approve this reservation."
                 style={{ marginBottom: 16, borderRadius: 8 }}
               />
             )}
@@ -756,8 +827,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <Alert
                 type="success"
                 showIcon
-                message="Đơn đặt lịch đã hoàn tất (Check-out)"
-                description="Đơn đặt lịch này đã bàn giao thú cưng và thanh toán hoàn tất. Các phân công nhân viên và phòng đã được khóa cố định."
+                message="Booking Completed (Checked-out)"
+                description="This booking has been completed, pet returned, and fully settled. Resource assignments are locked."
                 style={{ marginBottom: 16, borderRadius: 8 }}
               />
             )}
@@ -766,8 +837,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <Alert
                 type="error"
                 showIcon
-                message="Đơn đặt lịch đã bị hủy"
-                description="Đơn đặt lịch này đã bị hủy. Không thể chỉnh sửa hoặc phân công lại."
+                message="Booking Cancelled"
+                description="This booking was cancelled. Resource assignments cannot be modified."
                 style={{ marginBottom: 16, borderRadius: 8 }}
               />
             )}
@@ -777,8 +848,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <Alert
                 type="warning"
                 showIcon
-                message="Cần phân công trước khi Check-in"
-                description="Vui lòng chọn nhân viên và xếp phòng đầy đủ cho tất cả dịch vụ trước khi bấm Check-in tiếp đón thú cưng."
+                message="Assignment Required Before Check-in"
+                description="Please assign staff and rooms for all services before checking in the pet."
                 style={{ marginBottom: 16, borderRadius: 8 }}
               />
             )}
@@ -809,7 +880,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   expandedRowRender: (record) => (
                     <div style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
                       <Text strong style={{ fontSize: 13, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                        <CameraOutlined /> Hình ảnh Trước & Sau (Before & After) & Kết quả dịch vụ:
+                        <CameraOutlined /> Service Photos (Before & After) & Service Results:
                       </Text>
                       <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
                         <Image.PreviewGroup>
@@ -834,13 +905,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                                 height={80}
                                 style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #10b981' }}
                               />
-                              <div style={{ fontSize: 11, color: '#059669', fontWeight: 600, marginTop: 2 }}>After ⭐</div>
+                              <div style={{ fontSize: 11, color: '#059669', fontWeight: 600, marginTop: 2 }}>After Service</div>
                             </div>
                           )}
                         </Image.PreviewGroup>
                         {record.resultNote && (
                           <div style={{ fontSize: 13, color: '#334155', background: '#ffffff', padding: '8px 12px', borderRadius: 6, border: '1px solid #e2e8f0', flex: 1, minWidth: 200 }}>
-                            <span style={{ fontWeight: 600, color: '#0f766e' }}>Ghi chú kỹ thuật viên:</span> "{record.resultNote}"
+                            <span style={{ fontWeight: 600, color: '#0f766e' }}>Staff Note:</span> "{record.resultNote}"
                           </div>
                         )}
                       </div>
@@ -862,7 +933,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
     {/* Cancel Booking Reason Modal */}
     <Modal
-      title="Hủy đơn đặt lịch"
+      title="Cancel Booking"
       open={cancelModalOpen}
       onCancel={() => {
         setCancelModalOpen(false)
@@ -870,19 +941,19 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       }}
       onOk={handleCancelBooking}
       confirmLoading={cancelLoading}
-      okText="Xác nhận hủy đơn"
+      okText="Confirm Cancel"
       okButtonProps={{ danger: true }}
-      cancelText="Bỏ qua"
+      cancelText="Dismiss"
       centered
     >
       <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
-        Lễ tân thực hiện hủy đơn theo yêu cầu của khách hàng (hoặc lý do bất khả kháng). Vui lòng nhập lý do hủy:
+        Receptionist is cancelling this booking per customer request or unexpected circumstances. Please provide a cancellation reason:
       </p>
       <Input.TextArea
         rows={3}
         value={cancellationReason}
         onChange={(e) => setCancellationReason(e.target.value)}
-        placeholder="Ví dụ: Khách gọi điện xin hủy vì bận đột xuất / Thú cưng đang ốm..."
+        placeholder="e.g. Customer called to cancel / Pet is unwell..."
       />
     </Modal>
     </>

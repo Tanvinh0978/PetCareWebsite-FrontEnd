@@ -296,11 +296,11 @@ const VoucherListPage: React.FC = () => {
                       </p>
                       {hasActiveFilters ? (
                         <button type="button" className="btn" onClick={resetAllFilters}>Clear filters</button>
-                      ) : (
+                      ) : canManage ? (
                         <button type="button" className="btn" onClick={() => navigate(`${baseVoucherPath}/new`)}>
                           + Add first voucher
                         </button>
-                      )}
+                      ) : null}
                     </div>
                   </td>
                 </tr>

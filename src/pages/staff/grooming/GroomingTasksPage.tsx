@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { DogIcon, CatIcon } from '@/components/common/PetIcons'
 import {
   Typography,
   Card,
@@ -525,7 +526,7 @@ export const GroomingTasksPage: React.FC = () => {
                             flexShrink: 0,
                           }}
                         >
-                          {isDog ? '🐶' : '🐱'}
+                          {isDog ? <DogIcon size={18} /> : <CatIcon size={18} />}
                         </div>
                         <div>
                           <Text strong style={{ fontSize: 17, color: '#0f172a', display: 'block', lineHeight: 1.2 }}>
@@ -632,7 +633,7 @@ export const GroomingTasksPage: React.FC = () => {
                                       height={60}
                                       style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #10b981' }}
                                     />
-                                    <div style={{ fontSize: 10, color: '#059669', fontWeight: 600, marginTop: 2 }}>After ⭐</div>
+                                    <div style={{ fontSize: 10, color: '#059669', fontWeight: 600, marginTop: 2 }}>After Service</div>
                                   </div>
                                 )}
                               </Image.PreviewGroup>
@@ -643,7 +644,7 @@ export const GroomingTasksPage: React.FC = () => {
                               ellipsis={{ rows: 2 }}
                               style={{ margin: 0, fontSize: 12, color: '#166534', fontStyle: 'italic' }}
                             >
-                              💬 "{task.resultNote}"
+                              "{task.resultNote}"
                             </Paragraph>
                           )}
                         </div>
@@ -719,7 +720,7 @@ export const GroomingTasksPage: React.FC = () => {
                             boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)',
                           }}
                         >
-                          ✓ Finish & Submit Result
+                          Finish & Submit Result
                         </Button>
                       )}
 

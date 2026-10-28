@@ -39,12 +39,14 @@ import CreateBookingPage from "@/pages/customer/CreateBookingPage";
 import MyPetsPage from "@/pages/customer/MyPetsPage";
 import PetFormPage from "@/pages/customer/PetFormPage";
 import MyBookingsPage from "@/pages/customer/MyBookingsPage";
+import CustomerBookingDetailPage from "@/pages/customer/booking/CustomerBookingDetailPage";
 import CustomerProfilePage from "@/pages/customer/CustomerProfilePage";
 import ReviewManagementPage from "@/pages/admin/review/ReviewManagementPage";
 import PaymentResultPage from "@/pages/customer/PaymentResultPage";
 import StaffProfilePage from "@/pages/staff/StaffProfilePage";
 import GroomingTasksPage from "@/pages/staff/grooming/GroomingTasksPage";
 import BookingManagementPage from "@/pages/admin/booking/BookingManagementPage";
+import AdminBookingDetailPage from "@/pages/admin/booking/AdminBookingDetailPage";
 import BoardingTasksPage from "@/pages/staff/boarding/BoardingTasksPage";
 import CounterBookingPage from "@/pages/staff/CounterBookingPage";
 
@@ -104,6 +106,7 @@ export default function AppRoutes() {
         { path: "reviews", element: <ReviewManagementPage /> },
         { path: "bookings", element: <BookingManagementPage /> },
         { path: "bookings/new", element: <CounterBookingPage /> },
+        { path: "bookings/:id", element: <AdminBookingDetailPage backTo="/admin/bookings" /> },
         { path: "grooming-tasks", element: <GroomingTasksPage /> },
         { path: "boarding-tasks", element: <BoardingTasksPage /> },
         { path: "manage-boarding", element: <BoardingTasksPage /> },
@@ -117,6 +120,7 @@ export default function AppRoutes() {
         { index: true, element: <RequirePermission permission={PERMISSIONS.DASHBOARD_VIEW}><StaffDashboardPage /></RequirePermission> },
         { path: "bookings", element: <RequirePermission permission={PERMISSIONS.BOOKING_VIEW}><BookingManagementPage /></RequirePermission> },
         { path: "bookings/new", element: <RequirePermission permission={PERMISSIONS.BOOKING_CREATE}><CounterBookingPage /></RequirePermission> },
+        { path: "bookings/:id", element: <RequirePermission permission={PERMISSIONS.BOOKING_VIEW}><AdminBookingDetailPage backTo="/staff/bookings" /></RequirePermission> },
         { path: "grooming-tasks", element: <RequirePermission permission={PERMISSIONS.GROOMING_TASK_VIEW}><GroomingTasksPage /></RequirePermission> },
         { path: "boarding-tasks", element: <RequirePermission permission={[PERMISSIONS.CARE_RECORD_VIEW, PERMISSIONS.ROOM_VIEW]}><BoardingTasksPage /></RequirePermission> },
         { path: "manage-boarding", element: <RequirePermission permission={[PERMISSIONS.CARE_RECORD_VIEW, PERMISSIONS.ROOM_VIEW]}><BoardingTasksPage /></RequirePermission> },
@@ -165,6 +169,7 @@ export default function AppRoutes() {
         { path: "pets/:id/edit", element: <PetFormPage /> },
         { path: "booking", element: <CreateBookingPage /> },
         { path: "bookings", element: <MyBookingsPage /> },
+        { path: "bookings/:id", element: <CustomerBookingDetailPage /> },
         { path: "payment-result", element: <PaymentResultPage /> },
         { path: "profile", element: <CustomerProfilePage /> },
         notFound,

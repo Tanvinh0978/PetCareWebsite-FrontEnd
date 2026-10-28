@@ -20,6 +20,12 @@ import {
   ShopOutlined,
   UserOutlined,
   CheckCircleOutlined,
+  CheckCircleFilled,
+  CloseCircleOutlined,
+  ToolOutlined,
+  LoginOutlined,
+  LogoutOutlined,
+  TeamOutlined,
   ClockCircleOutlined,
   ScissorOutlined,
   HomeOutlined,
@@ -77,16 +83,32 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
   const getStatusBadge = (status: number | string) => {
     const s = Number(status)
     if (s === 0 || status === 'Pending') {
-      return <Tag color="warning">⏳ Pending</Tag>
+      return (
+        <Tag icon={<ClockCircleOutlined />} color="warning">
+          Pending
+        </Tag>
+      )
     }
     if (s === 1 || status === 'Confirmed') {
-      return <Tag color="blue">🔵 Confirmed</Tag>
+      return (
+        <Tag icon={<CheckCircleOutlined />} color="blue">
+          Confirmed
+        </Tag>
+      )
     }
     if (s === 2 || status === 'Completed') {
-      return <Tag color="success">✓ Completed</Tag>
+      return (
+        <Tag icon={<CheckCircleFilled />} color="success">
+          Completed
+        </Tag>
+      )
     }
     if (s === 3 || status === 'Cancelled') {
-      return <Tag color="error">✕ Cancelled</Tag>
+      return (
+        <Tag icon={<CloseCircleOutlined />} color="error">
+          Cancelled
+        </Tag>
+      )
     }
     return <Tag>{status}</Tag>
   }
@@ -117,7 +139,7 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
           {pets && pets.length > 0 ? (
             pets.map((p, idx) => (
               <Tag key={idx} color="purple" style={{ margin: 0, fontSize: 11 }}>
-                🐾 {p}
+                {p}
               </Tag>
             ))
           ) : (
@@ -231,7 +253,7 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                     <Text type="secondary" style={{ fontSize: 13, fontWeight: 600 }}>
                       TODAY'S REVENUE
                     </Text>
-                    <span style={{ fontSize: 20 }}>💵</span>
+                    <DollarOutlined style={{ fontSize: 20, color: '#059669' }} />
                   </div>
                   <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#059669', margin: '6px 0' }}>
                     {vnd.format(stats.revenue.todayRevenue)}
@@ -263,7 +285,7 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                     <Text type="secondary" style={{ fontSize: 13, fontWeight: 600 }}>
                       BOOKING APPOINTMENTS
                     </Text>
-                    <span style={{ fontSize: 20 }}>📅</span>
+                    <CalendarOutlined style={{ fontSize: 20, color: '#2563eb' }} />
                   </div>
                   <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#1e293b', margin: '6px 0' }}>
                     {stats.bookings.todayBookings}{' '}
@@ -301,7 +323,7 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                     <Text type="secondary" style={{ fontSize: 13, fontWeight: 600 }}>
                       HOTEL OCCUPANCY
                     </Text>
-                    <span style={{ fontSize: 20 }}>🏨</span>
+                    <HomeOutlined style={{ fontSize: 20, color: '#d97706' }} />
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '6px 0' }}>
                     <span style={{ fontSize: '1.85rem', fontWeight: 800, color: '#d97706' }}>
@@ -319,8 +341,8 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                     size="small"
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginTop: 6 }}>
-                    <span>🟢 {stats.rooms.availableRooms} Available</span>
-                    <span>🛠️ {stats.rooms.maintenanceRooms} Maintenance</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", display: "inline-block" }}></span> {stats.rooms.availableRooms} Available</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><ToolOutlined style={{ color: "#d97706" }} /> {stats.rooms.maintenanceRooms} Maintenance</span>
                   </div>
                 </Card>
               </Col>
@@ -341,19 +363,19 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                     <Text type="secondary" style={{ fontSize: 13, fontWeight: 600 }}>
                       TODAY'S OPERATIONS
                     </Text>
-                    <span style={{ fontSize: 20 }}>🐾</span>
+                    <ShopOutlined style={{ fontSize: 20, color: '#7c3aed' }} />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '10px 0 6px' }}>
                     <div style={{ background: '#f8fafc', padding: '6px 8px', borderRadius: 8 }}>
                       <div style={{ fontSize: 11, color: '#64748b' }}>Check-ins</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: '#059669' }}>
-                        📥 {stats.operations.todayCheckIns}
+                        <LoginOutlined style={{ marginRight: 4, color: "#059669" }} />{stats.operations.todayCheckIns}
                       </div>
                     </div>
                     <div style={{ background: '#f8fafc', padding: '6px 8px', borderRadius: 8 }}>
                       <div style={{ fontSize: 11, color: '#64748b' }}>Check-outs</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: '#2563eb' }}>
-                        📤 {stats.operations.todayCheckOuts}
+                        <LogoutOutlined style={{ marginRight: 4, color: "#2563eb" }} />{stats.operations.todayCheckOuts}
                       </div>
                     </div>
                   </div>
@@ -417,7 +439,7 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                       }}
                     >
                       <div style={{ fontSize: 12, color: '#0369a1', fontWeight: 600 }}>
-                        ✂️ In Progress
+                        <ScissorOutlined style={{ marginRight: 4 }} /> In Progress
                       </div>
                       <div style={{ fontSize: 24, fontWeight: 800, color: '#075985', marginTop: 4 }}>
                         {stats.operations.todayGroomingInProgress}
@@ -434,7 +456,7 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                       }}
                     >
                       <div style={{ fontSize: 12, color: '#047857', fontWeight: 600 }}>
-                        ✓ Completed Tasks
+                        <CheckCircleOutlined style={{ marginRight: 4 }} /> Completed Tasks
                       </div>
                       <div style={{ fontSize: 24, fontWeight: 800, color: '#065f46', marginTop: 4 }}>
                         {stats.operations.todayGroomingCompleted}
@@ -463,13 +485,13 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 14, color: '#475569' }}>Registered Customers</span>
                       <Text strong style={{ fontSize: 18, color: '#0f172a' }}>
-                        👥 {stats.customers.totalCustomers}
+                        <TeamOutlined style={{ marginRight: 6, color: "#2563eb" }} />{stats.customers.totalCustomers}
                       </Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 14, color: '#475569' }}>Active Registered Pets</span>
                       <Text strong style={{ fontSize: 18, color: '#059669' }}>
-                        🐾 {stats.customers.totalPets}
+                        <span style={{ fontWeight: 700 }}>{stats.customers.totalPets}</span>
                       </Text>
                     </div>
                     <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: 8, fontSize: 12, color: '#64748b' }}>
