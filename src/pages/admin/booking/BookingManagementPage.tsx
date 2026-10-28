@@ -11,7 +11,6 @@ import {
   Card,
   Popconfirm,
   message,
-  Tooltip,
   Typography,
   Modal,
 } from 'antd'
@@ -23,25 +22,20 @@ import {
   EyeOutlined,
   ReloadOutlined,
   DollarCircleOutlined,
-  ShopOutlined,
   CheckOutlined,
   CloseOutlined,
   PlusOutlined,
-  SyncOutlined,
   StopOutlined,
   ClockCircleOutlined,
-  HomeOutlined,
-  ScissorOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
-import BookingDetailModal from '@/components/admin/BookingDetailModal'
 import CheckoutBookingModal from '@/components/admin/CheckoutBookingModal'
 import { BookingStatusBadge, ServiceTypeBadge } from '@/components/common/PetIcons'
 import { useAuthStore } from '@/store/useAuthStore'
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
 
 export default function BookingManagementPage() {
@@ -61,7 +55,6 @@ export default function BookingManagementPage() {
   const [serviceDate, setServiceDate] = useState<string | undefined>(dayjs().format('YYYY-MM-DD'))
 
   // Modals
-  const [detailBookingId, setDetailBookingId] = useState<string | null>(null)
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const currentUser = useAuthStore((s) => s.user)
@@ -177,25 +170,28 @@ export default function BookingManagementPage() {
 
   const columns = [
     {
-      title: 'Booking ID',
+      title: 'BOOKING ID',
       dataIndex: 'id',
       key: 'id',
       width: 140,
       render: (id: string) => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#6366f1' }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#4338ca' }}>
           #{id ? id.slice(0, 8).toUpperCase() : '—'}
         </span>
       ),
     },
     {
-      title: 'Customer',
+      title: 'CUSTOMER',
       key: 'customer',
       width: 200,
       render: (_: any, record: BookingListItem) => (
         <div>
-          <Text strong style={{ fontSize: 14, color: '#0f172a', display: 'block' }}>
+          <Link
+            to={`${isStaff ? '/staff/bookings' : '/admin/bookings'}/${record.id}`}
+            style={{ fontWeight: 700, fontSize: 14, color: 'var(--slate-900)', textDecoration: 'none', display: 'block' }}
+          >
             {record.customerName || 'Guest'}
-          </Text>
+          </Link>
           <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
             Booked: {record.createdAt ? dayjs(record.createdAt).format('DD/MM/YYYY HH:mm') : '—'}
           </div>
@@ -203,9 +199,9 @@ export default function BookingManagementPage() {
       ),
     },
     {
-      title: 'Scheduled Time',
+      title: 'SCHEDULED TIME',
       key: 'scheduledTime',
-      width: 200,
+      width: 210,
       render: (_: any, record: BookingListItem) => {
         const isBoarding =
           record.bookingType === 'Boarding' ||
@@ -216,11 +212,11 @@ export default function BookingManagementPage() {
           const endStr = record.scheduledEndAt ? dayjs(record.scheduledEndAt).format('DD/MM/YYYY HH:mm') : '—';
           return (
             <div>
-              <div style={{ fontWeight: 600, color: '#0f172a', fontSize: 13 }}>
-                <CalendarOutlined style={{ marginRight: 6, color: '#059669' }} />
+              <div style={{ fontWeight: 600, color: 'var(--slate-800)', fontSize: 13 }}>
+                <CalendarOutlined style={{ marginRight: 6, color: 'var(--secondary)' }} />
                 {startStr}
               </div>
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+              <div style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 2 }}>
                 → Out: {endStr}
               </div>
               <ServiceTypeBadge type="Boarding" style={{ marginTop: 4 }} />
@@ -231,8 +227,8 @@ export default function BookingManagementPage() {
         const apptStr = record.scheduledStartAt ? dayjs(record.scheduledStartAt).format('DD/MM/YYYY HH:mm') : '—';
         return (
           <div>
-            <div style={{ fontWeight: 600, color: '#1e293b', fontSize: 13 }}>
-              <CalendarOutlined style={{ marginRight: 6, color: '#6366f1' }} />
+            <div style={{ fontWeight: 600, color: 'var(--slate-800)', fontSize: 13 }}>
+              <CalendarOutlined style={{ marginRight: 6, color: 'var(--secondary)' }} />
               {apptStr}
             </div>
             <ServiceTypeBadge type="Grooming" style={{ marginTop: 4 }} />
@@ -241,20 +237,20 @@ export default function BookingManagementPage() {
       },
     },
     {
-      title: 'Services',
+      title: 'SERVICES',
       dataIndex: 'itemsCount',
       key: 'itemsCount',
-      width: 170,
+      width: 180,
       render: (count: number, record: BookingListItem) => {
         const names = record.serviceNames && record.serviceNames.length > 0
           ? record.serviceNames.join(', ')
           : `${count || 1} Service Item(s)`;
         return (
           <div>
-            <div style={{ fontWeight: 500, color: '#1e293b', fontSize: 13, lineHeight: 1.3 }}>
+            <div style={{ fontWeight: 500, color: 'var(--slate-800)', fontSize: 13, lineHeight: 1.3 }}>
               {names}
             </div>
-            <Tag color="blue" style={{ fontSize: 11, marginTop: 4 }}>
+            <Tag color="blue" style={{ fontSize: 11, marginTop: 4, borderRadius: 6 }}>
               {count || 1} Item(s)
             </Tag>
           </div>
@@ -262,26 +258,26 @@ export default function BookingManagementPage() {
       },
     },
     {
-      title: 'Total Price',
+      title: 'TOTAL PRICE',
       dataIndex: 'totalPrice',
       key: 'totalPrice',
       width: 160,
       render: (price: number) => (
-        <Text strong style={{ fontSize: 15, color: '#059669' }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--secondary)' }}>
           {vnd.format(price)}
-        </Text>
+        </span>
       ),
     },
     {
-      title: 'Status',
+      title: 'STATUS',
       key: 'status',
       width: 190,
       render: (_: any, record: BookingListItem) => getStatusBadge(record.status, record),
     },
     {
-      title: 'Front Desk Actions',
+      title: 'ACTIONS',
       key: 'actions',
-      width: 270,
+      width: 250,
       render: (_: any, record: BookingListItem) => {
         const isPending = Number(record.status) === 0 || record.status === 'Pending'
         const isConfirmed = Number(record.status) === 1 || record.status === 'Confirmed'
@@ -289,6 +285,17 @@ export default function BookingManagementPage() {
 
         return (
           <Space size={6} wrap>
+            {/* Standard "View" button matching Customers/Pets Management */}
+            <Link
+              to={`${isStaff ? '/staff/bookings' : '/admin/bookings'}/${record.id}`}
+              className="btn-action view"
+              title="View booking details"
+              style={{ textDecoration: 'none' }}
+            >
+              <EyeOutlined style={{ fontSize: 13 }} />
+              View
+            </Link>
+
             {/* Pending actions: Confirm or Cancel */}
             {isPending && (
               <>
@@ -299,33 +306,28 @@ export default function BookingManagementPage() {
                   cancelText="Dismiss"
                   onConfirm={() => handleConfirmBooking(record.id)}
                 >
-                  <Button
-                    type="primary"
-                    size="small"
-                    loading={isLoading}
-                    icon={<CheckOutlined />}
-                    style={{
-                      backgroundColor: '#059669',
-                      borderColor: '#059669',
-                      fontWeight: 600,
-                      borderRadius: 6,
-                    }}
+                  <button
+                    type="button"
+                    className="btn-action edit"
+                    disabled={isLoading}
+                    title="Confirm booking"
                   >
+                    <CheckOutlined style={{ fontSize: 12 }} />
                     Confirm
-                  </Button>
+                  </button>
                 </Popconfirm>
 
                 {canCancelPerm && (
-                  <Button
-                    danger
-                    size="small"
-                    loading={isLoading}
-                    icon={<CloseOutlined />}
+                  <button
+                    type="button"
+                    className="btn-action danger"
+                    disabled={isLoading}
                     onClick={() => openCancelModal(record.id)}
-                    style={{ borderRadius: 6 }}
+                    title="Cancel booking"
                   >
+                    <CloseOutlined style={{ fontSize: 12 }} />
                     Cancel
-                  </Button>
+                  </button>
                 )}
               </>
             )}
@@ -341,35 +343,35 @@ export default function BookingManagementPage() {
                     cancelText="Dismiss"
                     onConfirm={() => handleCheckInBooking(record.id)}
                   >
-                    <Button
-                      type="primary"
-                      size="small"
-                      loading={isLoading}
-                      icon={<CheckCircleOutlined />}
+                    <button
+                      type="button"
+                      className="btn-action"
+                      disabled={isLoading}
                       style={{
-                        backgroundColor: '#f59e0b',
-                        borderColor: '#f59e0b',
-                        fontWeight: 600,
-                        borderRadius: 6,
+                        background: '#fef3c7',
+                        borderColor: '#fde68a',
+                        color: '#b45309',
                       }}
+                      title="Check in pet"
                     >
+                      <CheckCircleOutlined style={{ fontSize: 12 }} />
                       Check-in
-                    </Button>
+                    </button>
                   </Popconfirm>
                 )}
 
                 {!record.hasInServiceItems && !record.canCheckout && canCancelPerm && (
                   <>
-                    <Button
-                      danger
-                      size="small"
-                      loading={isLoading}
-                      icon={<CloseOutlined />}
+                    <button
+                      type="button"
+                      className="btn-action danger"
+                      disabled={isLoading}
                       onClick={() => openCancelModal(record.id)}
-                      style={{ borderRadius: 6 }}
+                      title="Cancel booking"
                     >
+                      <CloseOutlined style={{ fontSize: 12 }} />
                       Cancel
-                    </Button>
+                    </button>
 
                     {(record.canMarkNoShow ?? true) && (
                       <Popconfirm
@@ -380,53 +382,44 @@ export default function BookingManagementPage() {
                         okButtonProps={{ danger: true }}
                         onConfirm={() => handleMarkNoShow(record.id)}
                       >
-                        <Button
-                          size="small"
-                          loading={isLoading}
-                          icon={<StopOutlined />}
+                        <button
+                          type="button"
+                          className="btn-action"
+                          disabled={isLoading}
                           style={{
                             borderRadius: 6,
                             color: '#7c3aed',
                             borderColor: '#c4b5fd',
                             backgroundColor: '#f5f3ff',
-                            fontWeight: 600,
                           }}
+                          title="Mark as No-Show"
                         >
+                          <StopOutlined style={{ fontSize: 12 }} />
                           No-Show
-                        </Button>
+                        </button>
                       </Popconfirm>
                     )}
                   </>
                 )}
 
                 {record.canCheckout && (
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<DollarCircleOutlined />}
-                    onClick={() => setCheckoutBookingId(record.id)}
+                  <button
+                    type="button"
+                    className="btn-action"
                     style={{
-                      backgroundColor: '#0284c7',
-                      borderColor: '#0284c7',
-                      fontWeight: 600,
-                      borderRadius: 6,
+                      background: '#e0f2fe',
+                      borderColor: '#bae6fd',
+                      color: '#0369a1',
                     }}
+                    onClick={() => setCheckoutBookingId(record.id)}
+                    title="Check out"
                   >
+                    <DollarCircleOutlined style={{ fontSize: 12 }} />
                     Check-out
-                  </Button>
+                  </button>
                 )}
               </>
             )}
-
-            {/* Detail modal button */}
-            <Button
-              size="small"
-              icon={<EyeOutlined />}
-              onClick={() => setDetailBookingId(record.id)}
-              style={{ borderRadius: 6 }}
-            >
-              View Detail
-            </Button>
           </Space>
         )
       },
@@ -438,55 +431,46 @@ export default function BookingManagementPage() {
 
   return (
     <section className="page wide">
-      <div className="page-head" style={{ marginBottom: '1.25rem' }}>
+      <div className="page-head">
         <div>
-          <Title level={2} style={{ margin: 0, color: '#0f172a' }}>
-            Bookings & Front Desk Management
-          </Title>
-          <Text type="secondary" style={{ fontSize: 14 }}>
-            Search bookings, filter by scheduled service date, confirm phone reservations, and handle customer check-outs.
-          </Text>
+          <h1>Bookings Management</h1>
+          <p className="page-subtitle">View, search, and manage bookings in table format.</p>
         </div>
-        <Space size={8}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {canCreate && (
-            <Link to={createBookingPath}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                style={{
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  backgroundColor: '#059669',
-                  borderColor: '#059669',
-                }}
-              >
-                Counter Booking
-              </Button>
+            <Link to={createBookingPath} className="btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add booking
             </Link>
           )}
-          <Button
-            icon={<ReloadOutlined />}
+          <button
+            type="button"
+            className="btn-action view"
             onClick={() => fetchBookings()}
-            loading={loading}
-            style={{ borderRadius: 8, fontWeight: 500 }}
+            disabled={loading}
+            style={{ height: 42, padding: '0 1.1rem', borderRadius: 999 }}
           >
+            <ReloadOutlined spin={loading} style={{ fontSize: 13 }} />
             Refresh
-          </Button>
-        </Space>
+          </button>
+        </div>
       </div>
 
       {/* Filter Bar */}
       <Card
         style={{
           marginBottom: 18,
-          borderRadius: 12,
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          borderRadius: 14,
+          border: '1px solid var(--slate-200)',
+          boxShadow: 'var(--shadow-xs)',
         }}
-        styles={{ body: { padding: '16px' } }}
+        styles={{ body: { padding: '16px 20px' } }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Top row: Search input + Service Date Picker + Quick date buttons */}
+          {/* Top row: Search input + Service Date Picker + Quick date buttons + Filter Button */}
           <div
             style={{
               display: 'flex',
@@ -496,7 +480,7 @@ export default function BookingManagementPage() {
               justifyContent: 'space-between',
             }}
           >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', flex: 1 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', flex: 1 }}>
               <Input
                 placeholder="Search customer name, phone number..."
                 prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
@@ -511,8 +495,8 @@ export default function BookingManagementPage() {
               />
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CalendarOutlined style={{ color: '#059669', fontSize: 16 }} />
-                <Text strong style={{ fontSize: 13, color: '#475569' }}>
+                <CalendarOutlined style={{ color: 'var(--secondary)', fontSize: 16 }} />
+                <Text strong style={{ fontSize: 13, color: 'var(--slate-700)' }}>
                   Service Date:
                 </Text>
                 <DatePicker
@@ -530,76 +514,83 @@ export default function BookingManagementPage() {
 
               {/* Quick Date Switchers */}
               <Space size={6}>
-                <Button
-                  size="small"
-                  type={serviceDate === todayStr ? 'primary' : 'default'}
+                <button
+                  type="button"
+                  className="btn-action"
                   onClick={() => {
                     setServiceDate(todayStr)
                     setPageNumber(1)
                   }}
                   style={{
-                    borderRadius: 6,
+                    borderRadius: 8,
                     fontSize: 12,
                     fontWeight: 600,
+                    padding: '0.4rem 0.85rem',
                     ...(serviceDate === todayStr
-                      ? { backgroundColor: '#059669', borderColor: '#059669' }
-                      : {}),
+                      ? { backgroundColor: '#3d2d23', borderColor: '#3d2d23', color: '#fff' }
+                      : { backgroundColor: '#fff', borderColor: 'var(--slate-200)', color: 'var(--slate-700)' }),
                   }}
                 >
                   Today
-                </Button>
-                <Button
-                  size="small"
-                  type={serviceDate === tomorrowStr ? 'primary' : 'default'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-action"
                   onClick={() => {
                     setServiceDate(tomorrowStr)
                     setPageNumber(1)
                   }}
                   style={{
-                    borderRadius: 6,
+                    borderRadius: 8,
                     fontSize: 12,
                     fontWeight: 600,
+                    padding: '0.4rem 0.85rem',
                     ...(serviceDate === tomorrowStr
-                      ? { backgroundColor: '#059669', borderColor: '#059669' }
-                      : {}),
+                      ? { backgroundColor: '#3d2d23', borderColor: '#3d2d23', color: '#fff' }
+                      : { backgroundColor: '#fff', borderColor: 'var(--slate-200)', color: 'var(--slate-700)' }),
                   }}
                 >
                   Tomorrow
-                </Button>
-                <Button
-                  size="small"
-                  type={!serviceDate ? 'primary' : 'default'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-action"
                   onClick={() => {
                     setServiceDate(undefined)
                     setPageNumber(1)
                   }}
                   style={{
-                    borderRadius: 6,
+                    borderRadius: 8,
                     fontSize: 12,
                     fontWeight: 600,
-                    ...(!serviceDate ? { backgroundColor: '#475569', borderColor: '#475569' } : {}),
+                    padding: '0.4rem 0.85rem',
+                    ...(!serviceDate
+                      ? { backgroundColor: '#3d2d23', borderColor: '#3d2d23', color: '#fff' }
+                      : { backgroundColor: '#fff', borderColor: 'var(--slate-200)', color: 'var(--slate-700)' }),
                   }}
                 >
                   All Dates
-                </Button>
+                </button>
               </Space>
             </div>
 
-            <Button
-              type="primary"
+            <button
+              type="button"
+              className="btn"
               onClick={() => {
                 setPageNumber(1)
                 fetchBookings()
               }}
               style={{
+                height: 38,
+                padding: '0 1.35rem',
                 borderRadius: 8,
+                fontSize: 13,
                 fontWeight: 600,
-                backgroundColor: '#059669',
-                borderColor: '#059669',
               }}
             >
               Filter
-            </Button>
+            </button>
           </div>
 
           {/* Bottom row: Status filters */}
@@ -640,7 +631,7 @@ export default function BookingManagementPage() {
             </Radio.Group>
 
             {serviceDate && (
-              <span style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginLeft: 8 }}>
+              <span style={{ fontSize: 12, color: 'var(--secondary)', fontWeight: 600, marginLeft: 8 }}>
                 Showing appointments for {serviceDate === todayStr ? 'Today' : serviceDate}
               </span>
             )}
@@ -651,9 +642,9 @@ export default function BookingManagementPage() {
       {/* Bookings Table */}
       <Card
         style={{
-          borderRadius: 12,
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          borderRadius: 14,
+          border: '1px solid var(--slate-200)',
+          boxShadow: 'var(--shadow-xs)',
         }}
         styles={{ body: { padding: '16px' } }}
       >
@@ -677,15 +668,6 @@ export default function BookingManagementPage() {
           scroll={{ x: 960 }}
         />
       </Card>
-
-      {/* Booking Details Modal */}
-      <BookingDetailModal
-        open={Boolean(detailBookingId)}
-        bookingId={detailBookingId}
-        onClose={() => setDetailBookingId(null)}
-        onOpenCheckout={(id) => setCheckoutBookingId(id)}
-        onUpdated={fetchBookings}
-      />
 
       {/* Front Desk Check-out Modal */}
       <CheckoutBookingModal
@@ -713,7 +695,7 @@ export default function BookingManagementPage() {
         cancelText="Dismiss"
         centered
       >
-        <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
+        <p style={{ color: 'var(--slate-600)', fontSize: 13, marginBottom: 12 }}>
           Receptionist is cancelling this booking per customer request or unexpected circumstances. Please provide a cancellation reason:
         </p>
         <Input.TextArea
