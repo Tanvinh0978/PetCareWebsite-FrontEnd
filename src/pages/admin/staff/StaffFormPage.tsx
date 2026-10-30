@@ -178,7 +178,7 @@ const AdminStaffFormPage: React.FC = () => {
           <p className="page-subtitle">
             {editing
               ? 'Update profile details, contact information, and role assignments.'
-              : 'Register a staff account and grant access roles according to job functions.'}
+              : 'Add a new staff account and assign access roles according to job functions.'}
           </p>
         </div>
         <Link to="/admin/staff" className="btn btn-secondary">
@@ -292,11 +292,11 @@ const AdminStaffFormPage: React.FC = () => {
                       cursor: 'pointer',
                       padding: '0.5rem 0.75rem',
                       borderRadius: '6px',
-                      background: isChecked ? '#ecfdf5' : '#ffffff',
-                      border: `1px solid ${isChecked ? '#059669' : '#cbd5e1'}`,
+                      background: isChecked ? '#fdf9f3' : '#ffffff',
+                      border: `1.5px solid ${isChecked ? '#3d2d23' : '#cbd5e1'}`,
                       transition: 'all 0.15s ease',
                       fontWeight: isChecked ? 600 : 400,
-                      color: isChecked ? '#047857' : '#334155',
+                      color: isChecked ? '#3d2d23' : '#334155',
                       margin: 0,
                     }}
                   >
@@ -348,7 +348,7 @@ const AdminStaffFormPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.75rem' }}>
           <button type="submit" className="btn" disabled={saving}>
-            {saving ? 'Saving...' : editing ? 'Update Staff Member' : 'Register Staff Member'}
+            {saving ? 'Saving...' : editing ? 'Update Staff Member' : 'Add Staff Member'}
           </button>
           <button
             type="button"
