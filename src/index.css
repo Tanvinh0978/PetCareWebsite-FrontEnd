@@ -520,7 +520,8 @@ a:hover {
 .customer-footer-inner {
   max-width: 1280px;
   margin: 0 auto;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: 2fr 1fr 1.5fr 1.5fr;
   gap: 2.5rem;
 }
@@ -830,7 +831,8 @@ a:hover {
    Admin Dashboard Metrics
    ========================================================================== */
 .stats-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.25rem;
   margin: 1.5rem 0;
@@ -870,7 +872,8 @@ a:hover {
    Forms & Pricing Table Inputs
    ========================================================================== */
 .form {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 1.35rem;
   background: #fff;
   border: 1px solid var(--slate-200);
@@ -879,7 +882,8 @@ a:hover {
   box-shadow: var(--shadow-sm);
 }
 .form label {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.4rem;
   font-weight: 700;
   font-size: 0.92rem;
@@ -904,7 +908,8 @@ fieldset {
   border: 1px solid var(--slate-200);
   border-radius: 12px;
   padding: 1.25rem;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.85rem;
 }
 legend {
@@ -1030,7 +1035,8 @@ legend {
 .home-hero-container {
   max-width: 1280px;
   margin: 0 auto;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: 1.15fr 0.85fr;
   gap: 3.5rem;
   align-items: center;
@@ -1199,7 +1205,8 @@ legend {
   }
 }
 .bse-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: repeat(4, 1fr) auto;
   gap: 1.25rem;
   align-items: flex-end;
@@ -1278,7 +1285,8 @@ legend {
 
 /* Suites Showcase Grid */
 .suites-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
 }
@@ -1381,7 +1389,8 @@ legend {
 
 /* Curated Rhythms / 4 Pillars Grid */
 .rhythms-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.75rem;
 }
@@ -1439,7 +1448,8 @@ legend {
 
 /* Bento Grid Standards & Caregiver */
 .bento-standards {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: 1.3fr 0.9fr;
   gap: 2rem;
 }
@@ -1561,7 +1571,8 @@ legend {
   background: #ffffff;
   border: 1px solid var(--slate-200);
   border-radius: 20px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
   text-align: center;
@@ -1593,7 +1604,8 @@ legend {
 
 /* Testimonials Grid */
 .testimonials-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
 }
@@ -1736,7 +1748,8 @@ legend {
 
 /* Customer Catalog Cards */
 .grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-top: 1.5rem;
@@ -2076,7 +2089,8 @@ legend {
 
 .boarding-tasks-page { padding-bottom: 48px; }
 .boarding-summary-row {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin: 20px 0;
