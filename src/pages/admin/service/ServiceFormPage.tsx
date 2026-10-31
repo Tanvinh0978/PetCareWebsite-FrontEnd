@@ -1,6 +1,6 @@
 import React, { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { message } from 'antd';
+import { message, Select } from 'antd';
 import {
   ScissorOutlined,
   HomeOutlined,
@@ -286,12 +286,12 @@ export default function ServiceFormPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '190px 1fr',
+              gridTemplateColumns: '210px 1fr',
               gap: '1.5rem',
               alignItems: 'start',
             }}
           >
-            {/* Left: Service Photo Card */}
+            {/* Left: Service Photo Card (Centered) */}
             <div
               style={{
                 background: '#fdfbf7',
@@ -301,7 +301,9 @@ export default function ServiceFormPage() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
                 textAlign: 'center',
+                width: '100%',
               }}
             >
               <span
@@ -310,7 +312,7 @@ export default function ServiceFormPage() {
                   fontWeight: 700,
                   fontSize: '0.88rem',
                   color: '#3d2d23',
-                  marginBottom: '0.65rem',
+                  marginBottom: '0.75rem',
                 }}
               >
                 Service Photo
@@ -321,7 +323,8 @@ export default function ServiceFormPage() {
                 folder="services"
                 shape="square"
                 width={150}
-                height={115}
+                height={120}
+                align="center"
                 title="Select Image"
                 helperText="PNG, JPG, WEBP up to 5MB"
                 disabled={saving}
@@ -339,8 +342,9 @@ export default function ServiceFormPage() {
                   lineHeight: 1.4,
                   display: 'flex',
                   alignItems: 'flex-start',
-                  gap: '5px',
+                  gap: '6px',
                   textAlign: 'left',
+                  width: '100%',
                 }}
               >
                 <InfoCircleOutlined style={{ fontSize: '13px', marginTop: '2px', color: '#c69f7b', flexShrink: 0 }} />
@@ -597,19 +601,19 @@ export default function ServiceFormPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ background: '#fcf8f2', borderBottom: '1.5px solid #eeddc8' }}>
-                    <th style={{ padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <th style={{ width: '110px', padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Min Weight (kg)
                     </th>
-                    <th style={{ padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <th style={{ width: '110px', padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Max Weight (kg)
                     </th>
-                    <th style={{ padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <th style={{ minWidth: '150px', padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Price (VND) <span style={{ color: 'var(--danger)' }}>*</span>
                     </th>
-                    <th style={{ padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <th style={{ width: '150px', minWidth: '145px', padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Pricing Unit
                     </th>
-                    <th style={{ width: '90px', padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
+                    <th style={{ width: '95px', padding: '10px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#785839', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
                       Action
                     </th>
                   </tr>
@@ -683,28 +687,18 @@ export default function ServiceFormPage() {
                           }}
                         />
                       </td>
-                      <td style={{ padding: '8px 12px' }}>
-                        <select
+                      <td style={{ padding: '8px 12px', width: '150px', minWidth: '145px' }}>
+                        <Select
                           aria-label="Pricing unit"
                           value={r.pricingUnit}
-                          onChange={(e) => setRow(i, { pricingUnit: e.target.value as PricingUnit })}
-                          style={{
-                            border: '1px solid #eeddc8',
-                            borderRadius: '6px',
-                            padding: '0.45rem 1.8rem 0.45rem 0.65rem',
-                            fontSize: '0.88rem',
-                            width: '100%',
-                            backgroundColor: '#ffffff',
-                            color: '#3d2d23',
-                            fontWeight: 500,
-                          }}
-                        >
-                          {(Object.keys(PRICING_UNIT_LABEL) as PricingUnit[]).map((u) => (
-                            <option key={u} value={u}>
-                              / {PRICING_UNIT_LABEL[u]}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => setRow(i, { pricingUnit: val as PricingUnit })}
+                          style={{ width: '100%' }}
+                          options={[
+                            { value: 'Per_Turn', label: '/ session' },
+                            { value: 'Per_Day', label: '/ day' },
+                            { value: 'Item', label: '/ item' },
+                          ]}
+                        />
                       </td>
                       <td style={{ padding: '8px 12px', textAlign: 'center' }}>
                         {rows.length > 1 ? (
