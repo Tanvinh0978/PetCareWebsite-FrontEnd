@@ -1,26 +1,19 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { DogIcon, CatIcon } from '@/components/common/PetIcons'
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { DogIcon, CatIcon } from '@/components/common/PetIcons';
 import {
-  Typography,
-  Card,
   Row,
   Col,
   Tag,
   Button,
   DatePicker,
-  Tabs,
-  Badge,
   Spin,
   Empty,
-  Space,
   message,
-  Popconfirm,
   Image,
   Tooltip,
-} from 'antd'
+} from 'antd';
 import {
   ClockCircleOutlined,
-  CalendarOutlined,
   LeftOutlined,
   RightOutlined,
   ReloadOutlined,
@@ -34,158 +27,162 @@ import {
   PhoneOutlined,
   HomeOutlined,
   SyncOutlined,
-  CameraOutlined,
   EditOutlined,
-  EyeOutlined,
-} from '@ant-design/icons'
-import dayjs, { Dayjs } from 'dayjs'
-import groomingTaskService from '@/services/groomingTask.service'
-import type { GroomingTaskResponseDTO } from '@/types/groomingTask.types'
-import { normalizeStatus } from '@/types/groomingTask.types'
-import CompleteGroomingTaskModal from '@/components/staff/CompleteGroomingTaskModal'
-
-const { Title, Text, Paragraph } = Typography
+} from '@ant-design/icons';
+import dayjs, { Dayjs } from 'dayjs';
+import groomingTaskService from '@/services/groomingTask.service';
+import type { GroomingTaskResponseDTO } from '@/types/groomingTask.types';
+import { normalizeStatus } from '@/types/groomingTask.types';
+import CompleteGroomingTaskModal from '@/components/staff/CompleteGroomingTaskModal';
 
 export const GroomingTasksPage: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())
-  const [tasks, setTasks] = useState<GroomingTaskResponseDTO[]>([])
-  const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<string>('all')
+  const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
+  const [tasks, setTasks] = useState<GroomingTaskResponseDTO[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('all');
 
   // Action states
-  const [actionLoadingItemId, setActionLoadingItemId] = useState<string | null>(null)
-  const [completingTask, setCompletingTask] = useState<GroomingTaskResponseDTO | null>(null)
-  const [completeModalOpen, setCompleteModalOpen] = useState(false)
+  const [actionLoadingItemId, setActionLoadingItemId] = useState<string | null>(null);
+  const [completingTask, setCompletingTask] = useState<GroomingTaskResponseDTO | null>(null);
+  const [completeModalOpen, setCompleteModalOpen] = useState(false);
 
   // Fetch tasks
   const fetchTasks = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const dateStr = selectedDate.format('YYYY-MM-DD')
+      const dateStr = selectedDate.format('YYYY-MM-DD');
       const data = await groomingTaskService.getMyTasks({
         date: dateStr,
         pageSize: 100,
-      })
-      setTasks(data.items || [])
+      });
+      setTasks(data.items || []);
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'Failed to load grooming task schedule.'
-      message.error(msg)
+        'Failed to load grooming task schedule.';
+      message.error(msg);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [selectedDate])
+  }, [selectedDate]);
 
   useEffect(() => {
-    fetchTasks()
-  }, [fetchTasks])
+    fetchTasks();
+  }, [fetchTasks]);
 
   // Quick date switches
-  const handlePrevDay = () => setSelectedDate((prev) => prev.subtract(1, 'day'))
-  const handleToday = () => setSelectedDate(dayjs())
-  const handleNextDay = () => setSelectedDate((prev) => prev.add(1, 'day'))
+  const handlePrevDay = () => setSelectedDate((prev) => prev.subtract(1, 'day'));
+  const handleToday = () => setSelectedDate(dayjs());
+  const handleNextDay = () => setSelectedDate((prev) => prev.add(1, 'day'));
 
   // Filter tasks by active tab
   const filteredTasks = useMemo(() => {
-    if (activeTab === 'all') return tasks
-    const tabNum = Number(activeTab)
+    if (activeTab === 'all') return tasks;
+    const tabNum = Number(activeTab);
     if (tabNum === 1) {
       return tasks.filter((t) => {
-        const s = normalizeStatus(t.status)
-        return s === 1 || s === 0
-      })
+        const s = normalizeStatus(t.status);
+        return s === 1 || s === 0;
+      });
     }
-    return tasks.filter((t) => normalizeStatus(t.status) === tabNum)
-  }, [tasks, activeTab])
+    return tasks.filter((t) => normalizeStatus(t.status) === tabNum);
+  }, [tasks, activeTab]);
 
   // Count by status
   const counts = useMemo(() => {
-    let confirmed = 0
-    let checkedIn = 0
-    let inProgress = 0
-    let completed = 0
+    let confirmed = 0;
+    let checkedIn = 0;
+    let inProgress = 0;
+    let completed = 0;
 
     tasks.forEach((t) => {
-      const s = normalizeStatus(t.status)
-      if (s === 1 || s === 0) confirmed++
-      else if (s === 2) checkedIn++
-      else if (s === 3) inProgress++
-      else if (s === 4) completed++
-    })
+      const s = normalizeStatus(t.status);
+      if (s === 1 || s === 0) confirmed++;
+      else if (s === 2) checkedIn++;
+      else if (s === 3) inProgress++;
+      else if (s === 4) completed++;
+    });
 
-    return { total: tasks.length, confirmed, checkedIn, inProgress, completed }
-  }, [tasks])
+    return { total: tasks.length, confirmed, checkedIn, inProgress, completed };
+  }, [tasks]);
 
   // Check-In task handler (status -> 2)
   const handleCheckInTask = async (task: GroomingTaskResponseDTO) => {
     try {
-      setActionLoadingItemId(task.itemId)
-      const currentStatus = normalizeStatus(task.status)
+      setActionLoadingItemId(task.itemId);
+      const currentStatus = normalizeStatus(task.status);
       if (currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 1,
           roomId: task.roomId || undefined,
-        })
+        });
       }
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
         status: 2, // Checked_In
         roomId: task.roomId || undefined,
-      })
-      message.success(`Checked in ${task.petName} successfully!`)
-      fetchTasks()
+      });
+      message.success(`Checked in ${task.petName} successfully!`);
+      fetchTasks();
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'Failed to check in pet.'
-      message.error(msg)
+        'Failed to check in pet.';
+      message.error(msg);
     } finally {
-      setActionLoadingItemId(null)
+      setActionLoadingItemId(null);
     }
-  }
+  };
 
   // Start task handler (status -> 3)
   const handleStartTask = async (task: GroomingTaskResponseDTO) => {
     try {
-      setActionLoadingItemId(task.itemId)
-      const currentStatus = normalizeStatus(task.status)
-      // If task is still Confirmed (1) or Pending (0), advance to Checked_In first
+      setActionLoadingItemId(task.itemId);
+      const currentStatus = normalizeStatus(task.status);
+      // Advance to Checked_In first if needed
       if (currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 1,
           roomId: task.roomId || undefined,
-        })
+        });
       }
       if (currentStatus === 1 || currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 2, // Checked_In
           roomId: task.roomId || undefined,
-        })
+        });
       }
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
         status: 3, // In_Progress
         roomId: task.roomId || undefined,
-      })
-      message.success(`Started grooming session for ${task.petName}!`)
-      fetchTasks()
+      });
+      message.success(`Started grooming session for ${task.petName}!`);
+      fetchTasks();
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'Failed to start grooming session.'
-      message.error(msg)
+        'Failed to start grooming session.';
+      message.error(msg);
     } finally {
-      setActionLoadingItemId(null)
+      setActionLoadingItemId(null);
     }
-  }
+  };
 
   // Open complete modal
   const handleOpenCompleteModal = (task: GroomingTaskResponseDTO) => {
-    setCompletingTask(task)
-    setCompleteModalOpen(true)
-  }
+    setCompletingTask(task);
+    setCompleteModalOpen(true);
+  };
+
+  const tabItems = [
+    { key: 'all', label: 'All', count: counts.total },
+    { key: '2', label: 'Waiting / Checked-In', count: counts.checkedIn },
+    { key: '3', label: 'In Progress', count: counts.inProgress },
+    { key: '4', label: 'Completed', count: counts.completed },
+    { key: '1', label: 'Confirmed', count: counts.confirmed },
+  ];
 
   return (
     <div style={{ maxWidth: 1300, margin: '0 auto', padding: '16px 20px 48px' }}>
@@ -197,211 +194,259 @@ export const GroomingTasksPage: React.FC = () => {
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: 16,
-          marginBottom: 20,
+          marginBottom: 24,
         }}
       >
         <div>
-          <Title level={2} style={{ margin: 0, color: '#0f172a' }}>
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '2.1rem',
+              color: '#3d2d23',
+              fontWeight: 700,
+            }}
+          >
             Grooming & Spa Workstation
-          </Title>
-          <Text type="secondary" style={{ fontSize: 14 }}>
-            Track assigned pets, start service sessions, and document completed results in real time
-          </Text>
+          </h1>
+          <p style={{ margin: '6px 0 0', color: '#8c735f', fontSize: '0.9rem' }}>
+            Track assigned pets, start service sessions, and document completed results in real time.
+          </p>
         </div>
 
         {/* Date Filter & Quick Switch Controls */}
         <div
           style={{
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
             gap: 8,
-            background: '#ffffff',
-            padding: '6px 12px',
-            borderRadius: 12,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            border: '1px solid #e2e8f0',
+            backgroundColor: '#ffffff',
+            padding: '6px 14px',
+            borderRadius: 999,
+            boxShadow: '0 2px 10px rgba(61,45,35,0.05)',
+            border: '1.5px solid #eeddc8',
           }}
         >
           <Tooltip title="Previous day">
-            <Button
-              size="small"
-              icon={<LeftOutlined />}
+            <button
+              type="button"
               onClick={handlePrevDay}
-              style={{ borderRadius: 6 }}
-            />
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                border: '1px solid #eeddc8',
+                backgroundColor: '#faf6f0',
+                color: '#785839',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: 12,
+              }}
+            >
+              <LeftOutlined />
+            </button>
           </Tooltip>
 
-          <Button
-            size="small"
-            type={selectedDate.isSame(dayjs(), 'day') ? 'primary' : 'default'}
+          <button
+            type="button"
             onClick={handleToday}
             style={{
-              borderRadius: 6,
-              fontWeight: 600,
-              backgroundColor: selectedDate.isSame(dayjs(), 'day') ? '#059669' : undefined,
-              borderColor: selectedDate.isSame(dayjs(), 'day') ? '#059669' : undefined,
+              padding: '4px 12px',
+              borderRadius: 999,
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              border: selectedDate.isSame(dayjs(), 'day') ? 'none' : '1px solid #eeddc8',
+              backgroundColor: selectedDate.isSame(dayjs(), 'day') ? '#3d2d23' : '#ffffff',
+              color: selectedDate.isSame(dayjs(), 'day') ? '#ffffff' : '#785839',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
             }}
           >
             Today
-          </Button>
+          </button>
 
           <DatePicker
             value={selectedDate}
             onChange={(d) => d && setSelectedDate(d)}
             format="DD/MM/YYYY"
             allowClear={false}
-            style={{ borderRadius: 8, width: 140 }}
+            style={{
+              borderRadius: 999,
+              width: 135,
+              height: 32,
+              border: '1px solid #eeddc8',
+              fontSize: '0.85rem',
+            }}
           />
 
           <Tooltip title="Next day">
-            <Button
-              size="small"
-              icon={<RightOutlined />}
+            <button
+              type="button"
               onClick={handleNextDay}
-              style={{ borderRadius: 6 }}
-            />
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                border: '1px solid #eeddc8',
+                backgroundColor: '#faf6f0',
+                color: '#785839',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: 12,
+              }}
+            >
+              <RightOutlined />
+            </button>
           </Tooltip>
 
           <Tooltip title="Refresh task list">
-            <Button
-              size="small"
-              icon={<ReloadOutlined spin={loading} />}
+            <button
+              type="button"
               onClick={fetchTasks}
-              style={{ borderRadius: 6 }}
-            />
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                border: '1px solid #eeddc8',
+                backgroundColor: '#faf6f0',
+                color: '#785839',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: 12,
+                marginLeft: 4,
+              }}
+            >
+              <ReloadOutlined spin={loading} />
+            </button>
           </Tooltip>
         </div>
       </div>
 
-      {/* Tabs Filter Bar */}
-      <div style={{ marginBottom: 16 }}>
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          type="card"
-          items={[
-            {
-              key: 'all',
-              label: (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
-                  <span>All</span>
-                  <Badge count={counts.total} overflowCount={99} style={{ backgroundColor: '#64748b' }} />
-                </span>
-              ),
-            },
-            {
-              key: '2',
-              label: (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
-                  <span>Waiting / Checked-In</span>
-                  <Badge count={counts.checkedIn} overflowCount={99} style={{ backgroundColor: '#f59e0b' }} />
-                </span>
-              ),
-            },
-            {
-              key: '3',
-              label: (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
-                  <span>In Progress</span>
-                  <Badge count={counts.inProgress} overflowCount={99} style={{ backgroundColor: '#059669' }} />
-                </span>
-              ),
-            },
-            {
-              key: '4',
-              label: (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
-                  <span>Completed</span>
-                  <Badge count={counts.completed} overflowCount={99} style={{ backgroundColor: '#10b981' }} />
-                </span>
-              ),
-            },
-            {
-              key: '1',
-              label: (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
-                  <span>Confirmed</span>
-                  <Badge count={counts.confirmed} overflowCount={99} style={{ backgroundColor: '#2563eb' }} />
-                </span>
-              ),
-            },
-          ]}
-        />
+      {/* Sanctuary Filter Tabs */}
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '22px' }}>
+        {tabItems.map((t) => {
+          const isActive = activeTab === t.key;
+          return (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setActiveTab(t.key)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '7px 18px',
+                borderRadius: 999,
+                backgroundColor: isActive ? '#3d2d23' : '#ffffff',
+                color: isActive ? '#ffffff' : '#785839',
+                border: isActive ? 'none' : '1.5px solid #eeddc8',
+                fontWeight: isActive ? 700 : 600,
+                fontSize: '0.86rem',
+                cursor: 'pointer',
+                boxShadow: isActive
+                  ? '0 4px 14px rgba(61,45,35,0.18)'
+                  : '0 1px 3px rgba(61,45,35,0.04)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <span>{t.label}</span>
+              <span
+                style={{
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  backgroundColor: isActive ? '#eeddc8' : '#faf6f0',
+                  color: isActive ? '#3d2d23' : '#785839',
+                  border: isActive ? 'none' : '1px solid #eeddc8',
+                }}
+              >
+                {t.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Task Cards Grid */}
       <Spin spinning={loading} tip="Loading grooming tasks...">
         {filteredTasks.length === 0 ? (
-          <Card style={{ borderRadius: 16, textAlign: 'center', padding: '40px 0', border: '1px dashed #cbd5e1' }}>
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              border: '1.5px dashed #eeddc8',
+              padding: '60px 20px',
+              textAlign: 'center',
+            }}
+          >
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
                 <div>
-                  <Text strong style={{ fontSize: 16, color: '#475569', display: 'block' }}>
+                  <strong style={{ fontSize: '1.05rem', color: '#3d2d23', display: 'block' }}>
                     No grooming tasks scheduled for {selectedDate.format('DD/MM/YYYY')}
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: 13 }}>
+                  </strong>
+                  <span style={{ fontSize: '0.88rem', color: '#8c735f', display: 'block', marginTop: 4 }}>
                     {activeTab === 'all'
-                      ? 'Reception has not assigned any tasks or no bookings exist for this date.'
-                      : 'No tasks match the selected filter.'}
-                  </Text>
+                      ? 'No appointments assigned yet for this workstation date.'
+                      : 'No tasks match the currently selected filter.'}
+                  </span>
                 </div>
               }
             />
-          </Card>
+          </div>
         ) : (
           <Row gutter={[20, 20]}>
             {filteredTasks.map((task) => {
-              const status = normalizeStatus(task.status)
-              const isDog = task.petSpecies === 0 || String(task.petSpecies).toLowerCase() === 'dog'
-              const isConfirmed = status === 1 || status === 0
-              const isCheckedIn = status === 2
-              const isInProgress = status === 3
-              const isCompleted = status === 4
+              const status = normalizeStatus(task.status);
+              const isDog = task.petSpecies === 0 || String(task.petSpecies).toLowerCase() === 'dog';
+              const isConfirmed = status === 1 || status === 0;
+              const isCheckedIn = status === 2;
+              const isInProgress = status === 3;
+              const isCompleted = status === 4;
 
               const startTime = task.scheduledStartAt
                 ? dayjs(task.scheduledStartAt).format('HH:mm')
-                : '--:--'
+                : '--:--';
               const endTime = task.scheduledEndAt
                 ? dayjs(task.scheduledEndAt).format('HH:mm')
-                : '--:--'
+                : '--:--';
 
               return (
                 <Col xs={24} md={12} lg={8} key={task.itemId}>
-                  <Card
-                    hoverable
+                  <div
                     onClick={() => {
                       if (isInProgress || isCompleted) {
-                        handleOpenCompleteModal(task)
+                        handleOpenCompleteModal(task);
                       }
                     }}
                     style={{
-                      borderRadius: 14,
+                      borderRadius: '20px',
                       cursor: isInProgress || isCompleted ? 'pointer' : 'default',
+                      backgroundColor: '#ffffff',
                       border: isInProgress
-                        ? '2px solid #059669'
+                        ? '2px solid #785839'
                         : isCheckedIn
-                        ? '2px solid #f59e0b'
-                        : isConfirmed
-                        ? '1px solid #93c5fd'
-                        : '1px solid #e2e8f0',
+                        ? '1.5px solid #d97706'
+                        : '1.5px solid #eeddc8',
                       boxShadow: isInProgress
-                        ? '0 6px 16px rgba(5, 150, 105, 0.14)'
+                        ? '0 6px 20px rgba(120,88,57,0.14)'
                         : isCheckedIn
-                        ? '0 4px 14px rgba(245, 158, 11, 0.14)'
-                        : '0 2px 8px rgba(0, 0, 0, 0.04)',
+                        ? '0 4px 16px rgba(217,119,6,0.1)'
+                        : '0 4px 16px rgba(61,45,35,0.04)',
+                      padding: '20px 22px',
                       display: 'flex',
                       flexDirection: 'column',
                       height: '100%',
-                      background: '#ffffff',
-                    }}
-                    styles={{
-                      body: {
-                        padding: '16px 18px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flex: 1,
-                      },
+                      boxSizing: 'border-box',
+                      transition: 'all 0.2s ease',
                     }}
                   >
                     {/* Card Header: Time, Station, Status Badge */}
@@ -410,158 +455,197 @@ export const GroomingTasksPage: React.FC = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        borderBottom: '1px solid #f1f5f9',
+                        borderBottom: '1px solid #f1ece5',
                         paddingBottom: 12,
-                        marginBottom: 12,
+                        marginBottom: 14,
                       }}
                     >
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <ClockCircleOutlined style={{ color: '#059669', fontSize: 14 }} />
-                          <Text strong style={{ fontSize: 15, color: '#0f172a' }}>
+                          <ClockCircleOutlined style={{ color: '#785839', fontSize: 14 }} />
+                          <strong style={{ fontSize: '0.98rem', color: '#3d2d23' }}>
                             {startTime} - {endTime}
-                          </Text>
+                          </strong>
                           {task.durationMinutes > 0 && (
-                            <Tag style={{ fontSize: 11, borderRadius: 6, margin: 0, padding: '0 6px' }}>
+                            <span
+                              style={{
+                                fontSize: '0.74rem',
+                                borderRadius: 999,
+                                padding: '1px 7px',
+                                backgroundColor: '#faf6f0',
+                                border: '1px solid #eeddc8',
+                                color: '#785839',
+                                fontWeight: 600,
+                              }}
+                            >
                               {task.durationMinutes}m
-                            </Tag>
+                            </span>
                           )}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4, color: '#64748b', fontSize: 12 }}>
-                          <HomeOutlined style={{ color: '#d97706' }} />
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            marginTop: 4,
+                            color: '#8c735f',
+                            fontSize: '0.82rem',
+                          }}
+                        >
+                          <HomeOutlined style={{ color: '#785839' }} />
                           <span>{task.roomName || 'Pending Station Assignment'}</span>
                         </div>
                       </div>
 
                       {/* Status Tag */}
                       {isConfirmed && (
-                        <Tag
-                          color="blue"
-                          icon={<CheckCircleOutlined />}
+                        <span
                           style={{
-                            fontWeight: 600,
-                            padding: '4px 10px',
-                            borderRadius: 8,
-                            margin: 0,
-                            background: '#eff6ff',
-                            borderColor: '#bfdbfe',
-                            color: '#1d4ed8',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            padding: '3px 10px',
+                            borderRadius: 999,
+                            backgroundColor: '#f0f9ff',
+                            color: '#0369a1',
+                            border: '1px solid #bae6fd',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
                           }}
                         >
-                          Confirmed
-                        </Tag>
+                          <CheckCircleOutlined style={{ fontSize: 11 }} />
+                          <span>Confirmed</span>
+                        </span>
                       )}
                       {isCheckedIn && (
-                        <Tag
-                          color="warning"
-                          icon={<ClockCircleOutlined />}
+                        <span
                           style={{
-                            fontWeight: 600,
-                            padding: '4px 10px',
-                            borderRadius: 8,
-                            margin: 0,
-                            background: '#fffbeb',
-                            borderColor: '#fde68a',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            padding: '3px 10px',
+                            borderRadius: 999,
+                            backgroundColor: '#fffbeb',
                             color: '#b45309',
+                            border: '1px solid #fde68a',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
                           }}
                         >
-                          Ready / Checked-In
-                        </Tag>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+                          <span>Ready / Checked-In</span>
+                        </span>
                       )}
                       {isInProgress && (
-                        <Tag
-                          color="processing"
-                          icon={<SyncOutlined spin />}
+                        <span
                           style={{
-                            fontWeight: 600,
-                            padding: '4px 10px',
-                            borderRadius: 8,
-                            margin: 0,
-                            background: '#f0fdf4',
-                            borderColor: '#bbf7d0',
-                            color: '#15803d',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            padding: '3px 10px',
+                            borderRadius: 999,
+                            backgroundColor: '#fcf9f5',
+                            color: '#785839',
+                            border: '1.5px solid #eeddc8',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
                           }}
                         >
-                          In Progress
-                        </Tag>
+                          <SyncOutlined spin style={{ fontSize: 11, color: '#785839' }} />
+                          <span>In Progress</span>
+                        </span>
                       )}
                       {isCompleted && (
-                        <Tag
-                          color="success"
-                          icon={<CheckCircleFilled />}
+                        <span
                           style={{
-                            fontWeight: 600,
-                            padding: '4px 10px',
-                            borderRadius: 8,
-                            margin: 0,
-                            background: '#ecfdf5',
-                            borderColor: '#a7f3d0',
-                            color: '#065f46',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            padding: '3px 10px',
+                            borderRadius: 999,
+                            backgroundColor: '#ecfdf5',
+                            color: '#047857',
+                            border: '1px solid #a7f3d0',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
                           }}
                         >
-                          Completed
-                        </Tag>
-                      )}
-                      {!isConfirmed && !isCheckedIn && !isInProgress && !isCompleted && (
-                        <Tag style={{ borderRadius: 8, margin: 0 }}>
-                          Status: {task.status}
-                        </Tag>
+                          <CheckCircleFilled style={{ fontSize: 11 }} />
+                          <span>Completed</span>
+                        </span>
                       )}
                     </div>
 
                     {/* Card Body: Pet Info, Service, Customer */}
                     <div style={{ flex: 1 }}>
                       {/* Pet Profile */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                         <div
                           style={{
                             width: 44,
                             height: 44,
                             borderRadius: '50%',
-                            background: isDog ? '#fef3c7' : '#e0e7ff',
+                            backgroundColor: '#faf6f0',
+                            border: '1.5px solid #eeddc8',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: 22,
                             flexShrink: 0,
                           }}
                         >
                           {isDog ? <DogIcon size={18} /> : <CatIcon size={18} />}
                         </div>
                         <div>
-                          <Text strong style={{ fontSize: 17, color: '#0f172a', display: 'block', lineHeight: 1.2 }}>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              color: '#3d2d23',
+                              display: 'block',
+                              lineHeight: 1.25,
+                              fontFamily: "'Playfair Display', Georgia, serif",
+                            }}
+                          >
                             {task.petName}
-                          </Text>
-                          <Text type="secondary" style={{ fontSize: 13 }}>
+                          </strong>
+                          <span style={{ fontSize: '0.82rem', color: '#8c735f' }}>
                             {task.petBreed || (isDog ? 'Canine' : 'Feline')} •{' '}
-                            <strong style={{ color: '#059669' }}>{task.petWeight} kg</strong>
-                          </Text>
+                            <strong style={{ color: '#3d2d23' }}>{task.petWeight} kg</strong>
+                          </span>
                         </div>
                       </div>
 
                       {/* Service Booked */}
                       <div
                         style={{
-                          background: '#f8fafc',
-                          borderRadius: 8,
-                          padding: '8px 12px',
-                          marginBottom: 10,
+                          backgroundColor: '#faf6f0',
+                          border: '1px solid #eeddc8',
+                          borderRadius: '10px',
+                          padding: '9px 12px',
+                          marginBottom: 12,
                           display: 'flex',
                           alignItems: 'center',
                           gap: 8,
                         }}
                       >
-                        <ScissorOutlined style={{ color: '#059669', fontSize: 15 }} />
-                        <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                        <ScissorOutlined style={{ color: '#785839', fontSize: 15 }} />
+                        <strong style={{ fontSize: '0.88rem', color: '#3d2d23' }}>
                           {task.serviceName}
-                        </Text>
+                        </strong>
                       </div>
 
                       {/* Customer Info */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, marginBottom: 10 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#475569' }}>
-                          <UserOutlined style={{ color: '#6366f1' }} />
-                          <span>{task.customerName}</span>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '0.85rem',
+                          marginBottom: 12,
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#554236' }}>
+                          <UserOutlined style={{ color: '#8c735f' }} />
+                          <span style={{ fontWeight: 600 }}>{task.customerName}</span>
                         </div>
                         <a
                           href={`tel:${task.customerPhone}`}
@@ -569,8 +653,8 @@ export const GroomingTasksPage: React.FC = () => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 4,
-                            color: '#059669',
-                            fontWeight: 600,
+                            color: '#785839',
+                            fontWeight: 700,
                             textDecoration: 'none',
                           }}
                         >
@@ -583,18 +667,18 @@ export const GroomingTasksPage: React.FC = () => {
                       {task.petHealthNotes ? (
                         <div
                           style={{
-                            background: '#fffbeb',
+                            backgroundColor: '#fffbeb',
                             border: '1px solid #fde68a',
-                            borderRadius: 8,
-                            padding: '8px 12px',
-                            marginBottom: 12,
+                            borderRadius: '10px',
+                            padding: '9px 12px',
+                            marginBottom: 14,
                             display: 'flex',
                             alignItems: 'flex-start',
                             gap: 8,
                           }}
                         >
                           <WarningFilled style={{ color: '#d97706', fontSize: 15, marginTop: 2, flexShrink: 0 }} />
-                          <div style={{ fontSize: 12, color: '#92400e', lineHeight: 1.4 }}>
+                          <div style={{ fontSize: '0.8rem', color: '#92400e', lineHeight: 1.4 }}>
                             <strong>Special Pet Notice:</strong> {task.petHealthNotes}
                           </div>
                         </div>
@@ -604,11 +688,11 @@ export const GroomingTasksPage: React.FC = () => {
                       {isCompleted && (
                         <div
                           style={{
-                            background: '#f0fdf4',
-                            border: '1px solid #bbf7d0',
-                            borderRadius: 8,
+                            backgroundColor: '#fcf9f5',
+                            border: '1px solid #eeddc8',
+                            borderRadius: '10px',
                             padding: '10px 12px',
-                            marginBottom: 12,
+                            marginBottom: 14,
                           }}
                         >
                           {(task.beforeImageUrl || task.resultImageUrl) && (
@@ -618,138 +702,178 @@ export const GroomingTasksPage: React.FC = () => {
                                   <div style={{ textAlign: 'center' }}>
                                     <Image
                                       src={task.beforeImageUrl}
-                                      width={60}
-                                      height={60}
-                                      style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                                      width={56}
+                                      height={56}
+                                      style={{ objectFit: 'cover', borderRadius: 8, border: '1.5px solid #eeddc8' }}
                                     />
-                                    <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>Before</div>
+                                    <div style={{ fontSize: 10, color: '#8c735f', marginTop: 2 }}>Before</div>
                                   </div>
                                 )}
                                 {task.resultImageUrl && (
                                   <div style={{ textAlign: 'center' }}>
                                     <Image
                                       src={task.resultImageUrl}
-                                      width={60}
-                                      height={60}
-                                      style={{ objectFit: 'cover', borderRadius: 6, border: '1px solid #10b981' }}
+                                      width={56}
+                                      height={56}
+                                      style={{ objectFit: 'cover', borderRadius: 8, border: '1.5px solid #eeddc8' }}
                                     />
-                                    <div style={{ fontSize: 10, color: '#059669', fontWeight: 600, marginTop: 2 }}>After Service</div>
+                                    <div style={{ fontSize: 10, color: '#047857', fontWeight: 700, marginTop: 2 }}>Finished Result</div>
                                   </div>
                                 )}
                               </Image.PreviewGroup>
                             </div>
                           )}
                           {task.resultNote && (
-                            <Paragraph
-                              ellipsis={{ rows: 2 }}
-                              style={{ margin: 0, fontSize: 12, color: '#166534', fontStyle: 'italic' }}
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: '0.8rem',
+                                color: '#554236',
+                                fontStyle: 'italic',
+                                lineHeight: 1.4,
+                              }}
                             >
                               "{task.resultNote}"
-                            </Paragraph>
+                            </p>
                           )}
                         </div>
                       )}
                     </div>
 
-                    {/* Card Footer Actions - Single Step Action Button */}
+                    {/* Card Footer Actions */}
                     <div
-                      style={{ borderTop: '1px solid #f1f5f9', paddingTop: 14, marginTop: 'auto' }}
+                      style={{ borderTop: '1px solid #f1ece5', paddingTop: 14, marginTop: 'auto' }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {/* Step 1: Chưa check in -> Chỉ hiện nút Check In */}
+                      {/* Step 1: Chưa check in -> Nút Check In */}
                       {isConfirmed && (
-                        <Button
-                          type="primary"
-                          size="large"
-                          block
-                          icon={<LoginOutlined />}
-                          loading={actionLoadingItemId === task.itemId}
+                        <button
+                          type="button"
+                          disabled={actionLoadingItemId === task.itemId}
                           onClick={() => handleCheckInTask(task)}
                           style={{
-                            backgroundColor: '#f59e0b',
-                            borderColor: '#f59e0b',
+                            width: '100%',
                             height: 42,
-                            fontSize: 14,
-                            fontWeight: 600,
-                            borderRadius: 8,
-                            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)',
+                            borderRadius: 999,
+                            backgroundColor: '#3d2d23',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.9rem',
+                            border: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            boxShadow: '0 4px 14px rgba(61,45,35,0.18)',
+                            cursor: actionLoadingItemId === task.itemId ? 'not-allowed' : 'pointer',
+                            opacity: actionLoadingItemId === task.itemId ? 0.7 : 1,
+                            transition: 'all 0.2s ease',
                           }}
                         >
-                          Check In
-                        </Button>
+                          <LoginOutlined />
+                          <span>{actionLoadingItemId === task.itemId ? 'Checking in...' : 'Check In'}</span>
+                        </button>
                       )}
 
-                      {/* Step 2: Đã check in -> Chỉ hiện nút Start Service */}
+                      {/* Step 2: Đã check in -> Nút Start Service (Đồng bộ espresso, không dùng màu xanh dương chói lọi) */}
                       {isCheckedIn && (
-                        <Button
-                          type="primary"
-                          size="large"
-                          block
-                          loading={actionLoadingItemId === task.itemId}
-                          icon={<PlayCircleFilled />}
+                        <button
+                          type="button"
+                          disabled={actionLoadingItemId === task.itemId}
                           onClick={() => handleStartTask(task)}
                           style={{
-                            backgroundColor: '#2563eb',
-                            borderColor: '#2563eb',
+                            width: '100%',
                             height: 42,
-                            fontSize: 14,
-                            fontWeight: 600,
-                            borderRadius: 8,
-                            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                            borderRadius: 999,
+                            backgroundColor: '#3d2d23',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.92rem',
+                            border: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            boxShadow: '0 4px 14px rgba(61,45,35,0.22)',
+                            cursor: actionLoadingItemId === task.itemId ? 'not-allowed' : 'pointer',
+                            opacity: actionLoadingItemId === task.itemId ? 0.7 : 1,
+                            transition: 'all 0.2s ease',
                           }}
                         >
-                          ▶ Start Service
-                        </Button>
+                          <PlayCircleFilled style={{ fontSize: 15 }} />
+                          <span>{actionLoadingItemId === task.itemId ? 'Starting...' : 'Start Service'}</span>
+                        </button>
                       )}
 
-                      {/* Step 3: Đang làm -> Chỉ hiện nút Finish & Submit Result */}
+                      {/* Step 3: Đang làm -> Nút Finish & Submit Result */}
                       {isInProgress && (
-                        <Button
-                          type="primary"
-                          size="large"
-                          block
-                          icon={<CheckCircleFilled />}
+                        <button
+                          type="button"
                           onClick={() => handleOpenCompleteModal(task)}
                           style={{
-                            backgroundColor: '#059669',
-                            borderColor: '#059669',
+                            width: '100%',
                             height: 42,
-                            fontSize: 14,
-                            fontWeight: 600,
-                            borderRadius: 8,
-                            boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)',
+                            borderRadius: 999,
+                            backgroundColor: '#047857',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.92rem',
+                            border: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            boxShadow: '0 4px 14px rgba(4,120,87,0.2)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
                           }}
                         >
-                          Finish & Submit Result
-                        </Button>
+                          <CheckCircleFilled style={{ fontSize: 15 }} />
+                          <span>Finish & Submit Result</span>
+                        </button>
                       )}
 
-                      {/* Step 4: Đã hoàn tất -> Hiển thị kết quả */}
+                      {/* Step 4: Đã hoàn tất -> View / Edit Result */}
                       {isCompleted && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: 13, color: '#059669', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                            <CheckCircleFilled /> Handed Over & Finished
-                          </span>
-                          <Button
-                            size="small"
-                            type="primary"
-                            ghost
-                            icon={<EditOutlined />}
-                            onClick={() => handleOpenCompleteModal(task)}
+                          <span
                             style={{
-                              borderRadius: 6,
-                              fontWeight: 500,
-                              fontSize: 12,
+                              fontSize: '0.82rem',
+                              color: '#047857',
+                              fontWeight: 700,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
                             }}
                           >
-                            View / Edit Result
-                          </Button>
+                            <CheckCircleFilled /> Finished & Documented
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenCompleteModal(task)}
+                            style={{
+                              borderRadius: 999,
+                              fontWeight: 600,
+                              fontSize: '0.8rem',
+                              padding: '5px 12px',
+                              backgroundColor: '#ffffff',
+                              border: '1.5px solid #eeddc8',
+                              color: '#785839',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <EditOutlined style={{ fontSize: 12 }} />
+                            <span>View / Edit Result</span>
+                          </button>
                         </div>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 </Col>
-              )
+              );
             })}
           </Row>
         )}
@@ -759,16 +883,16 @@ export const GroomingTasksPage: React.FC = () => {
       <CompleteGroomingTaskModal
         open={completeModalOpen}
         onClose={() => {
-          setCompleteModalOpen(false)
-          setCompletingTask(null)
+          setCompleteModalOpen(false);
+          setCompletingTask(null);
         }}
         onSuccess={() => {
-          fetchTasks()
+          fetchTasks();
         }}
         task={completingTask}
       />
     </div>
-  )
-}
+  );
+};
 
-export default GroomingTasksPage
+export default GroomingTasksPage;
