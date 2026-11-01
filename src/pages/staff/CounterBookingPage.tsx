@@ -14,9 +14,11 @@ import {
   CheckCircleFilled,
   ClockCircleOutlined,
   DollarCircleOutlined,
+  GiftOutlined,
   HomeOutlined,
   PhoneOutlined,
   ScissorOutlined,
+  TagOutlined,
   UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons'
@@ -26,10 +28,12 @@ import { bookingService, type BookingItemPayload } from '@/services/booking.serv
 import { customerService } from '@/services/customer.service'
 import { petService } from '@/services/pet.service'
 import { serviceService } from '@/services/service.service'
+import { voucherService } from '@/services/voucher.service'
 import { DogIcon, CatIcon } from '@/components/common/PetIcons'
 import type { CustomerDTO } from '@/types/customer.types'
 import type { PetDTO } from '@/types/pet.types'
 import type { ServiceDTO } from '@/types/service.types'
+import type { VoucherDTO } from '@/types/voucher.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 import { useAuthStore } from '@/store/useAuthStore'
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
@@ -75,6 +79,12 @@ export default function CounterBookingPage() {
   // Schedule states
   const [appointmentAt, setAppointmentAt] = useState<Dayjs | null>(null)
   const [boardingDates, setBoardingDates] = useState<[Dayjs, Dayjs] | null>(null)
+
+  // Voucher states
+  const [voucherInput, setVoucherInput] = useState<string>('')
+  const [appliedVoucher, setAppliedVoucher] = useState<VoucherDTO | null>(null)
+  const [checkingVoucher, setCheckingVoucher] = useState(false)
+  const [voucherError, setVoucherError] = useState<string | null>(null)
 
   // Staff note
   const [note, setNote] = useState<string>('')
@@ -390,6 +400,63 @@ export default function CounterBookingPage() {
     return { lineItemsByPet: grouped, totalEstimatedCost: sum }
   }, [selectedPetIds, pets, petServices, category, services, stayDays])
 
+  // Voucher discount calculation
+  const voucherDiscount = useMemo(() => {
+    if (!appliedVoucher || totalEstimatedCost <= 0) return 0
+    const isPercent =
+      String(appliedVoucher.discountType).toLowerCase() === 'percentage' ||
+      String(appliedVoucher.discountType) === '0'
+    if (isPercent) {
+      return Math.round((totalEstimatedCost * appliedVoucher.discountValue) / 100)
+    } else {
+      return Math.min(totalEstimatedCost, appliedVoucher.discountValue)
+    }
+  }, [appliedVoucher, totalEstimatedCost])
+
+  const finalTotalCost = Math.max(0, totalEstimatedCost - voucherDiscount)
+
+  // Handle Voucher verification and application
+  const handleApplyVoucher = async () => {
+    const code = voucherInput.trim().toUpperCase()
+    if (!code) {
+      message.warning('Please enter a voucher code.')
+      return
+    }
+    setCheckingVoucher(true)
+    setVoucherError(null)
+    try {
+      const res: any = await voucherService.search({
+        keyword: code,
+        isValidOnly: true,
+        pageSize: 10,
+      })
+      const data = res?.result ?? res?.data ?? res
+      const items: VoucherDTO[] = data?.items ?? (Array.isArray(data) ? data : [])
+      const found = items.find(
+        (v) => v.code.trim().toUpperCase() === code && v.isValid
+      )
+      if (found) {
+        setAppliedVoucher(found)
+        message.success(`Privilege voucher "${found.code}" applied successfully!`)
+      } else {
+        setVoucherError('Voucher code is invalid, expired, or fully redeemed.')
+        message.error('Voucher code is invalid or expired.')
+      }
+    } catch (err: any) {
+      setVoucherError(err?.message || 'Could not verify voucher.')
+      message.error('Could not verify voucher.')
+    } finally {
+      setCheckingVoucher(false)
+    }
+  }
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null)
+    setVoucherInput('')
+    setVoucherError(null)
+    message.info('Voucher removed.')
+  }
+
   // Quick appointment time presets
   const handleQuickTime = (hours: number, minutes: number) => {
     const baseDate = appointmentAt || dayjs()
@@ -494,6 +561,7 @@ export default function CounterBookingPage() {
     try {
       await bookingService.create({
         customerId: selectedCustomerId,
+        voucherCode: appliedVoucher ? appliedVoucher.code : voucherInput.trim() || undefined,
         paymentChoice: 'PAY_AT_COUNTER',
         bookingItems,
       })
@@ -1588,7 +1656,7 @@ export default function CounterBookingPage() {
             )}
           </div>
 
-          {/* Section 4: Concierge Notes */}
+          {/* Section 4: Voucher & Concierge Notes */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -1598,7 +1666,7 @@ export default function CounterBookingPage() {
               boxShadow: '0 4px 18px rgba(61,45,35,0.04)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
               <div
                 style={{
                   width: 36,
@@ -1626,26 +1694,151 @@ export default function CounterBookingPage() {
                     color: '#3d2d23',
                   }}
                 >
-                  Front Desk & Care Notes (Optional)
+                  Privilege Voucher & Front Desk Notes
                 </h3>
                 <p style={{ margin: 0, fontSize: 13, color: '#8c735f' }}>
-                  Document pet behavioral quirks, medication schedule, or parent requests
+                  Apply customer promo code and document pet care instructions or requests
                 </p>
               </div>
             </div>
 
-            <TextArea
-              placeholder="e.g. Pet is sensitive around paws, requires grain-free treats only, check-in belongings logged..."
-              rows={3}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              style={{
-                borderRadius: 10,
-                border: '1.5px solid #eeddc8',
-                padding: '10px 14px',
-                backgroundColor: '#ffffff',
-              }}
-            />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
+              {/* Voucher Code Input */}
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: '#3d2d23',
+                    marginBottom: 6,
+                  }}
+                >
+                  <GiftOutlined style={{ color: '#785839', marginRight: 4 }} /> Promo / Privilege Voucher (Optional)
+                </label>
+
+                {appliedVoucher ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      backgroundColor: '#ecfdf5',
+                      border: '1.5px solid #a7f3d0',
+                      borderRadius: 10,
+                      padding: '10px 14px',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#047857', fontSize: 14 }}>
+                        {appliedVoucher.code}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#065f46' }}>
+                        {String(appliedVoucher.discountType).toLowerCase() === 'percentage'
+                          ? `Discount: -${appliedVoucher.discountValue}% off order total`
+                          : `Discount: -${vnd.format(appliedVoucher.discountValue)} fixed amount`}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveVoucher}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 6,
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #fecaca',
+                        color: '#dc2626',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input
+                        type="text"
+                        placeholder="Enter voucher code (e.g. SANCTUARY10)"
+                        value={voucherInput}
+                        onChange={(e) => {
+                          setVoucherInput(e.target.value)
+                          setVoucherError(null)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleApplyVoucher()
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          height: 42,
+                          borderRadius: 10,
+                          border: '1.5px solid #eeddc8',
+                          padding: '0 12px',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: '#3d2d23',
+                          textTransform: 'uppercase',
+                          outline: 'none',
+                          backgroundColor: '#ffffff',
+                        }}
+                      />
+                      <Button
+                        loading={checkingVoucher}
+                        onClick={handleApplyVoucher}
+                        style={{
+                          height: 42,
+                          borderRadius: 10,
+                          backgroundColor: '#3d2d23',
+                          borderColor: '#3d2d23',
+                          color: '#ffffff',
+                          fontWeight: 600,
+                          padding: '0 18px',
+                        }}
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                    {voucherError && (
+                      <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>
+                        {voucherError}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Care Notes */}
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: '#3d2d23',
+                    marginBottom: 6,
+                  }}
+                >
+                  Front Desk & Care Notes (Optional)
+                </label>
+                <TextArea
+                  placeholder="e.g. Pet sensitive to loud sounds, requires grain-free treats only..."
+                  rows={2}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  style={{
+                    borderRadius: 10,
+                    border: '1.5px solid #eeddc8',
+                    padding: '8px 12px',
+                    backgroundColor: '#ffffff',
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1850,7 +2043,176 @@ export default function CounterBookingPage() {
               )}
             </div>
 
+            {/* Promo / Privilege Voucher in Summary */}
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: 12,
+                backgroundColor: '#fdfbf7',
+                border: '1.5px solid #eeddc8',
+                marginBottom: 16,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 8,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: '#3d2d23',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <GiftOutlined style={{ color: '#785839' }} /> Privilege Voucher
+                </span>
+                {appliedVoucher && (
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      color: '#047857',
+                      backgroundColor: '#ecfdf5',
+                      border: '1px solid #a7f3d0',
+                      borderRadius: 999,
+                      padding: '1px 8px',
+                    }}
+                  >
+                    Applied
+                  </span>
+                )}
+              </div>
+
+              {appliedVoucher ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: '#ffffff',
+                    border: '1.5px solid #a7f3d0',
+                    borderRadius: 8,
+                    padding: '6px 10px',
+                  }}
+                >
+                  <div>
+                    <strong style={{ color: '#047857', fontSize: 13 }}>{appliedVoucher.code}</strong>
+                    <div style={{ fontSize: 11, color: '#065f46' }}>
+                      {String(appliedVoucher.discountType).toLowerCase() === 'percentage'
+                        ? `-${appliedVoucher.discountValue}% discount`
+                        : `-${vnd.format(appliedVoucher.discountValue)} discount`}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveVoucher}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#dc2626',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <input
+                      type="text"
+                      placeholder="e.g. SANCTUARY10"
+                      value={voucherInput}
+                      onChange={(e) => {
+                        setVoucherInput(e.target.value)
+                        setVoucherError(null)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleApplyVoucher()
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        height: 36,
+                        borderRadius: 8,
+                        border: '1.5px solid #eeddc8',
+                        padding: '0 10px',
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                        color: '#3d2d23',
+                        textTransform: 'uppercase',
+                        outline: 'none',
+                        backgroundColor: '#ffffff',
+                      }}
+                    />
+                    <Button
+                      loading={checkingVoucher}
+                      onClick={handleApplyVoucher}
+                      style={{
+                        height: 36,
+                        borderRadius: 8,
+                        backgroundColor: '#3d2d23',
+                        borderColor: '#3d2d23',
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        fontSize: 12,
+                        padding: '0 14px',
+                      }}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                  {voucherError && (
+                    <div style={{ color: '#dc2626', fontSize: 11, marginTop: 4 }}>
+                      {voucherError}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div style={{ height: 1, backgroundColor: '#eeddc8', margin: '14px 0' }} />
+
+            {/* Subtotal */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: 13,
+                marginBottom: 6,
+                color: '#8c735f',
+              }}
+            >
+              <span>Subtotal:</span>
+              <span style={{ fontWeight: 600, color: '#3d2d23' }}>{vnd.format(totalEstimatedCost)}</span>
+            </div>
+
+            {/* Voucher Discount */}
+            {appliedVoucher && voucherDiscount > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 13,
+                  marginBottom: 6,
+                  color: '#047857',
+                }}
+              >
+                <span>Voucher Discount ({appliedVoucher.code}):</span>
+                <span style={{ fontWeight: 700 }}>-{vnd.format(voucherDiscount)}</span>
+              </div>
+            )}
 
             {/* Estimated Total */}
             <div
@@ -1859,13 +2221,16 @@ export default function CounterBookingPage() {
                 justifyContent: 'space-between',
                 alignItems: 'baseline',
                 marginBottom: 16,
+                marginTop: 8,
               }}
             >
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#3d2d23' }}>
                   Total Estimated:
                 </div>
-                <div style={{ fontSize: 11.5, color: '#8c735f' }}>Due at check-out counter</div>
+                <div style={{ fontSize: 11.5, color: '#8c735f' }}>
+                  {appliedVoucher ? 'After privilege voucher' : 'Due at check-out counter'}
+                </div>
               </div>
               <div
                 style={{
@@ -1875,7 +2240,7 @@ export default function CounterBookingPage() {
                   color: '#3d2d23',
                 }}
               >
-                {vnd.format(totalEstimatedCost)}
+                {vnd.format(finalTotalCost)}
               </div>
             </div>
 
