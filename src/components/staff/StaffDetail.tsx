@@ -555,65 +555,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
           </div>
         </div>
       </div>
-
-      {/* Bottom Navigation Bar */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: 36,
-          paddingTop: 24,
-          borderTop: '1px solid #eeddc8',
-          flexWrap: 'wrap',
-          gap: 16,
-        }}
-      >
-        <Link
-          to={resolvedBackTo}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '0.6rem 1.4rem',
-            borderRadius: 999,
-            backgroundColor: '#ffffff',
-            border: '1.5px solid #eeddc8',
-            color: '#785839',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            textDecoration: 'none',
-            boxShadow: '0 2px 6px rgba(61,45,35,0.04)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <ArrowLeftOutlined style={{ fontSize: 13 }} />
-          <span>Back to Staff List</span>
-        </Link>
-
-        {resolvedEditTo && (
-          <Link
-            to={resolvedEditTo(staff.id)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '0.6rem 1.5rem',
-              borderRadius: 999,
-              backgroundColor: '#3d2d23',
-              border: '1px solid #3d2d23',
-              color: '#ffffff',
-              fontWeight: 600,
-              fontSize: '0.9rem',
-              textDecoration: 'none',
-              boxShadow: '0 2px 8px rgba(61,45,35,0.18)',
-            }}
-          >
-            <EditOutlined style={{ fontSize: 13 }} />
-            <span>Edit Staff Profile</span>
-          </Link>
-        )}
-      </div>
     </section>
   )
 }
