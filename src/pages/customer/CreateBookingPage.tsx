@@ -8,6 +8,8 @@ import { petService } from '@/services/pet.service';
 import { serviceService } from '@/services/service.service';
 import { bookingService, rememberVnpayBooking } from '@/services/booking.service';
 import { roomService } from '@/services/room.service';
+import { voucherService } from '@/services/voucher.service';
+import type { VoucherDTO } from '@/types/voucher.types';
 import type { ServiceDTO } from '@/types/service.types';
 import { isServiceCompatibleWithPet, getRoomTierInfo, isPetCat } from '@/utils/petServiceFilter';
 
@@ -41,6 +43,12 @@ const CreateBookingPage: React.FC = () => {
   const groomingDate = Form.useWatch('groomingDate', form);
   const boardingDateRange = Form.useWatch('boardingDateRange', form);
   const voucherCode = Form.useWatch('voucherCode', form);
+
+  // Privilege Voucher states
+  const [appliedVoucher, setAppliedVoucher] = useState<VoucherDTO | null>(null);
+  const [voucherInput, setVoucherInput] = useState<string>('');
+  const [checkingVoucher, setCheckingVoucher] = useState<boolean>(false);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -319,6 +327,9 @@ const CreateBookingPage: React.FC = () => {
     if (currentStep === 0) {
       setBookingType(null); // Go back to flow selection
       setPetServices({}); // Reset services
+      setAppliedVoucher(null);
+      setVoucherInput('');
+      setVoucherError(null);
       form.resetFields();
     } else {
       setCurrentStep(currentStep - 1);
@@ -366,6 +377,70 @@ const CreateBookingPage: React.FC = () => {
     return total;
   };
   const totalAmount = calculateTotal();
+  const subtotalAmount = totalAmount;
+
+  // Voucher discount calculation
+  const voucherDiscount = useMemo(() => {
+    if (!appliedVoucher || subtotalAmount <= 0) return 0;
+    const isPercent =
+      String(appliedVoucher.discountType).toLowerCase() === 'percentage' ||
+      String(appliedVoucher.discountType) === '0';
+    if (isPercent) {
+      return Math.round((subtotalAmount * appliedVoucher.discountValue) / 100);
+    } else {
+      return Math.min(subtotalAmount, appliedVoucher.discountValue);
+    }
+  }, [appliedVoucher, subtotalAmount]);
+
+  const finalTotalAmount = Math.max(0, subtotalAmount - voucherDiscount);
+
+  // Handle Voucher verification and application
+  const handleApplyVoucher = async () => {
+    const code = voucherInput.trim().toUpperCase();
+    if (!code) {
+      message.warning('Please enter a voucher code.');
+      return;
+    }
+    setCheckingVoucher(true);
+    setVoucherError(null);
+    try {
+      const res: any = await voucherService.search({
+        keyword: code,
+        isValidOnly: true,
+        pageSize: 10,
+      });
+      const data = res?.result ?? res?.data ?? res;
+      const items: VoucherDTO[] = data?.items ?? (Array.isArray(data) ? data : []);
+      const found = items.find(
+        (v) => v.code.trim().toUpperCase() === code && v.isValid
+      );
+      if (found) {
+        setAppliedVoucher(found);
+        form.setFieldsValue({ voucherCode: found.code });
+        message.success(`Privilege voucher "${found.code}" applied successfully!`);
+      } else {
+        setAppliedVoucher(null);
+        form.setFieldsValue({ voucherCode: undefined });
+        setVoucherError('Voucher code is invalid, expired, or fully redeemed.');
+        message.error('Voucher code is invalid or expired.');
+      }
+    } catch (err: any) {
+      setAppliedVoucher(null);
+      form.setFieldsValue({ voucherCode: undefined });
+      const msg = err?.response?.data?.message || err?.message || 'Could not verify voucher.';
+      setVoucherError(msg);
+      message.error(msg);
+    } finally {
+      setCheckingVoucher(false);
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null);
+    setVoucherInput('');
+    setVoucherError(null);
+    form.setFieldsValue({ voucherCode: undefined });
+  };
 
   const onFinish = async (values: any) => {
     if (hasMissingPetServices) {
@@ -442,8 +517,34 @@ const CreateBookingPage: React.FC = () => {
       setSubmitting(true);
       const customerId = localStorage.getItem('petcare.customerId');
       const paymentChoice = bookingType === 'Boarding' ? 'VNPAY' : (values.paymentChoice || 'PAY_AT_COUNTER');
+      let effectiveVoucherCode = appliedVoucher ? appliedVoucher.code : undefined;
+      if (!effectiveVoucherCode && voucherInput.trim()) {
+        const code = voucherInput.trim().toUpperCase();
+        try {
+          const vRes: any = await voucherService.search({
+            keyword: code,
+            isValidOnly: true,
+            pageSize: 10,
+          });
+          const vData = vRes?.result ?? vRes?.data ?? vRes;
+          const vItems: VoucherDTO[] = vData?.items ?? (Array.isArray(vData) ? vData : []);
+          const vFound = vItems.find((v) => v.code.trim().toUpperCase() === code && v.isValid);
+          if (vFound) {
+            effectiveVoucherCode = vFound.code;
+            setAppliedVoucher(vFound);
+          } else {
+            setVoucherError('Voucher code is invalid, expired, or fully redeemed.');
+            message.error(`Voucher "${code}" is invalid or expired.`);
+            setSubmitting(false);
+            return;
+          }
+        } catch {
+          effectiveVoucherCode = code;
+        }
+      }
+
       const payload: any = {
-        voucherCode: values.voucherCode?.trim() || undefined,
+        voucherCode: effectiveVoucherCode,
         paymentChoice,
         bookingItems,
       };
@@ -1626,14 +1727,150 @@ const CreateBookingPage: React.FC = () => {
                   <GiftOutlined style={{ color: 'var(--secondary)' }} /> Privileges &amp; Payment
                 </Title>
                 
-                <Form.Item name="voucherCode" label={<Text strong style={{ color: 'var(--slate-800)' }}>Promo / Privilege Voucher</Text>} style={{ marginBottom: '20px' }}>
-                  <Input 
-                    prefix={<GiftOutlined style={{ color: 'var(--secondary)' }} />} 
-                    placeholder="Enter privilege code" 
-                    size="large" 
-                    style={{ borderRadius: '10px', borderColor: 'var(--slate-300)' }}
-                  />
-                </Form.Item>
+                {/* Promo / Privilege Voucher Section */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: '#26180f', marginBottom: 8 }}>
+                    <GiftOutlined style={{ color: '#785839' }} /> Promo / Privilege Voucher
+                  </label>
+                  {appliedVoucher ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 14px',
+                        borderRadius: 12,
+                        backgroundColor: '#fbf8f4',
+                        border: '1.5px solid #d4c2b2',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                        <div
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 8,
+                            backgroundColor: '#ebd9cb',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#785839',
+                            fontSize: 16,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <GiftOutlined />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: '#26180f', letterSpacing: 0.5 }}>
+                              {appliedVoucher.code}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 600,
+                                padding: '2px 8px',
+                                borderRadius: 999,
+                                backgroundColor: '#e8efe9',
+                                color: '#3d6b46',
+                              }}
+                            >
+                              Applied
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 12, color: '#7a6b61', marginTop: 2 }}>
+                            Discount:{' '}
+                            <strong style={{ color: '#3d6b46' }}>
+                              {String(appliedVoucher.discountType).toLowerCase() === 'percentage' || String(appliedVoucher.discountType) === '0'
+                                ? `-${appliedVoucher.discountValue}% off order total`
+                                : `-${appliedVoucher.discountValue.toLocaleString()} VND`}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        type="text"
+                        danger
+                        onClick={handleRemoveVoucher}
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 12,
+                          borderRadius: 8,
+                          border: '1px solid #ffccc7',
+                          backgroundColor: '#fff',
+                          flexShrink: 0,
+                          marginLeft: 8,
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <input
+                          type="text"
+                          placeholder="ENTER VOUCHER CODE (E.G. SANCTUARY10)"
+                          value={voucherInput}
+                          onChange={(e) => {
+                            setVoucherInput(e.target.value.toUpperCase())
+                            setVoucherError(null)
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              handleApplyVoucher()
+                            }
+                          }}
+                          style={{
+                            flex: 1,
+                            height: 42,
+                            borderRadius: 10,
+                            border: voucherError ? '1.5px solid #dc2626' : '1.5px solid #d4c2b2',
+                            padding: '0 14px',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: '#3d2d23',
+                            textTransform: 'uppercase',
+                            outline: 'none',
+                            backgroundColor: '#ffffff',
+                          }}
+                        />
+                        <Button
+                          loading={checkingVoucher}
+                          onClick={handleApplyVoucher}
+                          style={{
+                            height: 42,
+                            borderRadius: 10,
+                            backgroundColor: '#3d2d23',
+                            borderColor: '#3d2d23',
+                            color: '#ffffff',
+                            fontWeight: 600,
+                            padding: '0 18px',
+                          }}
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                      {voucherError && (
+                        <div
+                          style={{
+                            color: '#dc2626',
+                            fontSize: 12,
+                            marginTop: 6,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            fontWeight: 500,
+                          }}
+                        >
+                          ⚠️ {voucherError}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 <div style={{ marginBottom: '24px' }}>
                   <Text strong style={{ display: 'block', marginBottom: '10px', color: 'var(--slate-900)', fontSize: '15px' }}>
@@ -1684,10 +1921,53 @@ const CreateBookingPage: React.FC = () => {
                 </div>
 
                 <div style={{ marginTop: 'auto', paddingTop: '18px', borderTop: '1px solid var(--slate-300)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text strong style={{ fontSize: '16px', color: 'var(--slate-800)' }}>Total Amount</Text>
+                  {/* Privilege Voucher Badge in breakdown */}
+                  {appliedVoucher && (
+                    <div
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        backgroundColor: '#fbf8f4',
+                        border: '1px solid #e8ded6',
+                        marginBottom: 12,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <GiftOutlined style={{ color: '#785839', fontSize: 13 }} />
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#26180f' }}>
+                          {appliedVoucher.code}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#3d6b46' }}>
+                        -{voucherDiscount.toLocaleString()} VND
+                      </span>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#7a6b61', marginBottom: appliedVoucher ? 6 : 10 }}>
+                    <span>Subtotal:</span>
+                    <span style={{ fontWeight: 600, color: '#26180f' }}>{subtotalAmount.toLocaleString()} VND</span>
+                  </div>
+
+                  {appliedVoucher && voucherDiscount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#3d6b46', marginBottom: 10 }}>
+                      <span>Voucher Discount ({appliedVoucher.code}):</span>
+                      <span style={{ fontWeight: 700 }}>-{voucherDiscount.toLocaleString()} VND</span>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: 10, borderTop: '1px solid #e8ded6' }}>
+                    <div>
+                      <Text strong style={{ fontSize: '15px', color: 'var(--slate-800)' }}>Total Amount</Text>
+                      <div style={{ fontSize: '11px', color: '#8c7b6f' }}>
+                        {bookingType === 'Boarding' ? 'Required online payment via VNPay' : 'Due at check-out counter'}
+                      </div>
+                    </div>
                     <Title level={2} style={{ margin: 0, color: 'var(--secondary)', fontFamily: 'var(--font-heading)', fontWeight: 700 }}>
-                      {totalAmount > 0 ? `${totalAmount.toLocaleString()} VND` : '0 VND'}
+                      {finalTotalAmount > 0 ? `${finalTotalAmount.toLocaleString()} VND` : '0 VND'}
                     </Title>
                   </div>
                 </div>
@@ -1709,6 +1989,9 @@ const CreateBookingPage: React.FC = () => {
             setBookingType(null);
             setCurrentStep(0);
             setPetServices({});
+            setAppliedVoucher(null);
+            setVoucherInput('');
+            setVoucherError(null);
             form.resetFields();
           }}
           className="link"
