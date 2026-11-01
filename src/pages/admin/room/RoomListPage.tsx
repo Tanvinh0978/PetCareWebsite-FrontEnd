@@ -1,136 +1,193 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { roomService, type RoomDTO } from '@/services/room.service'
-import { useAuthStore } from '@/store/useAuthStore'
-import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
-import { getApiErrorMessage } from '@/utils/apiError'
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Select, Pagination, message } from 'antd';
+import {
+  PlusOutlined,
+  HomeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SwapOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
+import { roomService, type RoomDTO } from '@/services/room.service';
+import { roomTypeService, type RoomTypeDTO } from '@/services/roomType.service';
+import { useAuthStore } from '@/store/useAuthStore';
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const AdminRoomListPage: React.FC = () => {
-  const location = useLocation()
-  const baseRoomPath = location.pathname.startsWith('/staff') ? '/staff/rooms' : '/admin/rooms'
-  const [data, setData] = useState<IPagedResult<RoomDTO> | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
-  const [searchTerm, setSearchTerm] = useState('')
-  const [keywordInput, setKeywordInput] = useState('')
-  const [status, setStatus] = useState<string>('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-  const user = useAuthStore((s) => s.user)
-  const canManage = hasPermission(user, PERMISSIONS.ROOM_MANAGE)
+  const location = useLocation();
+  const baseRoomPath = location.pathname.startsWith('/staff') ? '/staff/rooms' : '/admin/rooms';
+  const user = useAuthStore((s) => s.user);
+  const canManage = hasPermission(user, PERMISSIONS.ROOM_MANAGE);
+
+  const [data, setData] = useState<IPagedResult<RoomDTO> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [keywordInput, setKeywordInput] = useState('');
+  const [status, setStatus] = useState<string>('');
+  const [roomTypeIdFilter, setRoomTypeIdFilter] = useState<string>('');
+  const [roomTypes, setRoomTypes] = useState<RoomTypeDTO[]>([]);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const [roomToDelete, setRoomToDelete] = useState<RoomDTO | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const [roomToToggle, setRoomToToggle] = useState<RoomDTO | null>(null);
+  const [toggling, setToggling] = useState(false);
+
+  // Load room types for toolbar filter
+  useEffect(() => {
+    roomTypeService
+      .fetchAll()
+      .then((res) => {
+        if (res.isSuccess && res.result) {
+          setRoomTypes(res.result);
+        }
+      })
+      .catch((err) => console.error('Failed to load room types:', err));
+  }, []);
 
   const fetchRooms = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       const res = await roomService.fetchWithPagination({
         pageNumber: page,
         pageSize,
-        searchTerm: searchTerm || undefined,
+        searchTerm: searchTerm.trim() || undefined,
         status: status || undefined,
-      })
+        roomTypeId: roomTypeIdFilter || undefined,
+      });
       if (res.isSuccess && res.result) {
-        setData(res.result)
+        setData(res.result);
       } else {
-        setError(res.message || 'Failed to fetch rooms')
+        setError(res.message || 'Failed to fetch rooms');
       }
     } catch (err: any) {
-      setError(getApiErrorMessage(err))
+      setError(getApiErrorMessage(err));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchRooms()
+    fetchRooms();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, searchTerm, status])
+  }, [page, pageSize, searchTerm, status, roomTypeIdFilter]);
 
   const onSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPage(1)
-    setSearchTerm(keywordInput)
-  }
+    e.preventDefault();
+    setPage(1);
+    setSearchTerm(keywordInput.trim());
+  };
 
   const clearSearch = () => {
-    setKeywordInput('')
-    setSearchTerm('')
-    setPage(1)
-  }
+    setKeywordInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete room "${name}"? This cannot be undone.`)) {
-      return
-    }
+  const resetAllFilters = () => {
+    setKeywordInput('');
+    setSearchTerm('');
+    setStatus('');
+    setRoomTypeIdFilter('');
+    setPage(1);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!roomToDelete) return;
     try {
-      setLoading(true)
-      const res = await roomService.delete(id)
+      setDeleting(true);
+      const res = await roomService.delete(roomToDelete.id);
       if (res.isSuccess) {
-        fetchRooms() // Refresh list
+        message.success(`Room "${roomToDelete.roomName}" deleted successfully.`);
+        setRoomToDelete(null);
+        fetchRooms();
       } else {
-        setError(res.message || 'Failed to delete room')
-        setLoading(false)
+        setError(res.message || 'Failed to delete room');
       }
     } catch (err: any) {
-      setError(getApiErrorMessage(err))
-      setLoading(false)
+      setError(getApiErrorMessage(err));
+    } finally {
+      setDeleting(false);
     }
-  }
+  };
 
-  const handleToggleStatus = async (room: RoomDTO) => {
-    const newStatus = room.status === 'Available' ? 'Maintenance' : 'Available'
-    if (!window.confirm(`Are you sure you want to change room status to ${newStatus}?`)) {
-      return
-    }
-    
+  const handleConfirmToggleStatus = async () => {
+    if (!roomToToggle) return;
+    const newStatus = roomToToggle.status === 'Available' ? 'Maintenance' : 'Available';
     try {
-      setLoading(true)
-      await roomService.updateStatus(room.id, newStatus)
-      fetchRooms()
+      setToggling(true);
+      const res = await roomService.updateStatus(roomToToggle.id, newStatus);
+      if (res.isSuccess) {
+        message.success(`Room "${roomToToggle.roomName}" status updated to ${newStatus}.`);
+        setRoomToToggle(null);
+        fetchRooms();
+      } else {
+        setError(res.message || 'Failed to update room status');
+      }
     } catch (err: any) {
-      setError(getApiErrorMessage(err))
-      setLoading(false)
+      setError(getApiErrorMessage(err));
+    } finally {
+      setToggling(false);
     }
-  }
+  };
 
-  const hasActiveFilters = Boolean(searchTerm || status)
+  const hasActiveFilters = Boolean(searchTerm || status || roomTypeIdFilter);
 
-  const totalCount = data?.totalCount ?? 0
-  const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
-  const endEntry = Math.min(page * pageSize, totalCount)
-  const totalPages = data?.totalPages ?? 1
-
-  const getPageNumbers = () => {
-    const pages: number[] = []
-    const maxButtons = 5
-    let startPage = Math.max(1, page - Math.floor(maxButtons / 2))
-    let endPage = startPage + maxButtons - 1
-    if (endPage > totalPages) {
-      endPage = totalPages
-      startPage = Math.max(1, endPage - maxButtons + 1)
-    }
-    for (let p = startPage; p <= endPage; p++) {
-      pages.push(p)
-    }
-    return pages
-  }
+  const totalCount = data?.totalCount ?? 0;
+  const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endEntry = Math.min(page * pageSize, totalCount);
 
   return (
     <section className="page wide">
+      {/* Page Header */}
       <div className="page-head">
         <div>
-          <h1>Rooms Management</h1>
-          <p className="page-subtitle">View, search, and manage individual rooms.</p>
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '2.1rem',
+              color: '#3d2d23',
+              fontWeight: 700,
+            }}
+          >
+            Rooms Management
+          </h1>
+          <p className="page-subtitle" style={{ margin: '6px 0 0', color: '#8c735f', fontSize: '0.9rem' }}>
+            {canManage
+              ? 'View, search, filter, and manage individual boarding suite units and operational statuses.'
+              : 'Explore sanctuary boarding units and real-time suite occupancy.'}
+          </p>
         </div>
-        {canManage && <Link to={`${baseRoomPath}/new`} className="btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add Room
-        </Link>}
+        {canManage && (
+          <Link
+            to={`${baseRoomPath}/new`}
+            className="btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.55rem 1.4rem',
+              borderRadius: 999,
+              backgroundColor: '#3d2d23',
+              color: '#ffffff',
+              fontWeight: 700,
+              boxShadow: '0 4px 14px rgba(61,45,35,0.18)',
+              textDecoration: 'none',
+            }}
+          >
+            <PlusOutlined style={{ fontSize: 13 }} />
+            <span>Add Room</span>
+          </Link>
+        )}
       </div>
 
       {/* Filter and Search Panel */}
@@ -138,10 +195,7 @@ const AdminRoomListPage: React.FC = () => {
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
             <span className="search-icon-prefix" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+              <SearchOutlined style={{ color: '#8c735f' }} />
             </span>
             <input
               type="text"
@@ -156,37 +210,73 @@ const AdminRoomListPage: React.FC = () => {
               </button>
             )}
           </form>
-          
-          <div className="filter-dropdowns">
-            <select
-              value={status}
-              onChange={(e) => {
-                setPage(1)
-                setStatus(e.target.value)
-              }}
-              aria-label="Filter by status"
-            >
-              <option value="">All statuses</option>
-              <option value="Available">Available</option>
-              <option value="Maintenance">Maintenance</option>
-              <option value="Occupied">Occupied</option>
-            </select>
 
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPage(1)
-                setPageSize(Number(e.target.value))
+          <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {/* Room Type Filter */}
+            <Select
+              value={roomTypeIdFilter}
+              onChange={(val) => {
+                setPage(1);
+                setRoomTypeIdFilter(val);
               }}
-              aria-label="Items per page"
-            >
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-            </select>
+              style={{ minWidth: 160, height: 40 }}
+              options={[
+                { value: '', label: 'All Room Types' },
+                ...roomTypes.map((rt) => ({ value: rt.id, label: rt.name })),
+              ]}
+            />
+
+            {/* Status Filter */}
+            <Select
+              value={status}
+              onChange={(val) => {
+                setPage(1);
+                setStatus(val);
+              }}
+              style={{ minWidth: 140, height: 40 }}
+              options={[
+                { value: '', label: 'All statuses' },
+                { value: 'Available', label: 'Available' },
+                { value: 'Maintenance', label: 'Maintenance' },
+                { value: 'Occupied', label: 'Occupied' },
+              ]}
+            />
+
+            {/* Page Size Filter */}
+            <Select
+              value={pageSize}
+              onChange={(val) => {
+                setPage(1);
+                setPageSize(val);
+              }}
+              style={{ minWidth: 130, height: 40 }}
+              options={[
+                { value: 10, label: '10 per page' },
+                { value: 25, label: '25 per page' },
+                { value: 50, label: '50 per page' },
+              ]}
+            />
 
             {hasActiveFilters && (
-              <button type="button" className="chip" onClick={() => { clearSearch(); setStatus(''); }} title="Reset all filters">
+              <button
+                type="button"
+                className="chip"
+                onClick={resetAllFilters}
+                title="Reset all filters"
+                style={{
+                  height: 40,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: 10,
+                  border: '1.5px solid #eeddc8',
+                  background: '#ffffff',
+                  color: '#785839',
+                  fontWeight: 600,
+                  padding: '0 14px',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
                 Reset filters
               </button>
             )}
@@ -204,7 +294,7 @@ const AdminRoomListPage: React.FC = () => {
               <tr>
                 <th className="col-idx">#</th>
                 <th className="col-name">ROOM NAME</th>
-                <th>ROOM TYPE</th>
+                <th>ROOM CATEGORY</th>
                 <th className="col-status">STATUS</th>
                 <th className="col-actions">ACTIONS</th>
               </tr>
@@ -212,8 +302,8 @@ const AdminRoomListPage: React.FC = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                    <p style={{ margin: 0, color: '#557268' }}>Loading rooms...</p>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                    <p style={{ margin: 0, color: '#785839', fontWeight: 600 }}>Loading sanctuary rooms...</p>
                   </td>
                 </tr>
               ) : !data || data.items.length === 0 ? (
@@ -224,29 +314,127 @@ const AdminRoomListPage: React.FC = () => {
                       <p>
                         {hasActiveFilters
                           ? 'Try adjusting your search query or filters to find what you are looking for.'
-                          : 'No rooms exist in the system yet.'}
+                          : 'No physical rooms configured in the system yet.'}
                       </p>
                       {hasActiveFilters ? (
-                        <button type="button" className="btn" onClick={() => { clearSearch(); setStatus(''); }}>
+                        <button type="button" className="btn" onClick={resetAllFilters}>
                           Clear filters
                         </button>
-                      ) : (
-                        canManage ? (<Link to={`${baseRoomPath}/new`} className="btn">+ Add first room</Link>) : null
-                      )}
+                      ) : canManage ? (
+                        <Link to={`${baseRoomPath}/new`} className="btn">
+                          + Add first room
+                        </Link>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
               ) : (
-                data.items.map((r, idx) => (
+                data.items.map((r, idx) => {
+                  const rowNumber = (page - 1) * pageSize + idx + 1;
+                  return (
                     <tr key={r.id}>
-                      <td className="col-idx">{(page - 1) * pageSize + idx + 1}</td>
-                      <td className="col-name">{r.roomName}</td>
-                      <td>{r.roomTypeName}</td>
+                      <td className="col-idx">{rowNumber}</td>
+                      <td className="col-name">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div
+                            style={{
+                              width: 34,
+                              height: 34,
+                              borderRadius: 8,
+                              backgroundColor: '#faf6f0',
+                              border: '1.5px solid #eeddc8',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#785839',
+                              fontSize: '0.95rem',
+                              flexShrink: 0,
+                            }}
+                          >
+                            <HomeOutlined />
+                          </div>
+                          <div>
+                            <span style={{ fontWeight: 700, color: '#3d2d23', fontSize: '0.94rem' }}>
+                              {r.roomName}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '4px 12px',
+                            borderRadius: 999,
+                            backgroundColor: '#faf6f0',
+                            border: '1px solid #eeddc8',
+                            color: '#785839',
+                            fontWeight: 600,
+                            fontSize: '0.82rem',
+                          }}
+                        >
+                          <HomeOutlined style={{ fontSize: 11 }} />
+                          <span>{r.roomTypeName || 'Suite Category'}</span>
+                        </span>
+                      </td>
                       <td className="col-status">
-                         <span className={`status-pill ${r.status === 'Available' ? 'active' : r.status === 'Maintenance' ? 'inactive' : ''}`} style={r.status === 'Occupied' ? { background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' } : {}}>
-                           <span className="status-dot"></span>
-                           {r.status}
-                         </span>
+                        {r.status === 'Available' ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '3px 12px',
+                              borderRadius: 999,
+                              backgroundColor: '#ecfdf5',
+                              color: '#047857',
+                              border: '1px solid #a7f3d0',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#10b981' }} />
+                            Available
+                          </span>
+                        ) : r.status === 'Maintenance' ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '3px 12px',
+                              borderRadius: 999,
+                              backgroundColor: '#fef2f2',
+                              color: '#dc2626',
+                              border: '1px solid #fecaca',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+                            Maintenance
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '3px 12px',
+                              borderRadius: 999,
+                              backgroundColor: '#fef3c7',
+                              color: '#92400e',
+                              border: '1px solid #fde68a',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+                            {r.status || 'Occupied'}
+                          </span>
+                        )}
                       </td>
                       <td className="col-actions">
                         {canManage ? (
@@ -254,42 +442,54 @@ const AdminRoomListPage: React.FC = () => {
                             <button
                               type="button"
                               className="btn-action view"
-                              title="Toggle status"
-                              onClick={() => handleToggleStatus(r)}
+                              title={`Toggle status (currently ${r.status})`}
+                              onClick={() => setRoomToToggle(r)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                                padding: '4px 10px',
+                                borderRadius: 6,
+                                fontSize: '0.82rem',
+                              }}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="23 4 23 10 17 10"></polyline>
-                                <polyline points="1 20 1 14 7 14"></polyline>
-                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                              </svg>
-                              Toggle
+                              <SwapOutlined style={{ fontSize: 12 }} />
+                              <span>Toggle</span>
                             </button>
-                            
+
                             <Link
                               to={`${baseRoomPath}/${r.id}/edit`}
                               className="btn-action edit"
                               title="Edit room"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                                padding: '4px 10px',
+                                borderRadius: 6,
+                                fontSize: '0.82rem',
+                              }}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                              </svg>
-                              Edit
+                              <EditOutlined style={{ fontSize: 12 }} />
+                              <span>Edit</span>
                             </Link>
-                            
+
                             <button
                               type="button"
                               className="btn-action danger"
                               title="Delete room"
-                              onClick={() => handleDelete(r.id, r.roomName)}
+                              onClick={() => setRoomToDelete(r)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                                padding: '4px 10px',
+                                borderRadius: 6,
+                                fontSize: '0.82rem',
+                              }}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                <line x1="10" y1="11" x2="10" y2="17"></line>
-                                <line x1="14" y1="11" x2="14" y2="17"></line>
-                              </svg>
-                              Delete
+                              <DeleteOutlined style={{ fontSize: 12 }} />
+                              <span>Delete</span>
                             </button>
                           </div>
                         ) : (
@@ -297,8 +497,8 @@ const AdminRoomListPage: React.FC = () => {
                         )}
                       </td>
                     </tr>
-                  )
-                )
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -306,47 +506,108 @@ const AdminRoomListPage: React.FC = () => {
 
         {/* Table Footer with Pagination */}
         {data && totalCount > 0 && (
-          <div className="table-footer">
-            <div>
-              Showing <strong>{startEntry}</strong> to <strong>{endEntry}</strong> of <strong>{totalCount}</strong> rooms
-            </div>
-            {totalPages > 1 && (
-              <div className="table-pagination-nav">
-                <button
-                  type="button"
-                  className="page-btn"
-                  disabled={!data.hasPreviousPage}
-                  onClick={() => setPage(page - 1)}
-                  title="Previous page"
-                >
-                  ‹
-                </button>
-                {getPageNumbers().map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    className={`page-btn ${p === page ? 'active' : ''}`}
-                    onClick={() => setPage(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className="page-btn"
-                  disabled={!data.hasNextPage}
-                  onClick={() => setPage(page + 1)}
-                  title="Next page"
-                >
-                  ›
-                </button>
-              </div>
-            )}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 24px',
+              backgroundColor: '#ffffff',
+              borderTop: '1px solid #eeddc8',
+              flexWrap: 'wrap',
+              gap: 14,
+            }}
+          >
+            <span style={{ fontSize: '0.88rem', color: '#785839', fontWeight: 600 }}>
+              Showing {startEntry} to {endEntry} of {totalCount} rooms
+            </span>
+            <Pagination
+              current={page}
+              pageSize={pageSize}
+              total={totalCount}
+              onChange={(newPage) => setPage(newPage)}
+              showSizeChanger={false}
+            />
           </div>
         )}
       </div>
-    </section>
-  )
-}
 
-export default AdminRoomListPage
+      {/* Delete Room Confirmation Dialog */}
+      {roomToDelete && (
+        <div className="confirm-backdrop">
+          <div className="confirm-dialog" role="dialog" aria-modal="true">
+            <div className="confirm-icon danger">⚠️</div>
+            <h3>Delete Room?</h3>
+            <p>
+              Are you sure you want to delete room <strong>"{roomToDelete.roomName}"</strong>?
+              <br />
+              This action cannot be undone and will permanently remove this room unit.
+            </p>
+            <div className="confirm-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={deleting}
+                onClick={() => setRoomToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-action danger"
+                disabled={deleting}
+                onClick={handleConfirmDelete}
+                style={{ padding: '0.65rem 1.4rem', color: '#fff' }}
+              >
+                {deleting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toggle Status Confirmation Dialog */}
+      {roomToToggle && (
+        <div className="confirm-backdrop">
+          <div className="confirm-dialog" role="dialog" aria-modal="true">
+            <div
+              className="confirm-icon"
+              style={{ backgroundColor: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}
+            >
+              🔄
+            </div>
+            <h3>Change Room Status?</h3>
+            <p>
+              Are you sure you want to change the status of <strong>"{roomToToggle.roomName}"</strong> from{' '}
+              <strong style={{ color: '#3d2d23' }}>{roomToToggle.status}</strong> to{' '}
+              <strong style={{ color: '#3d2d23' }}>
+                {roomToToggle.status === 'Available' ? 'Maintenance' : 'Available'}
+              </strong>?
+            </p>
+            <div className="confirm-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={toggling}
+                onClick={() => setRoomToToggle(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-action"
+                disabled={toggling}
+                onClick={handleConfirmToggleStatus}
+                style={{ backgroundColor: '#3d2d23', color: '#ffffff', padding: '0.65rem 1.4rem' }}
+              >
+                {toggling ? 'Updating...' : 'Confirm Change'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
+export default AdminRoomListPage;
