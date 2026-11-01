@@ -550,48 +550,67 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: 14,
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: 16,
             }}
           >
             {roomType.rooms.map((r) => {
-              const isAvailable = (r.status || '').toLowerCase() === 'available';
+              const statusStr = (r.status || '').toLowerCase();
+              const isAvailable = statusStr === 'available';
+              const isMaintenance = statusStr === 'maintenance' || statusStr === 'under_maintenance';
+              const displayName = r.roomName || r.name || 'Suite Unit';
+
               return (
                 <div
                   key={r.id}
                   style={{
-                    padding: '16px 18px',
+                    padding: '16px 20px',
                     borderRadius: 14,
                     border: '1.5px solid #eeddc8',
-                    backgroundColor: '#fdfbf9',
+                    backgroundColor: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    gap: 14,
+                    boxShadow: '0 2px 8px rgba(61,45,35,0.03)',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
                     <div
                       style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #eeddc8',
+                        width: 42,
+                        height: 42,
+                        borderRadius: 11,
+                        backgroundColor: '#faf6f0',
+                        border: '1.5px solid #eeddc8',
                         color: '#785839',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: 16,
+                        fontSize: 18,
+                        flexShrink: 0,
                       }}
                     >
                       <HomeOutlined />
                     </div>
-                    <div>
-                      <div style={{ fontWeight: 700, color: '#3d2d23', fontSize: '0.92rem' }}>
-                        {r.name}
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          color: '#3d2d23',
+                          fontSize: '1.05rem',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        title={displayName}
+                      >
+                        {displayName}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#8c735f' }}>
-                        ID: {r.id.slice(0, 8)}...
+                      <div style={{ fontSize: '0.78rem', color: '#8c735f', marginTop: 2 }}>
+                        Sanctuary Suite Unit
                       </div>
                     </div>
                   </div>
@@ -600,17 +619,27 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: 4,
-                      padding: '0.2rem 0.65rem',
+                      gap: 6,
+                      padding: '0.35rem 0.85rem',
                       borderRadius: 999,
-                      fontSize: '0.75rem',
+                      fontSize: '0.8rem',
                       fontWeight: 700,
-                      backgroundColor: isAvailable ? '#ecfdf5' : '#fffbeb',
-                      color: isAvailable ? '#047857' : '#b45309',
-                      border: `1px solid ${isAvailable ? '#a7f3d0' : '#fde68a'}`,
+                      backgroundColor: isAvailable ? '#ecfdf5' : isMaintenance ? '#fef2f2' : '#eff6ff',
+                      color: isAvailable ? '#047857' : isMaintenance ? '#b91c1c' : '#1d4ed8',
+                      border: `1.5px solid ${isAvailable ? '#a7f3d0' : isMaintenance ? '#fecaca' : '#bfdbfe'}`,
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
                     }}
                   >
-                    {r.status || 'Active'}
+                    <span
+                      style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: '50%',
+                        backgroundColor: isAvailable ? '#10b981' : isMaintenance ? '#ef4444' : '#3b82f6',
+                      }}
+                    />
+                    {r.status || 'Available'}
                   </span>
                 </div>
               );
