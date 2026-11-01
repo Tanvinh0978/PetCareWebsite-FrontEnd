@@ -4,6 +4,7 @@ import { HeartOutlined } from '@ant-design/icons'
 import ImageUpload from '@/components/common/ImageUpload'
 import careRecordService from '@/services/careRecord.service'
 import type { BoardingTaskResponseDTO } from '@/types/boardingTask.types'
+import { normalizeStatus } from '@/types/groomingTask.types'
 
 const { TextArea } = Input
 
@@ -28,6 +29,11 @@ export default function CreateCareRecordModal({ open, task, onClose, onSuccess }
 
   const submit = async (values: { healthStatus: string; note: string }) => {
     if (!task) return
+    const currentStatus = normalizeStatus(task.status)
+    if (currentStatus === 4 || currentStatus === 5 || currentStatus === 6) {
+      message.warning('Dịch vụ lưu trú này đã hoàn tất hoặc đã hủy. Không thể ghi thêm nhật ký chăm sóc.')
+      return
+    }
     setSaving(true)
     try {
       await careRecordService.create({
@@ -36,11 +42,11 @@ export default function CreateCareRecordModal({ open, task, onClose, onSuccess }
         note: values.note?.trim() ?? '',
         ...(imageUrl ? { imageUrl } : {}),
       })
-      message.success(`Care log saved for ${task.petName}.`)
+      message.success(`Care diary saved for ${task.petName}.`)
       onSuccess()
       onClose()
     } catch (error: any) {
-      message.error(error?.response?.data?.message || error?.message || 'Could not save the care log.')
+      message.error(error?.response?.data?.message || error?.message || 'Could not save the care diary.')
     } finally {
       setSaving(false)
     }
@@ -108,7 +114,7 @@ export default function CreateCareRecordModal({ open, task, onClose, onSuccess }
                   lineHeight: 1.3,
                 }}
               >
-                Daily Care Log {task ? `· ${task.petName}` : ''}
+                Daily Care Diary {task ? `· ${task.petName}` : ''}
               </h3>
               <p style={{ margin: '3px 0 0', fontSize: 13, color: '#8c735f', fontWeight: 400 }}>
                 Record today’s health observations, meals, and care details for this guest.
@@ -229,7 +235,7 @@ export default function CreateCareRecordModal({ open, task, onClose, onSuccess }
                 boxShadow: '0 4px 12px rgba(61,45,35,0.2)',
               }}
             >
-              Save care log
+              Save care diary
             </Button>
           </div>
         </Form>

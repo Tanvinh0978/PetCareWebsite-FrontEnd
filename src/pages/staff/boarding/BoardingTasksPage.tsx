@@ -19,6 +19,7 @@ import {
   CheckCircleOutlined,
   CheckCircleFilled,
   ClockCircleOutlined,
+  EditOutlined,
   FileTextOutlined,
   HeartOutlined,
   HomeOutlined,
@@ -684,6 +685,8 @@ export default function BoardingTasksPage() {
               const status = statusDetails(task.status)
               const action = getAction(task.status)
               const remaining = task.daysRemaining
+              const normalized = normalizeStatus(task.status)
+              const canWriteDiary = normalized !== 4 && normalized !== 5 && normalized !== 6
 
               return (
                 <Col xs={24} xl={12} key={task.itemId}>
@@ -999,23 +1002,25 @@ export default function BoardingTasksPage() {
                             Care history
                           </Button>
 
-                          <Button
-                            type="primary"
-                            icon={<FileTextOutlined />}
-                            onClick={() => setCareTask(task)}
-                            style={{
-                              borderRadius: 999,
-                              border: 'none',
-                              backgroundColor: '#785839',
-                              color: '#ffffff',
-                              fontWeight: 600,
-                              height: 36,
-                              padding: '0 16px',
-                              boxShadow: '0 2px 8px rgba(120,88,57,0.18)',
-                            }}
-                          >
-                            Log today
-                          </Button>
+                          {canWriteDiary && (
+                            <Button
+                              type="primary"
+                              icon={<EditOutlined />}
+                              onClick={() => setCareTask(task)}
+                              style={{
+                                borderRadius: 999,
+                                border: 'none',
+                                backgroundColor: '#785839',
+                                color: '#ffffff',
+                                fontWeight: 600,
+                                height: 36,
+                                padding: '0 16px',
+                                boxShadow: '0 2px 8px rgba(120,88,57,0.18)',
+                              }}
+                            >
+                              Write diary
+                            </Button>
+                          )}
 
                           {action && (
                             <Button
