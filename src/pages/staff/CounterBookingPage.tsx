@@ -1702,7 +1702,7 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {/* Voucher Code Input */}
               <div>
                 <label
@@ -1723,41 +1723,85 @@ export default function CounterBookingPage() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      backgroundColor: '#ecfdf5',
-                      border: '1.5px solid #a7f3d0',
-                      borderRadius: 10,
-                      padding: '10px 14px',
+                      backgroundColor: '#fdfbf7',
+                      border: '1.5px solid #eeddc8',
+                      borderRadius: 12,
+                      padding: '12px 16px',
                     }}
                   >
-                    <div>
-                      <div style={{ fontWeight: 700, color: '#047857', fontSize: 14 }}>
-                        {appliedVoucher.code}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: '50%',
+                          backgroundColor: '#faf6f0',
+                          border: '1px solid #eeddc8',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#785839',
+                          fontSize: 16,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <GiftOutlined />
                       </div>
-                      <div style={{ fontSize: 12, color: '#065f46' }}>
-                        {String(appliedVoucher.discountType).toLowerCase() === 'percentage'
-                          ? `Discount: -${appliedVoucher.discountValue}% off order total`
-                          : `Discount: -${vnd.format(appliedVoucher.discountValue)} fixed amount`}
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span
+                            style={{
+                              fontFamily: "'Playfair Display', serif",
+                              fontSize: 16,
+                              fontWeight: 700,
+                              color: '#3d2d23',
+                              letterSpacing: '0.04em',
+                            }}
+                          >
+                            {appliedVoucher.code}
+                          </span>
+                          <span
+                            style={{
+                              backgroundColor: '#faf6f0',
+                              border: '1px solid #eeddc8',
+                              color: '#785839',
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              padding: '1px 8px',
+                            }}
+                          >
+                            Applied
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 12.5, color: '#785839', marginTop: 2 }}>
+                          {String(appliedVoucher.discountType).toLowerCase() === 'percentage'
+                            ? `Privilege discount: -${appliedVoucher.discountValue}% off order total`
+                            : `Privilege discount: -${vnd.format(appliedVoucher.discountValue)} off order total`}
+                        </div>
                       </div>
                     </div>
+
                     <button
                       type="button"
                       onClick={handleRemoveVoucher}
                       style={{
-                        padding: '4px 10px',
-                        borderRadius: 6,
+                        padding: '5px 14px',
+                        borderRadius: 999,
                         backgroundColor: '#ffffff',
                         border: '1px solid #fecaca',
                         color: '#dc2626',
                         fontSize: 12,
                         fontWeight: 600,
                         cursor: 'pointer',
+                        transition: 'all 0.15s ease',
                       }}
                     >
                       Remove
                     </button>
                   </div>
                 ) : (
-                  <div>
+                  <div style={{ maxWidth: 460 }}>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <input
                         type="text"
@@ -1778,7 +1822,7 @@ export default function CounterBookingPage() {
                           height: 42,
                           borderRadius: 10,
                           border: '1.5px solid #eeddc8',
-                          padding: '0 12px',
+                          padding: '0 14px',
                           fontSize: 13,
                           fontWeight: 600,
                           color: '#3d2d23',
@@ -1797,22 +1841,32 @@ export default function CounterBookingPage() {
                           borderColor: '#3d2d23',
                           color: '#ffffff',
                           fontWeight: 600,
-                          padding: '0 18px',
+                          padding: '0 20px',
                         }}
                       >
                         Apply
                       </Button>
                     </div>
                     {voucherError && (
-                      <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>
-                        {voucherError}
+                      <div
+                        style={{
+                          color: '#dc2626',
+                          fontSize: 12,
+                          marginTop: 6,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 5,
+                        }}
+                      >
+                        <WarningOutlined />
+                        <span>{voucherError}</span>
                       </div>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Care Notes */}
+              {/* Care Notes (Full width on its own line) */}
               <div>
                 <label
                   style={{
@@ -1826,14 +1880,14 @@ export default function CounterBookingPage() {
                   Front Desk & Care Notes (Optional)
                 </label>
                 <TextArea
-                  placeholder="e.g. Pet sensitive to loud sounds, requires grain-free treats only..."
-                  rows={2}
+                  placeholder="e.g. Pet is sensitive around paws, requires grain-free treats only, check-in belongings logged..."
+                  rows={3}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   style={{
                     borderRadius: 10,
                     border: '1.5px solid #eeddc8',
-                    padding: '8px 12px',
+                    padding: '10px 14px',
                     backgroundColor: '#ffffff',
                   }}
                 />
@@ -2043,145 +2097,6 @@ export default function CounterBookingPage() {
               )}
             </div>
 
-            {/* Promo / Privilege Voucher in Summary */}
-            <div
-              style={{
-                padding: '12px 14px',
-                borderRadius: 12,
-                backgroundColor: '#fdfbf7',
-                border: '1.5px solid #eeddc8',
-                marginBottom: 16,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 8,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: '#3d2d23',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <GiftOutlined style={{ color: '#785839' }} /> Privilege Voucher
-                </span>
-                {appliedVoucher && (
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      color: '#047857',
-                      backgroundColor: '#ecfdf5',
-                      border: '1px solid #a7f3d0',
-                      borderRadius: 999,
-                      padding: '1px 8px',
-                    }}
-                  >
-                    Applied
-                  </span>
-                )}
-              </div>
-
-              {appliedVoucher ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    backgroundColor: '#ffffff',
-                    border: '1.5px solid #a7f3d0',
-                    borderRadius: 8,
-                    padding: '6px 10px',
-                  }}
-                >
-                  <div>
-                    <strong style={{ color: '#047857', fontSize: 13 }}>{appliedVoucher.code}</strong>
-                    <div style={{ fontSize: 11, color: '#065f46' }}>
-                      {String(appliedVoucher.discountType).toLowerCase() === 'percentage'
-                        ? `-${appliedVoucher.discountValue}% discount`
-                        : `-${vnd.format(appliedVoucher.discountValue)} discount`}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleRemoveVoucher}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#dc2626',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <input
-                      type="text"
-                      placeholder="e.g. SANCTUARY10"
-                      value={voucherInput}
-                      onChange={(e) => {
-                        setVoucherInput(e.target.value)
-                        setVoucherError(null)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          handleApplyVoucher()
-                        }
-                      }}
-                      style={{
-                        flex: 1,
-                        height: 36,
-                        borderRadius: 8,
-                        border: '1.5px solid #eeddc8',
-                        padding: '0 10px',
-                        fontSize: 12.5,
-                        fontWeight: 600,
-                        color: '#3d2d23',
-                        textTransform: 'uppercase',
-                        outline: 'none',
-                        backgroundColor: '#ffffff',
-                      }}
-                    />
-                    <Button
-                      loading={checkingVoucher}
-                      onClick={handleApplyVoucher}
-                      style={{
-                        height: 36,
-                        borderRadius: 8,
-                        backgroundColor: '#3d2d23',
-                        borderColor: '#3d2d23',
-                        color: '#ffffff',
-                        fontWeight: 600,
-                        fontSize: 12,
-                        padding: '0 14px',
-                      }}
-                    >
-                      Apply
-                    </Button>
-                  </div>
-                  {voucherError && (
-                    <div style={{ color: '#dc2626', fontSize: 11, marginTop: 4 }}>
-                      {voucherError}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
             <div style={{ height: 1, backgroundColor: '#eeddc8', margin: '14px 0' }} />
 
             {/* Subtotal */}
@@ -2198,7 +2113,7 @@ export default function CounterBookingPage() {
               <span style={{ fontWeight: 600, color: '#3d2d23' }}>{vnd.format(totalEstimatedCost)}</span>
             </div>
 
-            {/* Voucher Discount */}
+            {/* Voucher Discount (View only in Summary) */}
             {appliedVoucher && voucherDiscount > 0 && (
               <div
                 style={{
@@ -2206,10 +2121,13 @@ export default function CounterBookingPage() {
                   justifyContent: 'space-between',
                   fontSize: 13,
                   marginBottom: 6,
-                  color: '#047857',
+                  color: '#b45309',
+                  fontWeight: 600,
                 }}
               >
-                <span>Voucher Discount ({appliedVoucher.code}):</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <GiftOutlined style={{ color: '#785839' }} /> Voucher ({appliedVoucher.code}):
+                </span>
                 <span style={{ fontWeight: 700 }}>-{vnd.format(voucherDiscount)}</span>
               </div>
             )}
@@ -2221,7 +2139,7 @@ export default function CounterBookingPage() {
                 justifyContent: 'space-between',
                 alignItems: 'baseline',
                 marginBottom: 16,
-                marginTop: 8,
+                marginTop: appliedVoucher && voucherDiscount > 0 ? 8 : 4,
               }}
             >
               <div>
