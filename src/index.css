@@ -1998,10 +1998,11 @@ legend {
 
 /* Shared image picker */
 .pet-basic-info {
-  background: #f3f7f4;
-  border: 1px solid #dce8df;
+  background: #fdf9f3;
+  border: 1px solid #eeddc8;
+  border-radius: 10px;
 }
-.pet-basic-info > div > span { color: #4f6256; }
+.pet-basic-info > div > span { color: #785839; }
 :root[data-theme="dark"] .pet-basic-info {
   background: #252f3d;
   border: 1px solid #3d4a5b;

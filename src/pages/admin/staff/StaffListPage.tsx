@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
-import { App } from 'antd'
+import { App, Select, Pagination } from 'antd'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { staffService } from '@/services/staff.service'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -114,22 +114,7 @@ const AdminStaffListPage: React.FC = () => {
   const totalCount = data?.totalCount ?? 0
   const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
   const endEntry = Math.min(page * pageSize, totalCount)
-  const totalPages = data?.totalPages ?? 1
-
-  const getPageNumbers = () => {
-    const pages: number[] = []
-    const maxButtons = 5
-    let startPage = Math.max(1, page - Math.floor(maxButtons / 2))
-    let endPage = startPage + maxButtons - 1
-    if (endPage > totalPages) {
-      endPage = totalPages
-      startPage = Math.max(1, endPage - maxButtons + 1)
-    }
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i)
-    }
-    return pages
-  }
+  
 
   return (
     <section className="page wide">
@@ -191,32 +176,34 @@ const AdminStaffListPage: React.FC = () => {
             )}
           </form>
 
-          <div className="filter-dropdowns">
-            <select
+          <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Select
               value={statusFilter}
-              onChange={(e) => {
+              onChange={(val) => {
                 setPage(1)
-                setStatusFilter(e.target.value as typeof statusFilter)
+                setStatusFilter(val)
               }}
-              aria-label="Filter by status"
-            >
-              <option value="all">All statuses</option>
-              <option value="active">Active only</option>
-              <option value="inactive">Inactive only</option>
-            </select>
+              style={{ minWidth: 140, height: 40 }}
+              options={[
+                { value: 'all', label: 'All statuses' },
+                { value: 'active', label: 'Active only' },
+                { value: 'inactive', label: 'Inactive only' },
+              ]}
+            />
 
-            <select
+            <Select
               value={pageSize}
-              onChange={(e) => {
+              onChange={(val) => {
                 setPage(1)
-                setPageSize(Number(e.target.value))
+                setPageSize(val)
               }}
-              aria-label="Items per page"
-            >
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-            </select>
+              style={{ minWidth: 130, height: 40 }}
+              options={[
+                { value: 10, label: '10 per page' },
+                { value: 25, label: '25 per page' },
+                { value: 50, label: '50 per page' },
+              ]}
+            />
 
             {hasActiveFilters && (
               <button
@@ -224,6 +211,19 @@ const AdminStaffListPage: React.FC = () => {
                 className="chip"
                 onClick={resetAllFilters}
                 title="Reset all filters"
+                style={{
+                  height: 40,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: 10,
+                  border: '1.5px solid #eeddc8',
+                  background: '#ffffff',
+                  color: '#785839',
+                  fontWeight: 600,
+                  padding: '0 14px',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
               >
                 Reset filters
               </button>
@@ -426,39 +426,28 @@ const AdminStaffListPage: React.FC = () => {
 
         {/* Pagination Bar */}
         {totalCount > 0 && (
-          <div className="table-pagination">
-            <span className="table-pagination-info">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 24px',
+              backgroundColor: '#ffffff',
+              borderTop: '1px solid #eeddc8',
+              flexWrap: 'wrap',
+              gap: 14,
+            }}
+          >
+            <span style={{ fontSize: '0.88rem', color: '#785839', fontWeight: 600 }}>
               Showing {startEntry} to {endEntry} of {totalCount} staff members
             </span>
-            <div className="table-pagination-nav">
-              <button
-                type="button"
-                className="btn-page"
-                disabled={page <= 1 || loading}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </button>
-              {getPageNumbers().map((pNum) => (
-                <button
-                  key={pNum}
-                  type="button"
-                  className={`btn-page ${pNum === page ? 'active' : ''}`}
-                  disabled={loading}
-                  onClick={() => setPage(pNum)}
-                >
-                  {pNum}
-                </button>
-              ))}
-              <button
-                type="button"
-                className="btn-page"
-                disabled={page >= totalPages || loading}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              >
-                Next
-              </button>
-            </div>
+            <Pagination
+              current={page}
+              pageSize={pageSize}
+              total={totalCount}
+              onChange={(newPage) => setPage(newPage)}
+              showSizeChanger={false}
+            />
           </div>
         )}
       </div>
