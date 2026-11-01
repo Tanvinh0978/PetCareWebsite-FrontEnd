@@ -270,7 +270,6 @@ export default function ServiceListPage() {
                 <th style={{ width: 64 }}>PHOTO</th>
                 <th className="col-name">SERVICE NAME</th>
                 <th className="col-type">CATEGORY</th>
-                <th className="col-desc">DESCRIPTION</th>
                 <th className="col-status">STATUS</th>
                 <th className="col-actions">ACTIONS</th>
               </tr>
@@ -278,13 +277,13 @@ export default function ServiceListPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
                     <p style={{ margin: 0, color: '#785839', fontWeight: 600 }}>Loading sanctuary services...</p>
                   </td>
                 </tr>
               ) : !data || data.items.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={6}>
                     <div className="table-empty-box">
                       <h3>No matching services found</h3>
                       <p>
@@ -380,21 +379,6 @@ export default function ServiceListPage() {
                         >
                           {badgeConfig.label}
                         </span>
-                      </td>
-                      <td className="col-desc" title={s.description || 'No description'}>
-                        <div
-                          style={{
-                            color: '#554236',
-                            fontSize: '0.88rem',
-                            lineHeight: 1.5,
-                            maxWidth: 320,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {s.description || <span style={{ color: '#998373', fontStyle: 'italic' }}>—</span>}
-                        </div>
                       </td>
                       <td className="col-status">
                         {s.isActive ? (
