@@ -1,132 +1,156 @@
-import React, { useEffect, useState, type FormEvent } from 'react'
-import { App } from 'antd'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { customerService } from '@/services/customer.service'
-import { useAuthStore } from '@/store/useAuthStore'
-import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
-import type { CustomerDTO } from '@/types/customer.types'
-import { getApiErrorMessage } from '@/utils/apiError'
+import React, { useEffect, useState, type FormEvent } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Select, Pagination, message } from 'antd';
+import {
+  PlusOutlined,
+  SearchOutlined,
+  EyeOutlined,
+  EditOutlined,
+  StopOutlined,
+  CheckCircleOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { customerService } from '@/services/customer.service';
+import { useAuthStore } from '@/store/useAuthStore';
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
+import type { CustomerDTO } from '@/types/customer.types';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const CustomerManagement: React.FC = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const baseCustomerPath = location.pathname.startsWith('/staff') ? '/staff/customers' : '/admin/customers'
-  const { message } = App.useApp()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const baseCustomerPath = location.pathname.startsWith('/staff') ? '/staff/customers' : '/admin/customers';
 
-  const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all')
-  const [keywordInput, setKeywordInput] = useState('')
-  const [keyword, setKeyword] = useState('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-  const [reload, setReload] = useState(0)
+  const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [keywordInput, setKeywordInput] = useState('');
+  const [keyword, setKeyword] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [reload, setReload] = useState(0);
 
-  const [data, setData] = useState<IPagedResult<CustomerDTO> | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [data, setData] = useState<IPagedResult<CustomerDTO> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const [customerToToggle, setCustomerToToggle] = useState<CustomerDTO | null>(null)
-  const [toggling, setToggling] = useState(false)
-  const user = useAuthStore((s) => s.user)
-  const canManage = hasPermission(user, PERMISSIONS.CUSTOMER_MANAGE)
+  const [customerToToggle, setCustomerToToggle] = useState<CustomerDTO | null>(null);
+  const [toggling, setToggling] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const canManage = hasPermission(user, PERMISSIONS.CUSTOMER_MANAGE);
 
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    customerService.fetchWithPagination({
-      pageNumber: page,
-      pageSize,
-      searchTerm: keyword || undefined,
-      isActive: status === 'all' ? undefined : status === 'active'
-    })
+    let cancelled = false;
+    setLoading(true);
+    customerService
+      .fetchWithPagination({
+        pageNumber: page,
+        pageSize,
+        searchTerm: keyword || undefined,
+        isActive: status === 'all' ? undefined : status === 'active',
+      })
       .then((res) => {
         if (!cancelled) {
-          setData(res.result)
-          setError('')
+          setData(res.result);
+          setError('');
         }
       })
       .catch((e) => {
-        if (!cancelled) setError(getApiErrorMessage(e))
+        if (!cancelled) setError(getApiErrorMessage(e));
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => { cancelled = true }
-  }, [page, pageSize, keyword, status, reload])
-
-  const openEdit = (id: string) => {
-    navigate(`${baseCustomerPath}/${id}/edit`)
-  }
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [page, pageSize, keyword, status, reload]);
 
   const onSearch = (e: FormEvent) => {
-    e.preventDefault()
-    setPage(1)
-    setKeyword(keywordInput.trim())
-  }
+    e.preventDefault();
+    setPage(1);
+    setKeyword(keywordInput.trim());
+  };
 
   const clearSearch = () => {
-    setKeywordInput('')
-    setKeyword('')
-    setPage(1)
-  }
+    setKeywordInput('');
+    setKeyword('');
+    setPage(1);
+  };
 
   const resetAllFilters = () => {
-    setKeywordInput('')
-    setKeyword('')
-    setStatus('all')
-    setPage(1)
-  }
+    setKeywordInput('');
+    setKeyword('');
+    setStatus('all');
+    setPage(1);
+  };
 
-  const hasActiveFilters = Boolean(keyword || status !== 'all')
+  const hasActiveFilters = Boolean(keyword || status !== 'all');
 
   async function handleConfirmToggle() {
-    if (!customerToToggle) return
-    setToggling(true)
+    if (!customerToToggle) return;
+    setToggling(true);
     try {
-      await customerService.toggleStatus(customerToToggle.id)
-      message.success(customerToToggle.isActive ? 'Customer deactivated' : 'Customer activated')
-      setCustomerToToggle(null)
-      setReload((n) => n + 1)
+      await customerService.toggleStatus(customerToToggle.id);
+      message.success(
+        customerToToggle.isActive
+          ? `Customer "${customerToToggle.fullName}" deactivated.`
+          : `Customer "${customerToToggle.fullName}" activated.`
+      );
+      setCustomerToToggle(null);
+      setReload((n) => n + 1);
     } catch (e) {
-      setError(getApiErrorMessage(e))
+      setError(getApiErrorMessage(e));
     } finally {
-      setToggling(false)
+      setToggling(false);
     }
   }
 
-  const totalCount = data?.totalCount ?? 0
-  const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
-  const endEntry = Math.min(page * pageSize, totalCount)
-  const totalPages = data?.totalPages ?? 1
-
-  const getPageNumbers = () => {
-    const pages: number[] = []
-    const maxButtons = 5
-    let startPage = Math.max(1, page - Math.floor(maxButtons / 2))
-    let endPage = startPage + maxButtons - 1
-    if (endPage > totalPages) {
-      endPage = totalPages
-      startPage = Math.max(1, endPage - maxButtons + 1)
-    }
-    for (let p = startPage; p <= endPage; p++) {
-      pages.push(p)
-    }
-    return pages
-  }
+  const totalCount = data?.totalCount ?? 0;
+  const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endEntry = Math.min(page * pageSize, totalCount);
 
   return (
     <section className="page wide">
+      {/* Page Header */}
       <div className="page-head">
         <div>
-          <h1>Customers Management</h1>
-          <p className="page-subtitle">View, search, and manage customers in table format.</p>
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '2.1rem',
+              color: '#3d2d23',
+              fontWeight: 700,
+            }}
+          >
+            Customers Management
+          </h1>
+          <p className="page-subtitle" style={{ margin: '6px 0 0', color: '#8c735f', fontSize: '0.9rem' }}>
+            {canManage
+              ? 'View, search, and manage registered sanctuary customer accounts and contact dossiers.'
+              : 'Explore customer profiles, contact info, and registered pets.'}
+          </p>
         </div>
-        {canManage && <Link to={`${baseCustomerPath}/new`} className="btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add customer
-        </Link>}
+        {canManage && (
+          <Link
+            to={`${baseCustomerPath}/new`}
+            className="btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.55rem 1.4rem',
+              borderRadius: 999,
+              backgroundColor: '#3d2d23',
+              color: '#ffffff',
+              fontWeight: 700,
+              boxShadow: '0 4px 14px rgba(61,45,35,0.18)',
+              textDecoration: 'none',
+            }}
+          >
+            <PlusOutlined style={{ fontSize: 13 }} />
+            <span>Add Customer</span>
+          </Link>
+        )}
       </div>
 
       {/* Filter and Search Panel */}
@@ -134,54 +158,78 @@ const CustomerManagement: React.FC = () => {
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
             <span className="search-icon-prefix" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+              <SearchOutlined style={{ color: '#8c735f' }} />
             </span>
             <input
               type="text"
-              placeholder="Search customers by name or email..."
+              placeholder="Search customers by name, email, or phone..."
               value={keywordInput}
               onChange={(e) => setKeywordInput(e.target.value)}
               aria-label="Search customers"
             />
             {keywordInput && (
-              <button type="button" className="search-clear-btn" onClick={clearSearch} title="Clear search">
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={clearSearch}
+                title="Clear search"
+              >
                 ✕
               </button>
             )}
           </form>
 
-          <div className="filter-dropdowns">
-            <select
+          <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {/* Status Dropdown */}
+            <Select
               value={status}
-              onChange={(e) => {
-                setPage(1)
-                setStatus(e.target.value as typeof status)
+              onChange={(val) => {
+                setPage(1);
+                setStatus(val);
               }}
-              aria-label="Filter by status"
-            >
-              <option value="all">All statuses</option>
-              <option value="active">Active only</option>
-              <option value="inactive">Inactive only</option>
-            </select>
+              style={{ minWidth: 140, height: 40 }}
+              options={[
+                { value: 'all', label: 'All statuses' },
+                { value: 'active', label: 'Active only' },
+                { value: 'inactive', label: 'Inactive only' },
+              ]}
+            />
 
-            <select
+            {/* Page Size Dropdown */}
+            <Select
               value={pageSize}
-              onChange={(e) => {
-                setPage(1)
-                setPageSize(Number(e.target.value))
+              onChange={(val) => {
+                setPage(1);
+                setPageSize(val);
               }}
-              aria-label="Items per page"
-            >
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-            </select>
+              style={{ minWidth: 130, height: 40 }}
+              options={[
+                { value: 10, label: '10 per page' },
+                { value: 25, label: '25 per page' },
+                { value: 50, label: '50 per page' },
+              ]}
+            />
 
             {hasActiveFilters && (
-              <button type="button" className="chip" onClick={resetAllFilters} title="Reset all filters">
+              <button
+                type="button"
+                className="chip"
+                onClick={resetAllFilters}
+                title="Reset all filters"
+                style={{
+                  height: 40,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: 10,
+                  border: '1.5px solid #eeddc8',
+                  background: '#ffffff',
+                  color: '#785839',
+                  fontWeight: 600,
+                  padding: '0 14px',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
                 Reset filters
               </button>
             )}
@@ -209,8 +257,8 @@ const CustomerManagement: React.FC = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                    <p style={{ margin: 0, color: '#557268' }}>Loading customers...</p>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                    <p style={{ margin: 0, color: '#785839', fontWeight: 600 }}>Loading sanctuary customers...</p>
                   </td>
                 </tr>
               ) : !data || data.items.length === 0 ? (
@@ -227,11 +275,11 @@ const CustomerManagement: React.FC = () => {
                         <button type="button" className="btn" onClick={resetAllFilters}>
                           Clear filters
                         </button>
-                      ) : (
+                      ) : canManage ? (
                         <Link to={`${baseCustomerPath}/new`} className="btn">
                           + Add first customer
                         </Link>
-                      )}
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -242,18 +290,102 @@ const CustomerManagement: React.FC = () => {
                     <tr key={c.id} className={c.isActive ? '' : 'row-inactive'}>
                       <td className="col-idx">{rowNumber}</td>
                       <td className="col-name">
-                        <Link to={`${baseCustomerPath}/${c.id}`} style={{ color: 'inherit', fontWeight: 700, textDecoration: 'none' }}>
-                          {c.fullName}
-                        </Link>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div
+                            style={{
+                              width: 34,
+                              height: 34,
+                              borderRadius: '50%',
+                              backgroundColor: '#faf6f0',
+                              border: '1.5px solid #eeddc8',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 700,
+                              color: '#785839',
+                              fontSize: '0.88rem',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {c.fullName ? c.fullName.charAt(0).toUpperCase() : <UserOutlined />}
+                          </div>
+                          <div>
+                            <Link
+                              to={`${baseCustomerPath}/${c.id}`}
+                              style={{
+                                color: '#3d2d23',
+                                fontWeight: 700,
+                                textDecoration: 'none',
+                                fontSize: '0.94rem',
+                              }}
+                            >
+                              {c.fullName}
+                            </Link>
+                          </div>
+                        </div>
                       </td>
-                      <td style={{ textTransform: 'none' }}>{c.email}</td>
-                      <td>{c.phoneNumber}</td>
-                      <td style={{ textAlign: 'center' }}>{c.totalPets}</td>
-                      <td className="col-status">
-                        <span className={`status-pill ${c.isActive ? 'active' : 'inactive'}`}>
-                          <span className="status-dot"></span>
-                          {c.isActive ? 'Active' : 'Inactive'}
+                      <td style={{ textTransform: 'none', color: '#554236', fontSize: '0.88rem' }}>
+                        {c.email}
+                      </td>
+                      <td style={{ color: '#554236', fontSize: '0.88rem' }}>
+                        {c.phoneNumber || '—'}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            padding: '3px 12px',
+                            borderRadius: 999,
+                            backgroundColor: '#faf6f0',
+                            color: '#785839',
+                            border: '1.5px solid #eeddc8',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                          }}
+                        >
+                          <span>{c.totalPets} Pets</span>
                         </span>
+                      </td>
+                      <td className="col-status">
+                        {c.isActive ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '3px 12px',
+                              borderRadius: 999,
+                              backgroundColor: '#ecfdf5',
+                              color: '#047857',
+                              border: '1px solid #a7f3d0',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#10b981' }} />
+                            Active
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '3px 12px',
+                              borderRadius: 999,
+                              backgroundColor: '#fef2f2',
+                              color: '#dc2626',
+                              border: '1px solid #fecaca',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+                            Inactive
+                          </span>
+                        )}
                       </td>
                       <td className="col-actions">
                         <div className="action-group">
@@ -261,47 +393,64 @@ const CustomerManagement: React.FC = () => {
                             to={`${baseCustomerPath}/${c.id}`}
                             className="btn-action view"
                             title="View customer details"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              padding: '4px 10px',
+                              borderRadius: 6,
+                              fontSize: '0.82rem',
+                            }}
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                              <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            View
+                            <EyeOutlined style={{ fontSize: 12 }} />
+                            <span>View</span>
                           </Link>
-                          {canManage && (<><Link
-                            to={`${baseCustomerPath}/${c.id}/edit`}
-                            className="btn-action edit"
-                            title="Edit customer"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                            Edit
-                          </Link>
-                          <button
-                            type="button"
-                            className={`btn-action ${c.isActive ? 'danger' : 'view'}`}
-                            onClick={() => setCustomerToToggle(c)}
-                            title={c.isActive ? 'Deactivate customer' : 'Activate customer'}
-                          >
-                            {c.isActive ? (
-                              <>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <circle cx="12" cy="12" r="10"></circle>
-                                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-                                </svg>
-                                Delete
-                              </>
-                            ) : (
-                              <>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                                Activate
-                              </>
-                            )}
-                          </button></>)}
+                          {canManage && (
+                            <>
+                              <Link
+                                to={`${baseCustomerPath}/${c.id}/edit`}
+                                className="btn-action edit"
+                                title="Edit customer"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '4px 10px',
+                                  borderRadius: 6,
+                                  fontSize: '0.82rem',
+                                }}
+                              >
+                                <EditOutlined style={{ fontSize: 12 }} />
+                                <span>Edit</span>
+                              </Link>
+                              <button
+                                type="button"
+                                className={`btn-action ${c.isActive ? 'danger' : 'view'}`}
+                                onClick={() => setCustomerToToggle(c)}
+                                title={c.isActive ? 'Deactivate customer' : 'Activate customer'}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '4px 10px',
+                                  borderRadius: 6,
+                                  fontSize: '0.82rem',
+                                }}
+                              >
+                                {c.isActive ? (
+                                  <>
+                                    <StopOutlined style={{ fontSize: 12 }} />
+                                    <span>Deactivate</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircleOutlined style={{ fontSize: 12 }} />
+                                    <span>Activate</span>
+                                  </>
+                                )}
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -314,96 +463,87 @@ const CustomerManagement: React.FC = () => {
 
         {/* Table Footer with Pagination */}
         {data && totalCount > 0 && (
-          <div className="table-footer">
-            <div>
-              Showing <strong>{startEntry}</strong> to <strong>{endEntry}</strong> of <strong>{totalCount}</strong> customers
-            </div>
-            {totalPages > 1 && (
-              <div className="table-pagination-nav">
-                <button
-                  type="button"
-                  className="page-btn"
-                  disabled={!data.hasPreviousPage}
-                  onClick={() => setPage(page - 1)}
-                  title="Previous page"
-                >
-                  ‹
-                </button>
-                {getPageNumbers().map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    className={`page-btn ${p === page ? 'active' : ''}`}
-                    onClick={() => setPage(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className="page-btn"
-                  disabled={!data.hasNextPage}
-                  onClick={() => setPage(page + 1)}
-                  title="Next page"
-                >
-                  ›
-                </button>
-              </div>
-            )}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 24px',
+              backgroundColor: '#ffffff',
+              borderTop: '1px solid #eeddc8',
+              flexWrap: 'wrap',
+              gap: 14,
+            }}
+          >
+            <span style={{ fontSize: '0.88rem', color: '#785839', fontWeight: 600 }}>
+              Showing {startEntry} to {endEntry} of {totalCount} customers
+            </span>
+            <Pagination
+              current={page}
+              pageSize={pageSize}
+              total={totalCount}
+              onChange={(newPage) => setPage(newPage)}
+              showSizeChanger={false}
+            />
           </div>
         )}
       </div>
 
       {/* Confirmation Modal for Toggling Status */}
       {customerToToggle && (
-        <div className="modal-overlay" onClick={() => !toggling && setCustomerToToggle(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <div className="modal-header">
-              <h2>{customerToToggle.isActive ? 'Deactivate' : 'Activate'} Customer</h2>
+        <div className="confirm-backdrop">
+          <div className="confirm-dialog" role="dialog" aria-modal="true">
+            <div
+              className={`confirm-icon ${customerToToggle.isActive ? 'danger' : ''}`}
+              style={
+                !customerToToggle.isActive
+                  ? { backgroundColor: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }
+                  : undefined
+              }
+            >
+              {customerToToggle.isActive ? '⚠️' : '✓'}
+            </div>
+            <h3>{customerToToggle.isActive ? 'Deactivate' : 'Activate'} Customer?</h3>
+            <p>
+              Are you sure you want to {customerToToggle.isActive ? 'deactivate' : 'activate'}{' '}
+              <strong>"{customerToToggle.fullName}"</strong>?
+              <br />
+              {customerToToggle.isActive
+                ? "This customer will be marked as inactive and won't be able to log in. You can reactivate them anytime."
+                : 'This customer account will be restored to active status.'}
+            </p>
+            <div className="confirm-actions">
               <button
                 type="button"
-                className="modal-close-btn"
-                onClick={() => setCustomerToToggle(null)}
+                className="btn btn-secondary"
                 disabled={toggling}
-              >
-                ✕
-              </button>
-            </div>
-            <div className="modal-body">
-              <p>
-                Are you sure you want to {customerToToggle.isActive ? 'deactivate' : 'activate'} <strong>"{customerToToggle.fullName}"</strong>?
-              </p>
-              {customerToToggle.isActive && (
-                <p style={{ margin: 0, color: '#688279', fontSize: '0.9rem' }}>
-                  This customer will be marked as inactive and won't be able to log in. You can reactivate them anytime.
-                </p>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="chip"
                 onClick={() => setCustomerToToggle(null)}
-                disabled={toggling}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className={`btn-action ${customerToToggle.isActive ? 'danger' : 'view'}`}
-                style={{ padding: '0.6rem 1.2rem', fontSize: '0.95rem' }}
-                onClick={handleConfirmToggle}
+                className={`btn btn-action ${customerToToggle.isActive ? 'danger' : ''}`}
                 disabled={toggling}
+                onClick={handleConfirmToggle}
+                style={{
+                  padding: '0.65rem 1.4rem',
+                  color: '#ffffff',
+                  backgroundColor: customerToToggle.isActive ? undefined : '#3d2d23',
+                }}
               >
-                {toggling ? 'Processing...' : (customerToToggle.isActive ? 'Confirm Deactivate' : 'Confirm Activate')}
+                {toggling
+                  ? 'Processing...'
+                  : customerToToggle.isActive
+                  ? 'Confirm Deactivate'
+                  : 'Confirm Activate'}
               </button>
             </div>
           </div>
         </div>
       )}
-
     </section>
-  )
-}
+  );
+};
 
-export default CustomerManagement
+export default CustomerManagement;
