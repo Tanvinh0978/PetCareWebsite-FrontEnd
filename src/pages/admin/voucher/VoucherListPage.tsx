@@ -1,63 +1,71 @@
-import React, { useEffect, useState, type FormEvent } from 'react'
-import { App } from 'antd'
-import { useLocation, useNavigate, Link } from 'react-router-dom'
-import { voucherService } from '@/services/voucher.service'
-import { useAuthStore } from '@/store/useAuthStore'
-import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
-import type { VoucherDTO } from '@/types/voucher.types'
-import { DiscountType, DISCOUNT_TYPE_LABEL, DISCOUNT_TYPE_SHORT } from '@/types/voucher.types'
-import { getApiErrorMessage } from '@/utils/apiError'
+import React, { useEffect, useState, type FormEvent } from 'react';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { Select, Pagination, message } from 'antd';
+import {
+  PlusOutlined,
+  SearchOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  TagOutlined,
+} from '@ant-design/icons';
+import { voucherService } from '@/services/voucher.service';
+import { useAuthStore } from '@/store/useAuthStore';
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
+import type { VoucherDTO } from '@/types/voucher.types';
+import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 /* ── helpers ── */
 const formatDate = (iso: string) => {
   try {
     return new Date(iso).toLocaleDateString('vi-VN', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-    })
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   } catch {
-    return iso
+    return iso;
   }
-}
+};
 
 const formatValue = (v: VoucherDTO) => {
   if (v.discountType === DiscountType.Percentage) {
-    return `${v.discountValue}%`
+    return `${v.discountValue}%`;
   }
-  return `${v.discountValue.toLocaleString('vi-VN')} ₫`
-}
+  return `${v.discountValue.toLocaleString('vi-VN')} ₫`;
+};
 
-/* ── component ── */
 const VoucherListPage: React.FC = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const baseVoucherPath = location.pathname.startsWith('/staff') ? '/staff/vouchers' : '/admin/vouchers'
-  const { message } = App.useApp()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const baseVoucherPath = location.pathname.startsWith('/staff') ? '/staff/vouchers' : '/admin/vouchers';
 
   // Filter / pagination state
-  const [keywordInput, setKeywordInput] = useState('')
-  const [keyword, setKeyword] = useState('')
-  const [validFilter, setValidFilter] = useState<'all' | 'valid' | 'invalid'>('all')
-  const [discountTypeFilter, setDiscountTypeFilter] = useState<'all' | DiscountType>('all')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-  const [reload, setReload] = useState(0)
+  const [keywordInput, setKeywordInput] = useState('');
+  const [keyword, setKeyword] = useState('');
+  const [validFilter, setValidFilter] = useState<'all' | 'valid' | 'invalid'>('all');
+  const [discountTypeFilter, setDiscountTypeFilter] = useState<'all' | DiscountType>('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [reload, setReload] = useState(0);
 
-  const [data, setData] = useState<IPagedResult<VoucherDTO> | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [data, setData] = useState<IPagedResult<VoucherDTO> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   // Delete confirmation modal
-  const [voucherToDelete, setVoucherToDelete] = useState<VoucherDTO | null>(null)
-  const [deleting, setDeleting] = useState(false)
-  const user = useAuthStore((s) => s.user)
-  const canManage = hasPermission(user, PERMISSIONS.VOUCHER_MANAGE)
+  const [voucherToDelete, setVoucherToDelete] = useState<VoucherDTO | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const canManage = hasPermission(user, PERMISSIONS.VOUCHER_MANAGE);
 
   /* ── data fetching ── */
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
+    let cancelled = false;
+    setLoading(true);
 
-    const hasFilters = keyword || validFilter !== 'all'
+    const hasFilters = keyword || validFilter !== 'all';
 
     const fetchFn = hasFilters
       ? voucherService.search({
@@ -66,140 +74,183 @@ const VoucherListPage: React.FC = () => {
           pageIndex: page,
           pageSize,
         })
-      : voucherService.fetchWithPagination({ pageIndex: page, pageSize })
+      : voucherService.fetchWithPagination({ pageIndex: page, pageSize });
 
     fetchFn
       .then((res: any) => {
         if (!cancelled) {
-          // GET /api/Vouchers returns PagedResult directly, search wraps in IBackendRes
-          const pagedResult: IPagedResult<VoucherDTO> = res?.result ?? res
+          const pagedResult: IPagedResult<VoucherDTO> = res?.result ?? res;
           // Client-side filter by discountType if needed
           if (discountTypeFilter !== 'all' && pagedResult?.items) {
             const filtered = pagedResult.items.filter(
               (v) => v.discountType === discountTypeFilter
-            )
-            setData({ ...pagedResult, items: filtered, totalCount: filtered.length })
+            );
+            setData({ ...pagedResult, items: filtered, totalCount: filtered.length });
           } else {
-            setData(pagedResult)
+            setData(pagedResult);
           }
-          setError('')
+          setError('');
         }
       })
       .catch((e: unknown) => {
-        if (!cancelled) setError(getApiErrorMessage(e))
+        if (!cancelled) setError(getApiErrorMessage(e));
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+        if (!cancelled) setLoading(false);
+      });
 
-    return () => { cancelled = true }
-  }, [page, pageSize, keyword, validFilter, discountTypeFilter, reload])
+    return () => {
+      cancelled = true;
+    };
+  }, [page, pageSize, keyword, validFilter, discountTypeFilter, reload]);
 
   /* ── event handlers ── */
   const onSearch = (e: FormEvent) => {
-    e.preventDefault()
-    setPage(1)
-    setKeyword(keywordInput.trim())
-  }
+    e.preventDefault();
+    setPage(1);
+    setKeyword(keywordInput.trim());
+  };
 
   const clearSearch = () => {
-    setKeywordInput('')
-    setKeyword('')
-    setPage(1)
-  }
+    setKeywordInput('');
+    setKeyword('');
+    setPage(1);
+  };
 
   const resetAllFilters = () => {
-    setKeywordInput('')
-    setKeyword('')
-    setValidFilter('all')
-    setDiscountTypeFilter('all')
-    setPage(1)
-  }
+    setKeywordInput('');
+    setKeyword('');
+    setValidFilter('all');
+    setDiscountTypeFilter('all');
+    setPage(1);
+  };
 
-  const hasActiveFilters = Boolean(keyword || validFilter !== 'all' || discountTypeFilter !== 'all')
+  const hasActiveFilters = Boolean(keyword || validFilter !== 'all' || discountTypeFilter !== 'all');
 
   async function handleConfirmDelete() {
-    if (!voucherToDelete) return
-    setDeleting(true)
+    if (!voucherToDelete) return;
+    setDeleting(true);
     try {
-      await voucherService.remove(voucherToDelete.id)
-      message.success(`Voucher "${voucherToDelete.code}" deleted successfully.`)
-      setVoucherToDelete(null)
-      setReload((n) => n + 1)
+      await voucherService.remove(voucherToDelete.id);
+      message.success(`Voucher "${voucherToDelete.code}" deleted successfully.`);
+      setVoucherToDelete(null);
+      setReload((n) => n + 1);
     } catch (e) {
-      setError(getApiErrorMessage(e))
+      setError(getApiErrorMessage(e));
     } finally {
-      setDeleting(false)
+      setDeleting(false);
     }
   }
 
   /* ── pagination ── */
-  const totalCount = data?.totalCount ?? 0
-  const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
-  const endEntry = Math.min(page * pageSize, totalCount)
-  const totalPages = data?.totalPages ?? 1
-
-  const getPageNumbers = () => {
-    const pages: number[] = []
-    const maxButtons = 5
-    let startPage = Math.max(1, page - Math.floor(maxButtons / 2))
-    let endPage = startPage + maxButtons - 1
-    if (endPage > totalPages) {
-      endPage = totalPages
-      startPage = Math.max(1, endPage - maxButtons + 1)
-    }
-    for (let p = startPage; p <= endPage; p++) pages.push(p)
-    return pages
-  }
+  const totalCount = data?.totalCount ?? 0;
+  const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endEntry = Math.min(page * pageSize, totalCount);
 
   /* ── validity badge ── */
   const getValidityBadge = (v: VoucherDTO) => {
-    const now = new Date()
-    const end = new Date(v.endDate)
-    const start = new Date(v.startDate)
-    const isExpired = end < now
-    const notStarted = start > now
-    const maxReached = v.maxUsage !== null && v.currentUsage >= v.maxUsage
+    const now = new Date();
+    const end = new Date(v.endDate);
+    const start = new Date(v.startDate);
+    const isExpired = end < now;
+    const notStarted = start > now;
+    const maxReached = v.maxUsage !== null && v.currentUsage >= v.maxUsage;
 
-    if (isExpired) return { label: 'Expired', cls: 'inactive', tip: 'Past end date' }
-    if (notStarted) return { label: 'Scheduled', cls: 'view', tip: 'Not started yet' }
-    if (maxReached) return { label: 'Exhausted', cls: 'inactive', tip: 'Usage limit reached' }
-    return { label: 'Active', cls: 'active', tip: 'Currently valid' }
-  }
+    if (isExpired) {
+      return {
+        label: 'Expired',
+        bg: '#fef2f2',
+        color: '#dc2626',
+        border: '#fecaca',
+        dot: '#ef4444',
+      };
+    }
+    if (notStarted) {
+      return {
+        label: 'Scheduled',
+        bg: '#f0f9ff',
+        color: '#0369a1',
+        border: '#bae6fd',
+        dot: '#0284c7',
+      };
+    }
+    if (maxReached) {
+      return {
+        label: 'Exhausted',
+        bg: '#fffbeb',
+        color: '#b45309',
+        border: '#fde68a',
+        dot: '#f59e0b',
+      };
+    }
+    return {
+      label: 'Active',
+      bg: '#ecfdf5',
+      color: '#047857',
+      border: '#a7f3d0',
+      dot: '#10b981',
+    };
+  };
 
   const getDiscountTypeBadge = (discountType: DiscountType | string) => {
     if (discountType === DiscountType.Percentage) {
-      return { bg: '#e0f2fe', color: '#0369a1', label: 'Percentage' }
+      return { bg: '#e0f2fe', color: '#0369a1', border: '#bae6fd', label: 'Percentage' };
     }
-    return { bg: '#f3e8ff', color: '#7e22ce', label: 'Fixed Amount' }
-  }
+    return { bg: '#faf5ff', color: '#7e22ce', border: '#e9d5ff', label: 'Fixed Amount' };
+  };
 
   /* ── render ── */
   return (
     <section className="page wide">
+      {/* Page Header */}
       <div className="page-head">
         <div>
-          <h1>Vouchers Management</h1>
-          <p className="page-subtitle">Create, search, and manage discount vouchers.</p>
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '2.1rem',
+              color: '#3d2d23',
+              fontWeight: 700,
+            }}
+          >
+            Vouchers Management
+          </h1>
+          <p className="page-subtitle" style={{ margin: '6px 0 0', color: '#8c735f', fontSize: '0.9rem' }}>
+            {canManage
+              ? 'Create, configure, schedule, and manage promotional discount vouchers and usage quotas.'
+              : 'View available promotional vouchers and active discount campaigns.'}
+          </p>
         </div>
-        {canManage && (<button type="button" className="btn" onClick={() => navigate(`${baseVoucherPath}/new`)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add voucher
-        </button>)}
+        {canManage && (
+          <Link
+            to={`${baseVoucherPath}/new`}
+            className="btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.55rem 1.4rem',
+              borderRadius: 999,
+              backgroundColor: '#3d2d23',
+              color: '#ffffff',
+              fontWeight: 700,
+              boxShadow: '0 4px 14px rgba(61,45,35,0.18)',
+              textDecoration: 'none',
+            }}
+          >
+            <PlusOutlined style={{ fontSize: 13 }} />
+            <span>Add Voucher</span>
+          </Link>
+        )}
       </div>
 
-      {/* Toolbar */}
+      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
             <span className="search-icon-prefix" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+              <SearchOutlined style={{ color: '#8c735f' }} />
             </span>
             <input
               type="text"
@@ -209,69 +260,103 @@ const VoucherListPage: React.FC = () => {
               aria-label="Search vouchers"
             />
             {keywordInput && (
-              <button type="button" className="search-clear-btn" onClick={clearSearch} title="Clear search">✕</button>
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={clearSearch}
+                title="Clear search"
+              >
+                ✕
+              </button>
             )}
           </form>
 
-          <div className="filter-dropdowns">
-            <select
-              value={validFilter}
-              onChange={(e) => { setPage(1); setValidFilter(e.target.value as typeof validFilter) }}
-              aria-label="Filter by validity"
-            >
-              <option value="all">All statuses</option>
-              <option value="valid">Valid only</option>
-              <option value="invalid">Expired / exhausted</option>
-            </select>
+          <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {/* Discount Type Dropdown */}
+            <Select
+              value={discountTypeFilter}
+              onChange={(val) => {
+                setPage(1);
+                setDiscountTypeFilter(val);
+              }}
+              style={{ minWidth: 155, height: 40 }}
+              options={[
+                { value: 'all', label: 'All Types' },
+                { value: DiscountType.Percentage, label: 'Percentage (%)' },
+                { value: DiscountType.Fixed_Amount, label: 'Fixed Amount (₫)' },
+              ]}
+            />
 
-            <select
+            {/* Validity Dropdown */}
+            <Select
+              value={validFilter}
+              onChange={(val) => {
+                setPage(1);
+                setValidFilter(val);
+              }}
+              style={{ minWidth: 145, height: 40 }}
+              options={[
+                { value: 'all', label: 'All statuses' },
+                { value: 'valid', label: 'Valid only' },
+                { value: 'invalid', label: 'Expired / Exhausted' },
+              ]}
+            />
+
+            {/* Page Size Dropdown */}
+            <Select
               value={pageSize}
-              onChange={(e) => { setPage(1); setPageSize(Number(e.target.value)) }}
-              aria-label="Items per page"
-            >
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-            </select>
+              onChange={(val) => {
+                setPage(1);
+                setPageSize(val);
+              }}
+              style={{ minWidth: 130, height: 40 }}
+              options={[
+                { value: 10, label: '10 per page' },
+                { value: 25, label: '25 per page' },
+                { value: 50, label: '50 per page' },
+              ]}
+            />
 
             {hasActiveFilters && (
-              <button type="button" className="chip" onClick={resetAllFilters} title="Reset all filters">
+              <button
+                type="button"
+                className="chip"
+                onClick={resetAllFilters}
+                title="Reset all filters"
+                style={{
+                  height: 40,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: 10,
+                  border: '1.5px solid #eeddc8',
+                  background: '#ffffff',
+                  color: '#785839',
+                  fontWeight: 600,
+                  padding: '0 14px',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
                 Reset filters
               </button>
             )}
           </div>
         </div>
-
-        {/* Discount type chips */}
-        <div className="type-chips-row">
-          <span className="type-chips-label">Type:</span>
-          {(['all', DiscountType.Percentage, DiscountType.Fixed_Amount] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={discountTypeFilter === t ? 'chip on' : 'chip'}
-              onClick={() => { setPage(1); setDiscountTypeFilter(t) }}
-            >
-              {t === 'all' ? 'All types' : DISCOUNT_TYPE_LABEL[t as DiscountType]}
-            </button>
-          ))}
-        </div>
       </div>
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Table */}
+      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
             <thead>
               <tr>
                 <th className="col-idx">#</th>
-                <th>CODE</th>
+                <th>VOUCHER CODE</th>
                 <th>TYPE</th>
                 <th style={{ textAlign: 'right' }}>DISCOUNT</th>
-                <th>START DATE</th>
-                <th>END DATE</th>
+                <th>VALID PERIOD</th>
                 <th style={{ textAlign: 'center' }}>USAGE</th>
                 <th className="col-status">STATUS</th>
                 <th className="col-actions">ACTIONS</th>
@@ -280,38 +365,41 @@ const VoucherListPage: React.FC = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                    <p style={{ margin: 0, color: '#557268' }}>Loading vouchers...</p>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                    <p style={{ margin: 0, color: '#785839', fontWeight: 600 }}>Loading vouchers...</p>
                   </td>
                 </tr>
               ) : !data || data.items.length === 0 ? (
                 <tr>
-                  <td colSpan={9}>
+                  <td colSpan={8}>
                     <div className="table-empty-box">
                       <h3>No matching vouchers found</h3>
                       <p>
                         {hasActiveFilters
                           ? 'Try adjusting your search query or filters.'
-                          : 'No vouchers exist in the system yet.'}
+                          : 'No vouchers exist in the sanctuary system yet.'}
                       </p>
                       {hasActiveFilters ? (
-                        <button type="button" className="btn" onClick={resetAllFilters}>Clear filters</button>
-                      ) : canManage ? (
-                        <button type="button" className="btn" onClick={() => navigate(`${baseVoucherPath}/new`)}>
-                          + Add first voucher
+                        <button type="button" className="btn" onClick={resetAllFilters}>
+                          Clear filters
                         </button>
+                      ) : canManage ? (
+                        <Link to={`${baseVoucherPath}/new`} className="btn">
+                          + Add first voucher
+                        </Link>
                       ) : null}
                     </div>
                   </td>
                 </tr>
               ) : (
                 data.items.map((v, idx) => {
-                  const rowNumber = (page - 1) * pageSize + idx + 1
-                  const validity = getValidityBadge(v)
-                  const dtBadge = getDiscountTypeBadge(v.discountType)
-                  const usageText = v.maxUsage !== null
-                    ? `${v.currentUsage} / ${v.maxUsage}`
-                    : `${v.currentUsage} / ∞`
+                  const rowNumber = (page - 1) * pageSize + idx + 1;
+                  const validity = getValidityBadge(v);
+                  const dtBadge = getDiscountTypeBadge(v.discountType);
+                  const usageText =
+                    v.maxUsage !== null
+                      ? `${v.currentUsage} / ${v.maxUsage}`
+                      : `${v.currentUsage} / ∞`;
 
                   return (
                     <tr key={v.id}>
@@ -319,34 +407,96 @@ const VoucherListPage: React.FC = () => {
                       <td>
                         <Link
                           to={`${baseVoucherPath}/${v.id}`}
-                          style={{ fontFamily: 'monospace', letterSpacing: '0.05em', fontWeight: 700, color: '#785839', textDecoration: 'none' }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            fontFamily: 'monospace',
+                            letterSpacing: '0.06em',
+                            fontWeight: 700,
+                            color: '#3d2d23',
+                            fontSize: '0.94rem',
+                            textDecoration: 'none',
+                          }}
                           title="View voucher details"
                         >
-                          {v.code}
+                          <div
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 6,
+                              backgroundColor: '#faf6f0',
+                              border: '1px solid #eeddc8',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#785839',
+                              fontSize: '0.85rem',
+                            }}
+                          >
+                            <TagOutlined />
+                          </div>
+                          <span>{v.code}</span>
                         </Link>
                       </td>
                       <td>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '0.78rem',
-                          fontWeight: 600,
-                          background: dtBadge.bg,
-                          color: dtBadge.color,
-                        }}>
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '3px 10px',
+                            borderRadius: '12px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            background: dtBadge.bg,
+                            color: dtBadge.color,
+                            border: `1px solid ${dtBadge.border}`,
+                          }}
+                        >
                           {dtBadge.label}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'right', fontWeight: 700 }}>
+                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#3d2d23', fontSize: '0.94rem' }}>
                         {formatValue(v)}
                       </td>
-                      <td>{formatDate(v.startDate)}</td>
-                      <td>{formatDate(v.endDate)}</td>
-                      <td style={{ textAlign: 'center' }}>{usageText}</td>
+                      <td>
+                        <div style={{ color: '#554236', fontSize: '0.86rem' }}>
+                          <span>{formatDate(v.startDate)}</span>
+                          <span style={{ color: '#8c735f', margin: '0 6px' }}>→</span>
+                          <span>{formatDate(v.endDate)}</span>
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            padding: '3px 10px',
+                            borderRadius: 999,
+                            backgroundColor: '#faf6f0',
+                            border: '1px solid #eeddc8',
+                            color: '#785839',
+                            fontWeight: 600,
+                            fontSize: '0.82rem',
+                          }}
+                        >
+                          {usageText}
+                        </span>
+                      </td>
                       <td className="col-status">
-                        <span className={`status-pill ${validity.cls}`} title={validity.tip}>
-                          <span className="status-dot"></span>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '3px 12px',
+                            borderRadius: 999,
+                            backgroundColor: validity.bg,
+                            color: validity.color,
+                            border: `1px solid ${validity.border}`,
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                          }}
+                        >
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: validity.dot }} />
                           {validity.label}
                         </span>
                       </td>
@@ -355,44 +505,60 @@ const VoucherListPage: React.FC = () => {
                           <Link
                             to={`${baseVoucherPath}/${v.id}`}
                             className="btn-action view"
-                            title="View details"
+                            title="View voucher details"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              padding: '4px 10px',
+                              borderRadius: 6,
+                              fontSize: '0.82rem',
+                            }}
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                              <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            View
+                            <EyeOutlined style={{ fontSize: 12 }} />
+                            <span>View</span>
                           </Link>
-                          {canManage && (<><Link
-                            to={`${baseVoucherPath}/${v.id}/edit`}
-                            className="btn-action edit"
-                            title="Edit voucher"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                            Edit
-                          </Link>
-                          <button
-                            type="button"
-                            className="btn-action danger"
-                            title="Delete voucher"
-                            onClick={() => setVoucherToDelete(v)}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="3 6 5 6 21 6"></polyline>
-                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                              <path d="M10 11v6"></path>
-                              <path d="M14 11v6"></path>
-                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
-                            </svg>
-                            Delete
-                          </button></>)}
+                          {canManage && (
+                            <>
+                              <Link
+                                to={`${baseVoucherPath}/${v.id}/edit`}
+                                className="btn-action edit"
+                                title="Edit voucher"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '4px 10px',
+                                  borderRadius: 6,
+                                  fontSize: '0.82rem',
+                                }}
+                              >
+                                <EditOutlined style={{ fontSize: 12 }} />
+                                <span>Edit</span>
+                              </Link>
+                              <button
+                                type="button"
+                                className="btn-action danger"
+                                title="Delete voucher"
+                                onClick={() => setVoucherToDelete(v)}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '4px 10px',
+                                  borderRadius: 6,
+                                  fontSize: '0.82rem',
+                                }}
+                              >
+                                <DeleteOutlined style={{ fontSize: 12 }} />
+                                <span>Delete</span>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
-                  )
+                  );
                 })
               )}
             </tbody>
@@ -401,48 +567,61 @@ const VoucherListPage: React.FC = () => {
 
         {/* Pagination footer */}
         {data && totalCount > 0 && (
-          <div className="table-footer">
-            <div>
-              Showing <strong>{startEntry}</strong> to <strong>{endEntry}</strong> of <strong>{totalCount}</strong> vouchers
-            </div>
-            {totalPages > 1 && (
-              <div className="table-pagination-nav">
-                <button type="button" className="page-btn" disabled={!data.hasPreviousPage} onClick={() => setPage(page - 1)} title="Previous page">‹</button>
-                {getPageNumbers().map((p) => (
-                  <button key={p} type="button" className={`page-btn ${p === page ? 'active' : ''}`} onClick={() => setPage(p)}>{p}</button>
-                ))}
-                <button type="button" className="page-btn" disabled={!data.hasNextPage} onClick={() => setPage(page + 1)} title="Next page">›</button>
-              </div>
-            )}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 24px',
+              backgroundColor: '#ffffff',
+              borderTop: '1px solid #eeddc8',
+              flexWrap: 'wrap',
+              gap: 14,
+            }}
+          >
+            <span style={{ fontSize: '0.88rem', color: '#785839', fontWeight: 600 }}>
+              Showing {startEntry} to {endEntry} of {totalCount} vouchers
+            </span>
+            <Pagination
+              current={page}
+              pageSize={pageSize}
+              total={totalCount}
+              onChange={(newPage) => setPage(newPage)}
+              showSizeChanger={false}
+            />
           </div>
         )}
       </div>
 
       {/* Delete confirmation modal */}
       {voucherToDelete && (
-        <div className="modal-overlay" onClick={() => !deleting && setVoucherToDelete(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <div className="modal-header">
-              <h2>Delete Voucher</h2>
-              <button type="button" className="modal-close-btn" onClick={() => setVoucherToDelete(null)} disabled={deleting}>✕</button>
-            </div>
-            <div className="modal-body">
-              <p>
-                Are you sure you want to delete voucher <strong>"{voucherToDelete.code}"</strong>?
-              </p>
-              {voucherToDelete.currentUsage > 0 ? (
-                <p style={{ margin: 0, color: '#b45309', fontSize: '0.9rem' }}>
-                  ⚠️ This voucher has been used {voucherToDelete.currentUsage} time(s). It may be soft-deleted rather than permanently removed.
-                </p>
-              ) : (
-                <p style={{ margin: 0, color: '#ef4444', fontSize: '0.9rem' }}>
-                  This voucher has never been used and will be permanently deleted.
-                </p>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="chip" onClick={() => setVoucherToDelete(null)} disabled={deleting}>Cancel</button>
-              <button type="button" className="btn-action danger" style={{ padding: '0.6rem 1.2rem', fontSize: '0.95rem' }} onClick={handleConfirmDelete} disabled={deleting}>
+        <div className="confirm-backdrop">
+          <div className="confirm-dialog" role="dialog" aria-modal="true">
+            <div className="confirm-icon danger">⚠️</div>
+            <h3>Delete Voucher?</h3>
+            <p>
+              Are you sure you want to delete voucher <strong>"{voucherToDelete.code}"</strong>?
+              <br />
+              {voucherToDelete.currentUsage > 0
+                ? `This voucher has been redeemed ${voucherToDelete.currentUsage} time(s). It will be deactivated and marked as removed.`
+                : 'This voucher has not been redeemed and will be permanently removed from the system.'}
+            </p>
+            <div className="confirm-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={deleting}
+                onClick={() => setVoucherToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-action danger"
+                disabled={deleting}
+                onClick={handleConfirmDelete}
+                style={{ padding: '0.65rem 1.4rem', color: '#fff' }}
+              >
                 {deleting ? 'Deleting...' : 'Confirm Delete'}
               </button>
             </div>
@@ -450,7 +629,7 @@ const VoucherListPage: React.FC = () => {
         </div>
       )}
     </section>
-  )
-}
+  );
+};
 
-export default VoucherListPage
+export default VoucherListPage;
