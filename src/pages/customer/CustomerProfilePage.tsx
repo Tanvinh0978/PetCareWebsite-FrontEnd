@@ -6,13 +6,11 @@ import {
   Input,
   Button,
   Tabs,
-  Avatar,
   message,
   Spin,
   Row,
   Col,
   Space,
-  Divider,
 } from 'antd';
 import {
   UserOutlined,
@@ -193,26 +191,7 @@ const CustomerProfilePage: React.FC = () => {
               ),
               children: (
                 <Spin spinning={loading} tip="Loading profile details...">
-                  <div style={{ paddingTop: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24, flexWrap: 'wrap' }}>
-                      <Avatar
-                        size={80}
-                        src={Form.useWatch('avatarUrl', profileForm) || profileData?.avatarUrl || user?.avatarUrl}
-                        style={{ backgroundColor: '#3d2d23', fontSize: 32, border: '2px solid #c69f7b', flexShrink: 0 }}
-                        icon={<UserOutlined />}
-                      >
-                        {(profileData?.fullName || user?.name || 'C').charAt(0)?.toUpperCase()}
-                      </Avatar>
-                      <div>
-                        <Title level={4} style={{ margin: 0, color: '#0f172a' }}>
-                          {profileData?.fullName || user?.name || 'Customer'}
-                        </Title>
-                        <Text type="secondary">{profileData?.email || user?.email || user?.login}</Text>
-                      </div>
-                    </div>
-
-                    <Divider style={{ margin: '16px 0 24px' }} />
-
+                  <div style={{ paddingTop: 20 }}>
                     <Form
                       form={profileForm}
                       layout="vertical"
