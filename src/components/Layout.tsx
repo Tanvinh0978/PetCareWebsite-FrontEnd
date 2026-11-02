@@ -312,7 +312,7 @@ export default function Layout({ role }: { role: Role }) {
               </div>
             ) : (
               <div className="customer-auth-status">
-                <Dropdown menu={{ items: userMenuItems }} trigger={['hover', 'click']} placement="bottomRight">
+                <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
                   <div
                     className="customer-role-badge"
                     style={{

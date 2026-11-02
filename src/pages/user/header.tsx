@@ -23,6 +23,7 @@ const HomeHeader = () => {
       />
       {isAuthenticated ? (
         <Dropdown
+          trigger={['click']}
           menu={{ items: [
             ...(role === ROLE.ADMIN ? [{ key: 'admin', label: 'Admin panel', onClick: () => navigate('/admin') }] : []),
             { key: 'my-pets', label: 'My Pets', onClick: () => navigate('/my-pets') },
