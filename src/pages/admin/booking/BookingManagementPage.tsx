@@ -3,10 +3,9 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   Table,
   Tag,
-  Button,
   Input,
   DatePicker,
-  Radio,
+  Select,
   Space,
   Card,
   Popconfirm,
@@ -18,15 +17,12 @@ import {
   SearchOutlined,
   CalendarOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined,
   EyeOutlined,
   ReloadOutlined,
   DollarCircleOutlined,
   CheckOutlined,
   CloseOutlined,
-  PlusOutlined,
   StopOutlined,
-  ClockCircleOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
@@ -426,9 +422,6 @@ export default function BookingManagementPage() {
     },
   ]
 
-  const todayStr = dayjs().format('YYYY-MM-DD')
-  const tomorrowStr = dayjs().add(1, 'day').format('YYYY-MM-DD')
-
   return (
     <section className="page wide">
       <div className="page-head">
@@ -451,10 +444,18 @@ export default function BookingManagementPage() {
             className="btn-action view"
             onClick={() => fetchBookings()}
             disabled={loading}
-            style={{ height: 42, padding: '0 1.1rem', borderRadius: 999 }}
+            title="Refresh"
+            style={{
+              width: 42,
+              height: 42,
+              padding: 0,
+              borderRadius: '50%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            <ReloadOutlined spin={loading} style={{ fontSize: 13 }} />
-            Refresh
+            <ReloadOutlined spin={loading} style={{ fontSize: 14 }} />
           </button>
         </div>
       </div>
@@ -469,172 +470,67 @@ export default function BookingManagementPage() {
         }}
         styles={{ body: { padding: '16px 20px' } }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Top row: Search input + Service Date Picker + Quick date buttons + Filter Button */}
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 12,
-              alignItems: 'center',
-              justifyContent: 'space-between',
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 12,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Input
+            placeholder="Search customer name, phone number..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setPageNumber(1)
             }}
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', flex: 1 }}>
-              <Input
-                placeholder="Search customer name, phone number..."
-                prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onPressEnter={() => {
+            allowClear
+            style={{ flex: '1 1 260px', maxWidth: 380, height: 38, borderRadius: 8 }}
+          />
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CalendarOutlined style={{ color: 'var(--secondary)', fontSize: 15 }} />
+              <Text strong style={{ fontSize: 13, color: 'var(--slate-700)' }}>
+                Service Date:
+              </Text>
+              <DatePicker
+                value={serviceDate ? dayjs(serviceDate, 'YYYY-MM-DD') : null}
+                onChange={(date: Dayjs | null) => {
+                  setServiceDate(date ? date.format('YYYY-MM-DD') : undefined)
                   setPageNumber(1)
-                  fetchBookings()
                 }}
+                format="YYYY-MM-DD"
+                placeholder="Select date"
                 allowClear
-                style={{ width: 280, borderRadius: 8 }}
+                style={{ width: 155, height: 38, borderRadius: 8 }}
               />
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CalendarOutlined style={{ color: 'var(--secondary)', fontSize: 16 }} />
-                <Text strong style={{ fontSize: 13, color: 'var(--slate-700)' }}>
-                  Service Date:
-                </Text>
-                <DatePicker
-                  value={serviceDate ? dayjs(serviceDate, 'YYYY-MM-DD') : null}
-                  onChange={(date: Dayjs | null) => {
-                    setServiceDate(date ? date.format('YYYY-MM-DD') : undefined)
-                    setPageNumber(1)
-                  }}
-                  format="YYYY-MM-DD"
-                  placeholder="Select service date"
-                  allowClear
-                  style={{ width: 150, borderRadius: 8 }}
-                />
-              </div>
-
-              {/* Quick Date Switchers */}
-              <Space size={6}>
-                <button
-                  type="button"
-                  className="btn-action"
-                  onClick={() => {
-                    setServiceDate(todayStr)
-                    setPageNumber(1)
-                  }}
-                  style={{
-                    borderRadius: 8,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    padding: '0.4rem 0.85rem',
-                    ...(serviceDate === todayStr
-                      ? { backgroundColor: '#3d2d23', borderColor: '#3d2d23', color: '#fff' }
-                      : { backgroundColor: '#fff', borderColor: 'var(--slate-200)', color: 'var(--slate-700)' }),
-                  }}
-                >
-                  Today
-                </button>
-                <button
-                  type="button"
-                  className="btn-action"
-                  onClick={() => {
-                    setServiceDate(tomorrowStr)
-                    setPageNumber(1)
-                  }}
-                  style={{
-                    borderRadius: 8,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    padding: '0.4rem 0.85rem',
-                    ...(serviceDate === tomorrowStr
-                      ? { backgroundColor: '#3d2d23', borderColor: '#3d2d23', color: '#fff' }
-                      : { backgroundColor: '#fff', borderColor: 'var(--slate-200)', color: 'var(--slate-700)' }),
-                  }}
-                >
-                  Tomorrow
-                </button>
-                <button
-                  type="button"
-                  className="btn-action"
-                  onClick={() => {
-                    setServiceDate(undefined)
-                    setPageNumber(1)
-                  }}
-                  style={{
-                    borderRadius: 8,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    padding: '0.4rem 0.85rem',
-                    ...(!serviceDate
-                      ? { backgroundColor: '#3d2d23', borderColor: '#3d2d23', color: '#fff' }
-                      : { backgroundColor: '#fff', borderColor: 'var(--slate-200)', color: 'var(--slate-700)' }),
-                  }}
-                >
-                  All Dates
-                </button>
-              </Space>
             </div>
 
-            <button
-              type="button"
-              className="btn"
-              onClick={() => {
-                setPageNumber(1)
-                fetchBookings()
-              }}
-              style={{
-                height: 38,
-                padding: '0 1.35rem',
-                borderRadius: 8,
-                fontSize: 13,
-                fontWeight: 600,
-              }}
-            >
-              Filter
-            </button>
-          </div>
-
-          {/* Bottom row: Status filters */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-              Status:
-            </Text>
-            <Radio.Group
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value)
-                setPageNumber(1)
-              }}
-              buttonStyle="solid"
-              size="middle"
-            >
-              <Radio.Button value={undefined}>All</Radio.Button>
-              <Radio.Button value={0}>
-                <ClockCircleOutlined style={{ marginRight: 6 }} />
-                Pending
-              </Radio.Button>
-              <Radio.Button value={1}>
-                <CheckCircleOutlined style={{ marginRight: 6 }} />
-                Confirmed
-              </Radio.Button>
-              <Radio.Button value={2}>
-                <CheckOutlined style={{ marginRight: 6 }} />
-                Completed
-              </Radio.Button>
-              <Radio.Button value={3}>
-                <CloseCircleOutlined style={{ marginRight: 6 }} />
-                Cancelled
-              </Radio.Button>
-              <Radio.Button value={4}>
-                <StopOutlined style={{ marginRight: 6 }} />
-                No-Show
-              </Radio.Button>
-            </Radio.Group>
-
-            {serviceDate && (
-              <span style={{ fontSize: 12, color: 'var(--secondary)', fontWeight: 600, marginLeft: 8 }}>
-                Showing appointments for {serviceDate === todayStr ? 'Today' : serviceDate}
-              </span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text strong style={{ fontSize: 13, color: 'var(--slate-700)' }}>
+                Status:
+              </Text>
+              <Select
+                value={statusFilter ?? 'all'}
+                onChange={(val) => {
+                  setStatusFilter(val === 'all' ? undefined : Number(val))
+                  setPageNumber(1)
+                }}
+                style={{ minWidth: 155, height: 38 }}
+                options={[
+                  { value: 'all', label: 'All Statuses' },
+                  { value: 0, label: 'Pending' },
+                  { value: 1, label: 'Confirmed' },
+                  { value: 2, label: 'Completed' },
+                  { value: 3, label: 'Cancelled' },
+                  { value: 4, label: 'No-Show' },
+                ]}
+              />
+            </div>
           </div>
         </div>
       </Card>
