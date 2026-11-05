@@ -827,9 +827,24 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <Alert
                 type="success"
                 showIcon
-                message="Booking Completed (Checked-out)"
-                description="This booking has been completed, pet returned, and fully settled. Resource assignments are locked."
-                style={{ marginBottom: 16, borderRadius: 8 }}
+                icon={<CheckCircleFilled style={{ color: '#10b981', fontSize: 18 }} />}
+                message={
+                  <span style={{ fontWeight: 700, color: '#065f46', fontSize: 14 }}>
+                    Booking Completed (Checked-out)
+                  </span>
+                }
+                description={
+                  <span style={{ color: '#047857', fontSize: 13, lineHeight: 1.5, display: 'block', marginTop: 2 }}>
+                    This booking has been completed, pet returned, and fully settled. Resource assignments are locked.
+                  </span>
+                }
+                style={{
+                  marginBottom: 16,
+                  borderRadius: 10,
+                  backgroundColor: '#ecfdf5',
+                  border: '1.5px solid #a7f3d0',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.08)',
+                }}
               />
             )}
 

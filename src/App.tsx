@@ -15,7 +15,7 @@ export default function App() {
           colorPrimary: '#785839',
           colorLink: '#785839',
           colorLinkHover: '#3d2d23',
-          colorSuccess: '#4a634e',
+          colorSuccess: '#16a34a',
           colorWarning: '#c69f7b',
           borderRadius: 10,
           fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
