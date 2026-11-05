@@ -43,7 +43,89 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
   };
 
   const handlePrint = () => {
-    window.print();
+    const printContent = document.getElementById('printable-receipt-content');
+    if (!printContent) {
+      window.print();
+      return;
+    }
+
+    // Create a dedicated hidden iframe for clean, instant, single-page printing
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const isA5 = paperSize === 'A5';
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${receipt?.receiptNo || 'Bien_Lai_Thanh_Toan'}</title>
+          <style>
+            @page {
+              size: ${isA5 ? 'A5 portrait' : '80mm auto'};
+              margin: ${isA5 ? '8mm 10mm' : '4mm 4mm'};
+            }
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+              color: #000000 !important;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+            }
+            body {
+              background: #ffffff !important;
+              padding: ${isA5 ? '6px 8px' : '4px'};
+              font-size: ${isA5 ? '12px' : '10px'};
+              line-height: 1.35;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th {
+              background-color: #f3f4f6;
+              border-top: 1.5px solid #000;
+              border-bottom: 1.5px solid #000;
+              padding: 6px 4px;
+            }
+            td {
+              border-bottom: 1px dashed #ccc;
+              padding: 6px 4px;
+            }
+            .no-print {
+              display: none !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        try {
+          document.body.removeChild(iframe);
+        } catch {}
+      }, 1500);
+    }, 250);
   };
 
   return (
@@ -66,30 +148,55 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
               print-color-adjust: exact !important;
             }
 
-            body * {
-              visibility: hidden !important;
+            /* Hide the main website body contents */
+            #root {
+              display: none !important;
             }
 
-            .printable-receipt-container,
-            .printable-receipt-container * {
-              visibility: visible !important;
-              color: #000000 !important;
-              text-shadow: none !important;
+            /* Do not hide ant-modal-wrap or modal content during print */
+            .ant-modal-mask,
+            .ant-modal-header,
+            .ant-modal-footer,
+            .ant-modal-close,
+            .no-print {
+              display: none !important;
+            }
+
+            .ant-modal-root,
+            .ant-modal-wrap,
+            .ant-modal,
+            .ant-modal-content,
+            .ant-modal-body {
+              position: static !important;
+              display: block !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              border: none !important;
               box-shadow: none !important;
+              background: transparent !important;
+              overflow: visible !important;
             }
 
             .printable-receipt-container {
-              position: absolute !important;
-              left: 0 !important;
-              top: 0 !important;
+              display: block !important;
               width: 100% !important;
               max-width: ${paperSize === 'A5' ? '138mm' : '74mm'} !important;
               margin: 0 auto !important;
               padding: 0 !important;
               background: #ffffff !important;
               border: none !important;
+              box-shadow: none !important;
+              color: #000000 !important;
               font-size: ${paperSize === 'A5' ? '10.5pt' : '8.5pt'} !important;
               line-height: 1.35 !important;
+            }
+
+            .printable-receipt-container * {
+              color: #000000 !important;
+              text-shadow: none !important;
+              box-shadow: none !important;
             }
 
             .printable-receipt-container table {
@@ -105,15 +212,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
 
             .printable-receipt-container td {
               border-bottom: 1px dashed #cccccc !important;
-            }
-
-            .ant-modal-mask,
-            .ant-modal-wrap,
-            .ant-modal-footer,
-            .ant-modal-header,
-            .ant-modal-close,
-            .no-print {
-              display: none !important;
             }
           }
         `}
@@ -172,6 +270,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
 
           {receipt && (
             <div
+              id="printable-receipt-content"
               className="printable-receipt-container"
               style={{
                 background: '#ffffff',
