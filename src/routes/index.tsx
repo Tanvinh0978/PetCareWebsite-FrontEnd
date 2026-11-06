@@ -36,6 +36,7 @@ import RolePermissionPage from "@/pages/admin/role/RolePermissionPage";
 import AdminVoucherListPage from "@/pages/admin/voucher/VoucherListPage";
 import AdminVoucherFormPage from "@/pages/admin/voucher/VoucherFormPage";
 import CreateBookingPage from "@/pages/customer/CreateBookingPage";
+import PromotionsPage from "@/pages/customer/PromotionsPage";
 import MyPetsPage from "@/pages/customer/MyPetsPage";
 import PetFormPage from "@/pages/customer/PetFormPage";
 import MyBookingsPage from "@/pages/customer/MyBookingsPage";
@@ -170,6 +171,7 @@ export default function AppRoutes() {
         { path: "pets/:id", element: <PetDetail backTo="/customer/pets" editTo={(id) => `/customer/pets/${id}/edit`} /> },
         { path: "pets/:id/edit", element: <PetFormPage /> },
         { path: "booking", element: <CreateBookingPage /> },
+        { path: "promotions", element: <PromotionsPage /> },
         { path: "bookings", element: <MyBookingsPage /> },
         { path: "bookings/:id", element: <CustomerBookingDetailPage /> },
         { path: "payment-result", element: <PaymentResultPage /> },
@@ -182,6 +184,7 @@ export default function AppRoutes() {
       element: <GuestOnly><Layout role="guest" /></GuestOnly>,
       children: [
         { index: true, element: <HomePage /> },
+        { path: "promotions", element: <PromotionsPage /> },
         ...publicServiceRoutes("", true),
         ...publicRoomTypeRoutes("", true),
         notFound,

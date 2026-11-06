@@ -11,24 +11,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
 import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types';
 import { getApiErrorMessage } from '@/utils/apiError';
-
-// Convert a local datetime-local string to ISO 8601 UTC string
-const localToISO = (local: string): string => {
-  if (!local) return '';
-  return new Date(local).toISOString();
-};
-
-// Convert ISO 8601 UTC string → datetime-local input value (YYYY-MM-DDTHH:mm)
-const isoToLocal = (iso: string): string => {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  } catch {
-    return '';
-  }
-};
+import { isoToLocalInput, localInputToISO } from '@/utils/format';
 
 const AdminVoucherFormPage: React.FC = () => {
   const { id } = useParams();
@@ -63,8 +46,8 @@ const AdminVoucherFormPage: React.FC = () => {
         setCode(v.code);
         setDiscountType((v.discountType as DiscountType) ?? DiscountType.Percentage);
         setDiscountValue(v.discountValue);
-        setStartDate(isoToLocal(v.startDate));
-        setEndDate(isoToLocal(v.endDate));
+        setStartDate(isoToLocalInput(v.startDate));
+        setEndDate(isoToLocalInput(v.endDate));
         if (v.maxUsage !== null && v.maxUsage !== undefined) {
           setHasMaxUsage(true);
           setMaxUsage(v.maxUsage);
@@ -89,6 +72,9 @@ const AdminVoucherFormPage: React.FC = () => {
     if (isNaN(numVal) || numVal <= 0) return 'Discount value must be greater than 0.';
     if (discountType === DiscountType.Percentage && numVal > 100) {
       return 'Percentage discount cannot exceed 100%.';
+    }
+    if (discountType === DiscountType.Fixed_Amount && numVal < 1000) {
+      return 'Fixed discount amount must be at least 1,000 ₫.';
     }
 
     if (!startDate) return 'Start date is required.';
@@ -119,8 +105,8 @@ const AdminVoucherFormPage: React.FC = () => {
       code: code.trim().toUpperCase(),
       discountType,
       discountValue: Number(discountValue),
-      startDate: localToISO(startDate),
-      endDate: localToISO(endDate),
+      startDate: localInputToISO(startDate),
+      endDate: localInputToISO(endDate),
       maxUsage: hasMaxUsage && maxUsage !== '' ? Number(maxUsage) : null,
     };
 
@@ -433,9 +419,9 @@ const AdminVoucherFormPage: React.FC = () => {
                       ? 'Enter percentage (1–100)'
                       : 'e.g. 50000'
                   }
-                  min={discountType === DiscountType.Percentage ? 1 : 0.01}
+                  min={discountType === DiscountType.Percentage ? 1 : 1000}
                   max={discountType === DiscountType.Percentage ? 100 : undefined}
-                  step={discountType === DiscountType.Percentage ? 1 : 1000}
+                  step={discountType === DiscountType.Percentage ? 1 : 'any'}
                   required
                   style={{
                     border: '1.5px solid #eeddc8',
@@ -472,17 +458,33 @@ const AdminVoucherFormPage: React.FC = () => {
             {/* Start & End Date */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
               <div>
-                <span
-                  style={{
-                    display: 'block',
-                    fontWeight: 700,
-                    fontSize: '0.88rem',
-                    color: '#3d2d23',
-                    marginBottom: '0.45rem',
-                  }}
-                >
-                  Start Date & Time <span style={{ color: '#dc2626' }}>*</span>
-                </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      fontSize: '0.88rem',
+                      color: '#3d2d23',
+                    }}
+                  >
+                    Start Date & Time <span style={{ color: '#dc2626' }}>*</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setStartDate(isoToLocalInput(new Date().toISOString()))}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#785839',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      padding: 0,
+                    }}
+                  >
+                    Set to now
+                  </button>
+                </div>
                 <input
                   type="datetime-local"
                   value={startDate}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { DogIcon, CatIcon, PawIcon } from '@/components/common/PetIcons'
-import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space, Alert } from 'antd';
-import { ScissorOutlined, HomeOutlined, LoginOutlined, LogoutOutlined, CalendarOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Steps, Form, DatePicker, Input, Button, Typography, Spin, message, Row, Col, Divider, Tag, Empty, Tabs, Checkbox, Radio, Card, Space, Alert, Modal } from 'antd';
+import { ScissorOutlined, HomeOutlined, LoginOutlined, LogoutOutlined, CalendarOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, GiftOutlined, InfoCircleOutlined, ShopOutlined, RightOutlined, LeftOutlined, TagOutlined, CopyOutlined } from '@ant-design/icons';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { petService } from '@/services/pet.service';
 import { serviceService } from '@/services/service.service';
@@ -12,6 +12,7 @@ import { voucherService } from '@/services/voucher.service';
 import type { VoucherDTO } from '@/types/voucher.types';
 import type { ServiceDTO } from '@/types/service.types';
 import { isServiceCompatibleWithPet, getRoomTierInfo, isPetCat } from '@/utils/petServiceFilter';
+import { formatDateOnly, parseUtcDate } from '@/utils/format';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -44,11 +45,16 @@ const CreateBookingPage: React.FC = () => {
   const boardingDateRange = Form.useWatch('boardingDateRange', form);
   const voucherCode = Form.useWatch('voucherCode', form);
 
+  const [searchParams] = useSearchParams();
+  const queryVoucher = searchParams.get('voucher');
+
   // Privilege Voucher states
   const [appliedVoucher, setAppliedVoucher] = useState<VoucherDTO | null>(null);
   const [voucherInput, setVoucherInput] = useState<string>('');
   const [checkingVoucher, setCheckingVoucher] = useState<boolean>(false);
   const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [availableVouchers, setAvailableVouchers] = useState<VoucherDTO[]>([]);
+  const [showVoucherModal, setShowVoucherModal] = useState<boolean>(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -65,13 +71,27 @@ const CreateBookingPage: React.FC = () => {
   const fetchInitialData = async () => {
     try {
       setLoading(true);
-      const [petsRes, servicesData] = await Promise.all([
+      const [petsRes, servicesData, vouchersRes] = await Promise.all([
         petService.fetchMyPets(true),
-        serviceService.fetchActive()
+        serviceService.fetchActive(),
+        voucherService.search({ isValidOnly: true, pageSize: 50 }).catch(() => null),
       ]);
       const petsList = (petsRes as any).result || (petsRes as any).data || petsRes;
       const rawPets = Array.isArray(petsList) ? petsList : (petsList.items || []);
       setPets(rawPets.filter((p: any) => p.isActive !== false && !p.isDeleted));
+
+      if (vouchersRes) {
+        const vData: any = (vouchersRes as any)?.result ?? (vouchersRes as any)?.data ?? vouchersRes;
+        const vList: VoucherDTO[] = vData?.items ?? (Array.isArray(vData) ? vData : []);
+        const now = new Date();
+        const active = vList.filter((v) => {
+          const start = parseUtcDate(v.startDate);
+          const end = parseUtcDate(v.endDate);
+          const limitOk = v.maxUsage === null || v.maxUsage === undefined || v.currentUsage < v.maxUsage;
+          return v.isValid && start <= now && end >= now && limitOk;
+        });
+        setAvailableVouchers(active);
+      }
       
       const servicesWithDetails = await Promise.all(
         servicesData.map(async (srv) => {
@@ -395,8 +415,9 @@ const CreateBookingPage: React.FC = () => {
   const finalTotalAmount = Math.max(0, subtotalAmount - voucherDiscount);
 
   // Handle Voucher verification and application
-  const handleApplyVoucher = async () => {
-    const code = voucherInput.trim().toUpperCase();
+  const handleApplyVoucher = async (codeToApply?: string | unknown) => {
+    const raw = typeof codeToApply === 'string' ? codeToApply : voucherInput;
+    const code = raw.trim().toUpperCase();
     if (!code) {
       message.warning('Please enter a voucher code.');
       return;
@@ -416,8 +437,10 @@ const CreateBookingPage: React.FC = () => {
       );
       if (found) {
         setAppliedVoucher(found);
+        setVoucherInput(found.code);
         form.setFieldsValue({ voucherCode: found.code });
         message.success(`Privilege voucher "${found.code}" applied successfully!`);
+        setShowVoucherModal(false);
       } else {
         setAppliedVoucher(null);
         form.setFieldsValue({ voucherCode: undefined });
@@ -434,6 +457,22 @@ const CreateBookingPage: React.FC = () => {
       setCheckingVoucher(false);
     }
   };
+
+  const applyVoucherDirectly = (v: VoucherDTO) => {
+    setAppliedVoucher(v);
+    setVoucherInput(v.code);
+    setVoucherError(null);
+    form.setFieldsValue({ voucherCode: v.code });
+    message.success(`Privilege voucher "${v.code}" applied successfully!`);
+    setShowVoucherModal(false);
+  };
+
+  useEffect(() => {
+    if (queryVoucher && !appliedVoucher) {
+      setVoucherInput(queryVoucher.toUpperCase());
+      handleApplyVoucher(queryVoucher.toUpperCase());
+    }
+  }, [queryVoucher]);
 
   const handleRemoveVoucher = () => {
     setAppliedVoucher(null);
@@ -1839,7 +1878,7 @@ const CreateBookingPage: React.FC = () => {
                         />
                         <Button
                           loading={checkingVoucher}
-                          onClick={handleApplyVoucher}
+                          onClick={() => handleApplyVoucher()}
                           style={{
                             height: 42,
                             borderRadius: 10,
@@ -1866,6 +1905,87 @@ const CreateBookingPage: React.FC = () => {
                           }}
                         >
                           ⚠️ {voucherError}
+                        </div>
+                      )}
+
+                      {availableVouchers.length > 0 && (
+                        <div style={{ marginTop: 12 }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              marginBottom: 8,
+                            }}
+                          >
+                            <span style={{ fontSize: 12, color: '#7a6b61', fontWeight: 600 }}>
+                              Available Vouchers:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowVoucherModal(true)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#785839',
+                                fontSize: 12,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                padding: 0,
+                                textDecoration: 'underline',
+                              }}
+                            >
+                              <GiftOutlined /> View all ({availableVouchers.length})
+                            </button>
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {availableVouchers.slice(0, 4).map((v) => {
+                              const isPercent =
+                                String(v.discountType).toLowerCase() === 'percentage' ||
+                                String(v.discountType) === '0';
+                              const badge = isPercent
+                                ? `-${v.discountValue}%`
+                                : `-${Number(v.discountValue).toLocaleString('vi-VN')} ₫`;
+                              return (
+                                <button
+                                  key={v.id}
+                                  type="button"
+                                  onClick={() => applyVoucherDirectly(v)}
+                                  title={`Click to apply ${v.code}`}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    padding: '5px 10px',
+                                    borderRadius: 8,
+                                    border: '1px dashed #785839',
+                                    backgroundColor: '#faf6f0',
+                                    color: '#3d2d23',
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s ease',
+                                  }}
+                                >
+                                  <span>🏷️ {v.code}</span>
+                                  <span
+                                    style={{
+                                      color: '#059669',
+                                      backgroundColor: '#e8efe9',
+                                      padding: '1px 5px',
+                                      borderRadius: 4,
+                                      fontSize: 11,
+                                    }}
+                                  >
+                                    {badge}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -2088,6 +2208,128 @@ const CreateBookingPage: React.FC = () => {
           </div>
         </Form>
       </div>
+
+      {/* Browse Available Vouchers Modal */}
+      <Modal
+        open={showVoucherModal}
+        onCancel={() => setShowVoucherModal(false)}
+        footer={null}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 6 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: '#ebd9cb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#785839',
+                fontSize: 18,
+              }}
+            >
+              <GiftOutlined />
+            </div>
+            <div>
+              <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: '#3d2d23', fontWeight: 700 }}>
+                Available Privilege Vouchers
+              </div>
+              <div style={{ fontSize: 12, color: '#8c735f', fontWeight: 400 }}>
+                Select a promotional voucher to apply instant savings to your booking.
+              </div>
+            </div>
+          </div>
+        }
+        width={560}
+        centered
+      >
+        <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '12px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {availableVouchers.length === 0 ? (
+            <Empty description="No promotional vouchers are currently available." />
+          ) : (
+            availableVouchers.map((v) => {
+              const isPercent =
+                String(v.discountType).toLowerCase() === 'percentage' ||
+                String(v.discountType) === '0';
+              const discountLabel = isPercent
+                ? `${v.discountValue}% OFF`
+                : `${Number(v.discountValue).toLocaleString('vi-VN')} ₫ OFF`;
+              const isSelected = appliedVoucher?.id === v.id;
+
+              return (
+                <div
+                  key={v.id}
+                  style={{
+                    borderRadius: 14,
+                    border: isSelected ? '2px solid #059669' : '1.5px solid #eeddc8',
+                    backgroundColor: isSelected ? '#f0fdf4' : '#fcfaf7',
+                    padding: '16px 18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 14,
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span
+                        style={{
+                          fontSize: 15,
+                          fontWeight: 800,
+                          color: '#3d2d23',
+                          fontFamily: 'monospace',
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        {v.code}
+                      </span>
+                      <Tag
+                        color={isPercent ? 'cyan' : 'purple'}
+                        style={{ borderRadius: 999, fontWeight: 700, margin: 0 }}
+                      >
+                        {discountLabel}
+                      </Tag>
+                    </div>
+
+                    <div style={{ fontSize: 12, color: '#7a6b61', marginTop: 6 }}>
+                      Valid until: <strong>{formatDateOnly(v.endDate)}</strong>
+                      {v.maxUsage !== null && v.maxUsage !== undefined && (
+                        <span style={{ marginLeft: 10 }}>
+                          • Remaining: <strong>{Math.max(0, v.maxUsage - v.currentUsage)}</strong> / {v.maxUsage}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button
+                    type={isSelected ? 'default' : 'primary'}
+                    onClick={() => {
+                      if (isSelected) {
+                        handleRemoveVoucher();
+                      } else {
+                        applyVoucherDirectly(v);
+                      }
+                    }}
+                    style={{
+                      borderRadius: 8,
+                      height: 36,
+                      fontWeight: 600,
+                      fontSize: 13,
+                      backgroundColor: isSelected ? '#ffffff' : '#3d2d23',
+                      borderColor: isSelected ? '#059669' : '#3d2d23',
+                      color: isSelected ? '#059669' : '#ffffff',
+                    }}
+                  >
+                    {isSelected ? 'Applied ✓' : 'Apply'}
+                  </Button>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </Modal>
 
       <style>{`
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
