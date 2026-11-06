@@ -15,19 +15,10 @@ import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
 import type { VoucherDTO } from '@/types/voucher.types';
 import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types';
 import { getApiErrorMessage } from '@/utils/apiError';
+import { parseUtcDate, formatDateTime } from '@/utils/format';
 
 /* ── helpers ── */
-const formatDate = (iso: string) => {
-  try {
-    return new Date(iso).toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  } catch {
-    return iso;
-  }
-};
+const formatDate = (iso: string) => formatDateTime(iso);
 
 const formatValue = (v: VoucherDTO) => {
   if (v.discountType === DiscountType.Percentage) {
@@ -150,8 +141,8 @@ const VoucherListPage: React.FC = () => {
   /* ── validity badge ── */
   const getValidityBadge = (v: VoucherDTO) => {
     const now = new Date();
-    const end = new Date(v.endDate);
-    const start = new Date(v.startDate);
+    const end = parseUtcDate(v.endDate);
+    const start = parseUtcDate(v.startDate);
     const isExpired = end < now;
     const notStarted = start > now;
     const maxReached = v.maxUsage !== null && v.currentUsage >= v.maxUsage;
@@ -602,9 +593,9 @@ const VoucherListPage: React.FC = () => {
             <p>
               Are you sure you want to delete voucher <strong>"{voucherToDelete.code}"</strong>?
               <br />
-              {voucherToDelete.currentUsage > 0
-                ? `This voucher has been redeemed ${voucherToDelete.currentUsage} time(s). It will be deactivated and marked as removed.`
-                : 'This voucher has not been redeemed and will be permanently removed from the system.'}
+              <span style={{ color: '#8c735f', fontSize: '0.85rem' }}>
+                This voucher will be permanently deleted from the system.
+              </span>
             </p>
             <div className="confirm-actions">
               <button

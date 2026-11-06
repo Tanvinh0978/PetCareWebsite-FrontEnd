@@ -15,25 +15,14 @@ import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
 import type { VoucherDTO } from '@/types/voucher.types';
 import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types';
 import { getApiErrorMessage } from '@/utils/apiError';
+import { parseUtcDate, formatDateTime } from '@/utils/format';
 
 interface VoucherDetailProps {
   backTo?: string;
   editTo?: (id: string) => string;
 }
 
-const formatDate = (iso: string) => {
-  try {
-    return new Date(iso).toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return iso;
-  }
-};
+const formatDate = (iso: string) => formatDateTime(iso);
 
 const formatValue = (v: VoucherDTO) => {
   if (v.discountType === DiscountType.Percentage) {
@@ -44,8 +33,8 @@ const formatValue = (v: VoucherDTO) => {
 
 function getValidityBadge(v: VoucherDTO) {
   const now = new Date();
-  const start = new Date(v.startDate);
-  const end = new Date(v.endDate);
+  const start = parseUtcDate(v.startDate);
+  const end = parseUtcDate(v.endDate);
   const maxReached = v.maxUsage !== null && v.currentUsage >= v.maxUsage;
 
   if (maxReached) {

@@ -7,10 +7,12 @@ export const NAV: Record<Role, NavItem[]> = {
   guest: [
     { label: "Services", to: "services" },
     { label: "Room Types", to: "room-types" },
+    { label: "Promotions", to: "promotions" },
   ],
   customer: [
     { label: "Services", to: "services" },
     { label: "Room Types", to: "room-types" },
+    { label: "Promotions", to: "promotions" },
     { label: "Book Now", to: "booking" },
     // [new-page:nav-customer]
   ],

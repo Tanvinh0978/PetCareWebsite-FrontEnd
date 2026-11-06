@@ -58,8 +58,7 @@ export const voucherService = {
 
   /**
    * DELETE /api/Vouchers/{id}
-   * Backend hard-delete nếu chưa được dùng (currentUsage == 0),
-   * hoặc soft-delete nếu đã có usage.
+   * Xóa vĩnh viễn voucher khỏi hệ thống.
    */
   remove: (id: string) =>
     axiosClient.delete<IBackendRes<string>, IBackendRes<string>>(`${BASE}/${id}`),
