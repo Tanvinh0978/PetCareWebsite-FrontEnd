@@ -67,29 +67,23 @@ export default function CounterBookingPage() {
   const [petsLoading, setPetsLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  // Selection states
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([])
   const [activePetTab, setActivePetTab] = useState<string>('')
   const [category, setCategory] = useState<BookingCategory>('Grooming')
 
-  // Per-pet service configurations: { [petId]: { groomingIds, boardingId, dietId } }
   const [petServices, setPetServices] = useState<Record<string, PetServiceConfig>>({})
 
-  // Schedule states
   const [appointmentAt, setAppointmentAt] = useState<Dayjs | null>(null)
   const [boardingDates, setBoardingDates] = useState<[Dayjs, Dayjs] | null>(null)
 
-  // Voucher states
   const [voucherInput, setVoucherInput] = useState<string>('')
   const [appliedVoucher, setAppliedVoucher] = useState<VoucherDTO | null>(null)
   const [checkingVoucher, setCheckingVoucher] = useState(false)
   const [voucherError, setVoucherError] = useState<string | null>(null)
 
-  // Staff note
   const [note, setNote] = useState<string>('')
 
-  // Load Customers and Services with details
   useEffect(() => {
     let active = true
     setLoading(true)
@@ -101,7 +95,6 @@ export default function CounterBookingPage() {
         if (!active) return
         setCustomers(customerResponse.result?.items ?? [])
 
-        // Fetch detailed prices and room links for all active services
         const servicesWithDetails = await Promise.all(
           activeServices.map(async (srv) => {
             try {
@@ -130,7 +123,6 @@ export default function CounterBookingPage() {
     }
   }, [])
 
-  // Load pets whenever customer selection changes
   useEffect(() => {
     if (!selectedCustomerId) {
       setPets([])
@@ -147,7 +139,6 @@ export default function CounterBookingPage() {
         if (active) {
           const activePets = customerPets.filter((pet) => pet.isActive)
           setPets(activePets)
-          // Default select all pets if customer only has 1 pet
           if (activePets.length === 1) {
             setSelectedPetIds([activePets[0].id])
             setActivePetTab(activePets[0].id)
@@ -172,7 +163,6 @@ export default function CounterBookingPage() {
     }
   }, [selectedCustomerId])
 
-  // Sync activePetTab when selectedPetIds change
   useEffect(() => {
     if (selectedPetIds.length > 0) {
       if (!selectedPetIds.includes(activePetTab)) {
@@ -183,7 +173,6 @@ export default function CounterBookingPage() {
     }
   }, [selectedPetIds, activePetTab])
 
-  // Lookups
   const selectedCustomer = useMemo(
     () => customers.find((c) => c.id === selectedCustomerId) || null,
     [customers, selectedCustomerId]
@@ -194,12 +183,10 @@ export default function CounterBookingPage() {
     [pets, activePetTab]
   )
 
-  // Toggle pet selection
   const togglePetSelection = (petId: string) => {
     setSelectedPetIds((prev) => {
       if (prev.includes(petId)) {
         const next = prev.filter((id) => id !== petId)
-        // clean up config
         setPetServices((currentConfig) => {
           const copy = { ...currentConfig }
           delete copy[petId]
@@ -212,21 +199,18 @@ export default function CounterBookingPage() {
     })
   }
 
-  // Select all pets
   const selectAllPets = () => {
     const allIds = pets.map((p) => p.id)
     setSelectedPetIds(allIds)
     if (allIds.length > 0) setActivePetTab(allIds[0])
   }
 
-  // Clear pet selection
   const clearPetSelection = () => {
     setSelectedPetIds([])
     setActivePetTab('')
     setPetServices({})
   }
 
-  // Weight-based pricing helper
   const getPriceForPet = (service: ServiceDTO, petWeight: number) => {
     if (!service.prices || service.prices.length === 0) return 0
     const priceObj = service.prices.find(
@@ -237,7 +221,6 @@ export default function CounterBookingPage() {
     return priceObj ? priceObj.price : 0
   }
 
-  // Filter Grooming services for current active pet
   const groomingServicesForActivePet = useMemo(() => {
     return services.filter((s) => {
       const type = String(s.serviceType || '').toLowerCase()
@@ -248,7 +231,6 @@ export default function CounterBookingPage() {
     })
   }, [services, activePet])
 
-  // Filter Boarding suite services for current active pet
   const boardingServicesForActivePet = useMemo(() => {
     return services.filter((s) => {
       const type = String(s.serviceType || '').toLowerCase()
@@ -259,7 +241,6 @@ export default function CounterBookingPage() {
     })
   }, [services, activePet])
 
-  // Filter Diet options
   const dietServices = useMemo(() => {
     return services.filter((s) => {
       const type = String(s.serviceType || '').toLowerCase()
@@ -267,7 +248,6 @@ export default function CounterBookingPage() {
     })
   }, [services])
 
-  // Boarding duration calculation
   const stayDays = useMemo(() => {
     if (!boardingDates || boardingDates.length < 2 || !boardingDates[0] || !boardingDates[1]) {
       return 1
@@ -275,7 +255,6 @@ export default function CounterBookingPage() {
     return Math.max(1, boardingDates[1].startOf('day').diff(boardingDates[0].startOf('day'), 'day'))
   }, [boardingDates])
 
-  // Toggle grooming service for active pet
   const toggleGroomingForActivePet = (srvId: string) => {
     if (!activePet) return
     const petId = activePet.id
@@ -294,7 +273,6 @@ export default function CounterBookingPage() {
     })
   }
 
-  // Set boarding suite for active pet
   const setBoardingSuiteForActivePet = (suiteId: string) => {
     if (!activePet) return
     const petId = activePet.id
@@ -307,7 +285,6 @@ export default function CounterBookingPage() {
     }))
   }
 
-  // Set diet add-on for active pet
   const setDietForActivePet = (dietId?: string) => {
     if (!activePet) return
     const petId = activePet.id
@@ -320,7 +297,6 @@ export default function CounterBookingPage() {
     }))
   }
 
-  // Financial calculation across all selected pets
   const { lineItemsByPet, totalEstimatedCost } = useMemo(() => {
     let sum = 0
     const grouped: Record<
@@ -400,7 +376,6 @@ export default function CounterBookingPage() {
     return { lineItemsByPet: grouped, totalEstimatedCost: sum }
   }, [selectedPetIds, pets, petServices, category, services, stayDays])
 
-  // Voucher discount calculation
   const voucherDiscount = useMemo(() => {
     if (!appliedVoucher || totalEstimatedCost <= 0) return 0
     const isPercent =
@@ -415,7 +390,6 @@ export default function CounterBookingPage() {
 
   const finalTotalCost = Math.max(0, totalEstimatedCost - voucherDiscount)
 
-  // Handle Voucher verification and application
   const handleApplyVoucher = async () => {
     const code = voucherInput.trim().toUpperCase()
     if (!code) {
@@ -457,14 +431,12 @@ export default function CounterBookingPage() {
     message.info('Voucher removed.')
   }
 
-  // Quick appointment time presets
   const handleQuickTime = (hours: number, minutes: number) => {
     const baseDate = appointmentAt || dayjs()
     const target = baseDate.hour(hours).minute(minutes).second(0)
     setAppointmentAt(target)
   }
 
-  // Submission handler
   const handleCreateBooking = async () => {
     if (!canCreate) {
       return message.error('You do not have permission to create bookings (BOOKING_CREATE).')
@@ -491,7 +463,6 @@ export default function CounterBookingPage() {
 
     const bookingItems: BookingItemPayload[] = []
 
-    // Validate each selected pet has required services
     for (const petId of selectedPetIds) {
       const pet = pets.find((p) => p.id === petId)
       const petName = pet ? `"${pet.name}"` : 'one of the pets'
@@ -607,7 +578,6 @@ export default function CounterBookingPage() {
         }
       `}</style>
 
-      {/* Page Header */}
       <div
         style={{
           display: 'flex',
@@ -673,7 +643,6 @@ export default function CounterBookingPage() {
         />
       )}
 
-      {/* Main Grid: Form Left (col-15), Sticky Summary Right (col-9) */}
       <div
         style={{
           display: 'grid',
@@ -682,9 +651,7 @@ export default function CounterBookingPage() {
           alignItems: 'start',
         }}
       >
-        {/* Left Column: Booking Form Steps */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* Section 1: Customer & Pet Identification */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -730,7 +697,6 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            {/* Customer Selector */}
             <div style={{ marginBottom: 20 }}>
               <label
                 style={{
@@ -760,7 +726,6 @@ export default function CounterBookingPage() {
               />
             </div>
 
-            {/* Pet Companions Multi-select */}
             <div>
               <div
                 style={{
@@ -922,7 +887,6 @@ export default function CounterBookingPage() {
             </div>
           </div>
 
-          {/* Section 2: Sanctuary Experience Category (Grooming vs Boarding) */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -975,7 +939,6 @@ export default function CounterBookingPage() {
                 gap: 16,
               }}
             >
-              {/* Option 1: Botanical Grooming & Spa */}
               <div
                 onClick={() => setCategory('Grooming')}
                 style={{
@@ -1043,7 +1006,6 @@ export default function CounterBookingPage() {
                 </div>
               </div>
 
-              {/* Option 2: Sanctuary Hotel Suites */}
               <div
                 onClick={() => setCategory('Boarding')}
                 style={{
@@ -1113,7 +1075,6 @@ export default function CounterBookingPage() {
             </div>
           </div>
 
-          {/* Section 3: Experience Details & Scheduling Per Pet */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -1178,7 +1139,6 @@ export default function CounterBookingPage() {
               </div>
             ) : (
               <div>
-                {/* Pet Selection Tabs (when multiple pets selected) */}
                 {selectedPetIds.length > 1 && (
                   <div
                     style={{
@@ -1245,7 +1205,6 @@ export default function CounterBookingPage() {
                   </div>
                 )}
 
-                {/* Active Pet Header Info */}
                 {activePet && (
                   <div
                     style={{
@@ -1284,7 +1243,6 @@ export default function CounterBookingPage() {
                   </div>
                 )}
 
-                {/* A. GROOMING FLOW FOR ACTIVE PET */}
                 {category === 'Grooming' && activePet && (
                   <div>
                     <label
@@ -1385,7 +1343,6 @@ export default function CounterBookingPage() {
                   </div>
                 )}
 
-                {/* B. BOARDING FLOW FOR ACTIVE PET */}
                 {category === 'Boarding' && activePet && (
                   <div style={{ marginBottom: 20 }}>
                     <label
@@ -1499,7 +1456,6 @@ export default function CounterBookingPage() {
                       })}
                     </div>
 
-                    {/* Diet Add-on Selector for Active Pet */}
                     <div>
                       <label
                         style={{
@@ -1537,7 +1493,6 @@ export default function CounterBookingPage() {
                   </div>
                 )}
 
-                {/* SHARED SCHEDULE SECTION */}
                 <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1.5px solid #eeddc8' }}>
                   {category === 'Grooming' ? (
                     <div>
@@ -1570,7 +1525,6 @@ export default function CounterBookingPage() {
                           placeholder="Select appointment date and time"
                         />
 
-                        {/* Quick Time Presets */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: 12, color: '#8c735f', marginRight: 4 }}>
                             Quick Time:
@@ -1656,7 +1610,6 @@ export default function CounterBookingPage() {
             )}
           </div>
 
-          {/* Section 4: Voucher & Concierge Notes */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -1703,7 +1656,6 @@ export default function CounterBookingPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {/* Voucher Code Input */}
               <div>
                 <label
                   style={{
@@ -1866,7 +1818,6 @@ export default function CounterBookingPage() {
                 )}
               </div>
 
-              {/* Care Notes (Full width on its own line) */}
               <div>
                 <label
                   style={{
@@ -1896,7 +1847,6 @@ export default function CounterBookingPage() {
           </div>
         </div>
 
-        {/* Right Column: Sticky Reservation Summary */}
         <div style={{ position: 'sticky', top: 24 }}>
           <div
             style={{
@@ -1945,7 +1895,6 @@ export default function CounterBookingPage() {
               </span>
             </div>
 
-            {/* Guest Details */}
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8c735f', marginBottom: 4 }}>
                 Customer
@@ -1960,7 +1909,6 @@ export default function CounterBookingPage() {
               )}
             </div>
 
-            {/* Selected Pets */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8c735f', marginBottom: 6 }}>
                 Companions ({selectedPetIds.length})
@@ -1999,7 +1947,6 @@ export default function CounterBookingPage() {
               )}
             </div>
 
-            {/* Category & Schedule */}
             <div
               style={{
                 padding: '12px 14px',
@@ -2033,7 +1980,6 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            {/* Line Items Breakdown Grouped by Pet */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8c735f', marginBottom: 8 }}>
                 Itemized Line Items
@@ -2099,7 +2045,6 @@ export default function CounterBookingPage() {
 
             <div style={{ height: 1, backgroundColor: '#eeddc8', margin: '14px 0' }} />
 
-            {/* Subtotal */}
             <div
               style={{
                 display: 'flex',
@@ -2113,7 +2058,6 @@ export default function CounterBookingPage() {
               <span style={{ fontWeight: 600, color: '#3d2d23' }}>{vnd.format(totalEstimatedCost)}</span>
             </div>
 
-            {/* Voucher Discount (View only in Summary) */}
             {appliedVoucher && voucherDiscount > 0 && (
               <div
                 style={{
@@ -2132,7 +2076,6 @@ export default function CounterBookingPage() {
               </div>
             )}
 
-            {/* Estimated Total */}
             <div
               style={{
                 display: 'flex',
@@ -2162,7 +2105,6 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            {/* Payment Method Badge */}
             <div
               style={{
                 padding: '10px 12px',
@@ -2183,7 +2125,6 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <Button
                 type="primary"

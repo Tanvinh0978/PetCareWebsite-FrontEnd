@@ -152,7 +152,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
 
   return (
     <section className="page" style={{ maxWidth: 960, margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
-      {/* Top Breadcrumb & Action Bar */}
       <div
         style={{
           display: 'flex',
@@ -209,7 +208,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
         )}
       </div>
 
-      {/* Hero Staff Showcase Card */}
       <div
         style={{
           borderRadius: 20,
@@ -230,7 +228,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
             borderBottom: '1px solid #f1ece7',
           }}
         >
-          {/* Avatar with Double Luxury Ring */}
           <div style={{ position: 'relative' }}>
             {staff.avatarUrl ? (
               <img
@@ -267,7 +264,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
               </div>
             )}
 
-            {/* Micro Badge on Avatar */}
             <div
               style={{
                 position: 'absolute',
@@ -291,9 +287,7 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
             </div>
           </div>
 
-          {/* Core Staff Info */}
           <div style={{ flex: 1, minWidth: 260 }}>
-            {/* Badges Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
               <span
                 style={{
@@ -367,7 +361,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
               </span>
             </div>
 
-            {/* Staff Full Name */}
             <h1
               style={{
                 margin: '6px 0 8px',
@@ -388,7 +381,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
           </div>
         </div>
 
-        {/* Assigned Roles Section */}
         <div style={{ paddingTop: 20 }}>
           <div
             style={{
@@ -436,7 +428,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
         </div>
       </div>
 
-      {/* Contact & Employment Dossier Card */}
       <div
         style={{
           borderRadius: 20,
@@ -477,7 +468,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
             gap: 20,
           }}
         >
-          {/* Email */}
           <div
             style={{
               padding: '16px 18px',
@@ -497,7 +487,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
             </div>
           </div>
 
-          {/* Phone */}
           <div
             style={{
               padding: '16px 18px',
@@ -517,7 +506,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
             </div>
           </div>
 
-          {/* Experience */}
           <div
             style={{
               padding: '16px 18px',
@@ -535,7 +523,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
             </div>
           </div>
 
-          {/* Address */}
           <div
             style={{
               padding: '16px 18px',

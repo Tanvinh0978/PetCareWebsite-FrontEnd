@@ -104,7 +104,6 @@ const AdminCustomerFormPage: React.FC = () => {
           </p>
         )}
 
-        {/* Luxury Card Container */}
         <div
           style={{
             background: '#ffffff',
@@ -117,7 +116,6 @@ const AdminCustomerFormPage: React.FC = () => {
             gap: '1.25rem',
           }}
         >
-          {/* Full Name */}
           <div>
             <span style={{ display: 'block', fontWeight: 700, fontSize: '0.88rem', color: '#3d2d23', marginBottom: '0.4rem' }}>
               Full Name <span style={{ color: 'var(--danger)' }}>*</span>
@@ -137,7 +135,6 @@ const AdminCustomerFormPage: React.FC = () => {
             />
           </div>
 
-          {/* Email & Phone in 1 Row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
               <span style={{ display: 'block', fontWeight: 700, fontSize: '0.88rem', color: '#3d2d23', marginBottom: '0.4rem' }}>
@@ -187,7 +184,6 @@ const AdminCustomerFormPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Password (for new customer) */}
           {!editing && (
             <div>
               <span style={{ display: 'block', fontWeight: 700, fontSize: '0.88rem', color: '#3d2d23', marginBottom: '0.4rem' }}>
@@ -209,7 +205,6 @@ const AdminCustomerFormPage: React.FC = () => {
             </div>
           )}
 
-          {/* Address */}
           <div>
             <span style={{ display: 'block', fontWeight: 700, fontSize: '0.88rem', color: '#3d2d23', marginBottom: '0.4rem' }}>
               Address (Optional)
@@ -228,7 +223,6 @@ const AdminCustomerFormPage: React.FC = () => {
             />
           </div>
 
-          {/* Action Buttons */}
           <div
             style={{
               display: 'flex',

@@ -44,7 +44,7 @@ const AdminStaffFormPage: React.FC = () => {
   const [password, setPassword] = useState('')
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])
   const [yearsOfExperience, setYearsOfExperience] = useState<number | string>(1)
-  const [status, setStatus] = useState<number>(0) // 0: Active, 1: Inactive
+  const [status, setStatus] = useState<number>(0)
 
   const [roles, setRoles] = useState<RoleDTO[]>([])
   const [loadingRoles, setLoadingRoles] = useState(true)
@@ -99,7 +99,6 @@ const AdminStaffFormPage: React.FC = () => {
       .finally(() => setLoading(false))
   }, [id])
 
-  // Sync roleIds when roles finish loading if editing and roleIds wasn't available directly
   useEffect(() => {
     if (editing && roles.length > 0 && selectedRoleIds.length === 0 && id) {
       staffService
@@ -196,7 +195,6 @@ const AdminStaffFormPage: React.FC = () => {
 
   return (
     <section className="page" style={{ maxWidth: '780px', margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
-      {/* Page Header */}
       <div
         style={{
           display: 'flex',
@@ -275,7 +273,6 @@ const AdminStaffFormPage: React.FC = () => {
           </div>
         )}
 
-        {/* Luxury Sanctuary Card Container */}
         <div
           style={{
             background: '#ffffff',
@@ -288,7 +285,6 @@ const AdminStaffFormPage: React.FC = () => {
             gap: '1.35rem',
           }}
         >
-          {/* Full Name */}
           <div>
             <span
               style={{
@@ -321,7 +317,6 @@ const AdminStaffFormPage: React.FC = () => {
             />
           </div>
 
-          {/* Email & Phone */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
             <div>
               <span
@@ -395,7 +390,6 @@ const AdminStaffFormPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Initial Password (for new staff) */}
           {!editing && (
             <div>
               <span
@@ -430,7 +424,6 @@ const AdminStaffFormPage: React.FC = () => {
             </div>
           )}
 
-          {/* Address */}
           <div>
             <span
               style={{
@@ -464,7 +457,6 @@ const AdminStaffFormPage: React.FC = () => {
             />
           </div>
 
-          {/* Assigned Job Roles */}
           <div>
             <div
               style={{
@@ -585,7 +577,6 @@ const AdminStaffFormPage: React.FC = () => {
             )}
           </div>
 
-          {/* Experience & Status */}
           <div style={{ display: 'grid', gridTemplateColumns: editing ? '1fr 1fr' : '1fr', gap: '1rem' }}>
             <div>
               <span
@@ -647,7 +638,6 @@ const AdminStaffFormPage: React.FC = () => {
             )}
           </div>
 
-          {/* Action Buttons */}
           <div
             style={{
               display: 'flex',

@@ -91,7 +91,6 @@ export default function VerifyOtpPage() {
 
   return (
     <div className="auth-shell">
-      {/* ══ LEFT PANEL ══ */}
       <div className="auth-left">
         <div className="auth-left-bg-image"
           style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80")' }}
@@ -108,7 +107,6 @@ export default function VerifyOtpPage() {
         </div>
       </div>
 
-      {/* ══ RIGHT PANEL ══ */}
       <div className="auth-right">
         <div className="auth-form-card">
           <div className="auth-form-header">
@@ -119,7 +117,6 @@ export default function VerifyOtpPage() {
             </Text>
           </div>
 
-          {/* OTP Input Boxes */}
           <div className="otp-input-row" onPaste={handlePaste}>
             {otp.map((digit, i) => (
               <input

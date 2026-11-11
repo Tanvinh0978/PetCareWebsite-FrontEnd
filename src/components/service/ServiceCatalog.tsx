@@ -12,7 +12,6 @@ import {
   type ServiceType,
 } from '@/types/service';
 
-// Danh sách dịch vụ đang hoạt động, dùng chung cho guest và customer.
 export default function ServiceCatalog({
   detailBase,
   showSignInHint,
@@ -57,7 +56,6 @@ export default function ServiceCatalog({
 
   return (
     <section className="page">
-      {/* Header section */}
       <div className="page-head" style={{ marginBottom: '1.75rem' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 'clamp(1.75rem, 3.5vw, 2.35rem)', color: 'var(--slate-900)' }}>
@@ -80,7 +78,6 @@ export default function ServiceCatalog({
         </div>
       )}
 
-      {/* Unified Search & Category Filter Bar */}
       <div
         style={{
           background: 'var(--paper-card, #ffffff)',
@@ -94,7 +91,6 @@ export default function ServiceCatalog({
           gap: 14,
         }}
       >
-        {/* Search input with icon */}
         <div>
           <Input
             prefix={<SearchOutlined style={{ color: '#8c7b6f', fontSize: 16, marginRight: 4 }} />}
@@ -112,7 +108,6 @@ export default function ServiceCatalog({
           />
         </div>
 
-        {/* Category Pills */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#8c7b6f', marginRight: 4 }}>
             Filter by:
@@ -205,7 +200,6 @@ export default function ServiceCatalog({
         </div>
       )}
 
-      {/* Services Grid */}
       <div className="grid">
         {shown.map((s) => {
           const badge = SERVICE_TYPE_BADGE_CONFIG[s.serviceType] || {

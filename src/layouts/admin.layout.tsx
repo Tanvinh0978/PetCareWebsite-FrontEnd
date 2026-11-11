@@ -21,7 +21,6 @@ const AdminLayout: React.FC = () => {
     '/admin/reviews': <StarOutlined />,
   }
 
-  // Thêm mục menu admin mới ở đây (mỗi feature một mục).
   const menuRoutes = [
     { path: '/admin/services', name: 'Services' },
     { path: '/admin/customers', name: 'Customers' },

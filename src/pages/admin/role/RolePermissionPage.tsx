@@ -39,7 +39,6 @@ export default function RolePermissionPage() {
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 1. Fetch Role List
   useEffect(() => {
     let cancelled = false;
     setLoadingRoles(true);
@@ -75,7 +74,6 @@ export default function RolePermissionPage() {
     };
   }, []);
 
-  // 2. Fetch Selected Role Permissions
   useEffect(() => {
     if (!selectedRoleId) return;
     let cancelled = false;
@@ -103,7 +101,6 @@ export default function RolePermissionPage() {
     };
   }, [selectedRoleId]);
 
-  // Group all available permissions by module
   const { modules, groupedPermissions } = useMemo(() => {
     if (!roleDetail?.allAvailablePermissions) {
       return { modules: [], groupedPermissions: {} as Record<string, PermissionDTO[]> };
@@ -120,14 +117,12 @@ export default function RolePermissionPage() {
     return { modules: mods, groupedPermissions: groups };
   }, [roleDetail]);
 
-  // Toggle single permission
   const handleTogglePerm = (permId: string) => {
     setSelectedPermIds((prev) =>
       prev.includes(permId) ? prev.filter((id) => id !== permId) : [...prev, permId]
     );
   };
 
-  // Toggle whole module
   const handleToggleModule = (moduleName: string) => {
     const permsInMod = groupedPermissions[moduleName] || [];
     const permIdsInMod = permsInMod.map((p) => p.id);
@@ -140,7 +135,6 @@ export default function RolePermissionPage() {
     }
   };
 
-  // Select all or deselect all
   const handleSelectAll = () => {
     if (!roleDetail) return;
     if (selectedPermIds.length === roleDetail.allAvailablePermissions.length) {
@@ -150,7 +144,6 @@ export default function RolePermissionPage() {
     }
   };
 
-  // Save changes
   const handleSave = async () => {
     if (!selectedRoleId) return;
     setSaving(true);
@@ -174,7 +167,6 @@ export default function RolePermissionPage() {
       }
 
       message.success(`Permissions for "${roleDetail?.roleName || 'Role'}" saved successfully!`);
-      // Refresh role list summary
       const updatedRoles = await roleService.getRoles();
       setRoles(updatedRoles);
     } catch (err) {
@@ -184,7 +176,6 @@ export default function RolePermissionPage() {
     }
   };
 
-  // Filter grouped permissions by search term only (module filter dropdown removed per request)
   const filteredModules = useMemo(() => {
     const s = searchTerm.trim().toLowerCase();
     if (!s) return modules;
@@ -205,7 +196,6 @@ export default function RolePermissionPage() {
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1
@@ -279,7 +269,6 @@ export default function RolePermissionPage() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1.5rem', alignItems: 'start' }}>
-        {/* LEFT COLUMN: Role Tabs / Selector */}
         <div
           style={{
             backgroundColor: '#ffffff',
@@ -363,9 +352,7 @@ export default function RolePermissionPage() {
           )}
         </div>
 
-        {/* RIGHT COLUMN: Permission Assignment Matrix */}
         <div>
-          {/* Top Search & Enabled Counter Bar (Dropdown filter removed) */}
           <div
             style={{
               display: 'flex',
@@ -420,7 +407,6 @@ export default function RolePermissionPage() {
             </div>
           </div>
 
-          {/* Permissions Matrix */}
           {loadingDetail ? (
             <div
               style={{
@@ -481,7 +467,6 @@ export default function RolePermissionPage() {
                       boxShadow: '0 2px 12px rgba(61,45,35,0.03)',
                     }}
                   >
-                    {/* Module Header */}
                     <div
                       style={{
                         display: 'flex',
@@ -542,7 +527,6 @@ export default function RolePermissionPage() {
                       </button>
                     </div>
 
-                    {/* Permissions Grid */}
                     <div
                       style={{
                         display: 'grid',
@@ -573,7 +557,7 @@ export default function RolePermissionPage() {
                             <input
                               type="checkbox"
                               checked={isChecked}
-                              onChange={() => {}} // handled by parent div onClick
+                              onChange={() => {}}
                               style={{
                                 marginTop: '3px',
                                 accentColor: '#3d2d23',

@@ -112,7 +112,6 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
 
   return (
     <section className="page" style={{ maxWidth: 960, margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
-      {/* Top Breadcrumb & Action Bar */}
       <div
         style={{
           display: 'flex',
@@ -194,7 +193,6 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
         </div>
       </div>
 
-      {/* Hero Showcase Card */}
       <div
         style={{
           borderRadius: 20,
@@ -213,7 +211,6 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
             flexWrap: 'wrap',
           }}
         >
-          {/* Suite Image Column */}
           <div
             style={{
               width: 280,
@@ -276,9 +273,7 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
             )}
           </div>
 
-          {/* Suite Info Column */}
           <div style={{ flex: 1, minWidth: 280 }}>
-            {/* Badges Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
               <span
                 style={{
@@ -317,7 +312,6 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
               </span>
             </div>
 
-            {/* Suite Name */}
             <h1
               style={{
                 margin: '8px 0 12px',
@@ -332,7 +326,6 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
               {roomType.name}
             </h1>
 
-            {/* Description Box */}
             <div
               style={{
                 backgroundColor: 'var(--paper, #fdfbf7)',
@@ -365,7 +358,6 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
         </div>
       </div>
 
-      {/* Sanctuary Boarding Standards Banner */}
       <div
         style={{
           display: 'grid',
@@ -489,7 +481,6 @@ export default function RoomTypeDetail({ backTo, editTo, guest }: RoomTypeDetail
         </div>
       </div>
 
-      {/* Physical Rooms Breakdown Card */}
       {roomType.rooms && roomType.rooms.length > 0 && (
         <div
           style={{

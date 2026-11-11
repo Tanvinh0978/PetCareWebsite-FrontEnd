@@ -15,7 +15,7 @@ import { PetSpecies, isCat } from '@/types/pet.types';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 interface PetManagementTableProps {
-  basePath: string; // e.g. '/admin/pets' or '/staff/pets'
+  basePath: string;
   title?: string;
   subtitle?: string;
 }
@@ -120,7 +120,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1
@@ -159,7 +158,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
         </Link>
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -186,7 +184,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
           </form>
 
           <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* Species Dropdown */}
             <Select
               value={species}
               onChange={(val) => {
@@ -201,7 +198,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
               ]}
             />
 
-            {/* Status Dropdown */}
             <Select
               value={status}
               onChange={(val) => {
@@ -216,7 +212,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
               ]}
             />
 
-            {/* Page Size Dropdown */}
             <Select
               value={pageSize}
               onChange={(val) => {
@@ -264,7 +259,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
         </p>
       )}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -514,7 +508,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {totalCount > 0 && (
           <div
             style={{
@@ -542,7 +535,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       {petToDelete && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">

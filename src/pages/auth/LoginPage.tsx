@@ -35,7 +35,6 @@ export default function LoginPage() {
 
   return (
     <div className="auth-shell">
-      {/* ══ LEFT PANEL ══ */}
       <div className="auth-left">
         <div className="auth-left-bg-image"
           style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80")' }}
@@ -52,7 +51,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ══ RIGHT PANEL ══ */}
       <div className="auth-right">
         <div className="auth-form-card">
           <div className="auth-form-header">

@@ -110,15 +110,12 @@ export default function CustomerBookingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Payment state
   const [paying, setPaying] = useState(false);
 
-  // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('Change of plans');
   const [cancelling, setCancelling] = useState(false);
 
-  // Review states
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewingItem, setReviewingItem] = useState<{
     id: string;
@@ -154,10 +151,8 @@ export default function CustomerBookingDetailPage() {
 
   const [deletingReview, setDeletingReview] = useState(false);
 
-  // Boarding Care History Modal
   const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
 
-  // Comparison Photos Modal
   const [beforeAfterItem, setBeforeAfterItem] = useState<BookingDetailItem | null>(null);
 
   const fetchDetail = async () => {
@@ -166,7 +161,6 @@ export default function CustomerBookingDetailPage() {
     setError('');
     try {
       const detail = await bookingService.fetchById(id);
-      // Ensure payment choice detection
       const hasBoardingItem = detail?.bookingItems?.some((item) =>
         String(item.serviceType).trim().toLowerCase() === 'boarding' || String(item.serviceType) === '1'
       );
@@ -185,7 +179,6 @@ export default function CustomerBookingDetailPage() {
     fetchDetail();
   }, [id]);
 
-  // Group services by pet
   const petGroups = useMemo<PetGroup[]>(() => {
     if (!booking || !booking.bookingItems) return [];
     const map = new Map<string, PetGroup>();
@@ -207,7 +200,6 @@ export default function CustomerBookingDetailPage() {
     return Array.from(map.values());
   }, [booking]);
 
-  // Extract the unified schedule from the booking items (rendered ONCE at top)
   const unifiedSchedule = useMemo(() => {
     if (!booking?.bookingItems?.length) return null;
     const firstItem = booking.bookingItems[0];
@@ -416,7 +408,6 @@ export default function CustomerBookingDetailPage() {
 
   return (
     <section className="page" style={{ maxWidth: 980, margin: '0 auto', padding: '2rem 1.5rem 4rem' }}>
-      {/* Top Header / Breadcrumb & Actions Bar */}
       <div
         style={{
           display: 'flex',
@@ -446,7 +437,6 @@ export default function CustomerBookingDetailPage() {
           <span>Back to My Bookings</span>
         </Link>
 
-        {/* Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {canPayOnline && (
             <Button
@@ -490,7 +480,6 @@ export default function CustomerBookingDetailPage() {
         </div>
       </div>
 
-      {/* Main Booking Summary Card */}
       <Card
         style={{
           borderRadius: 20,
@@ -501,7 +490,6 @@ export default function CustomerBookingDetailPage() {
         }}
         bodyStyle={{ padding: '28px 32px' }}
       >
-        {/* Header row: Booking Code & Status Pill */}
         <div
           style={{
             display: 'flex',
@@ -553,7 +541,6 @@ export default function CustomerBookingDetailPage() {
           </div>
         </div>
 
-        {/* Unified Schedule Banner - DISPLAYED PROMINENTLY ONCE */}
         {unifiedSchedule && (
           <div
             style={{
@@ -610,7 +597,6 @@ export default function CustomerBookingDetailPage() {
           </div>
         )}
 
-        {/* Payment Warning / Counter badge */}
         {canPayOnline && (
           <Alert
             type="warning"
@@ -628,7 +614,6 @@ export default function CustomerBookingDetailPage() {
           </div>
         )}
 
-        {/* Key Metrics Grid */}
         <div style={{ marginTop: 24 }}>
           <Row gutter={[20, 16]}>
             <Col xs={24} sm={12} md={6}>
@@ -686,7 +671,6 @@ export default function CustomerBookingDetailPage() {
         )}
       </Card>
 
-      {/* Services Grouped by Pet Section */}
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 6px', fontSize: '1.4rem', fontFamily: "'Playfair Display', Georgia, serif", color: '#3d2d23' }}>
           Services by Companion ({booking.bookingItems?.length || 0})
@@ -717,7 +701,6 @@ export default function CustomerBookingDetailPage() {
                 }}
                 bodyStyle={{ padding: 0 }}
               >
-                {/* Pet Group Header Bar */}
                 <div
                   style={{
                     padding: '16px 24px',
@@ -782,7 +765,6 @@ export default function CustomerBookingDetailPage() {
                   </Tag>
                 </div>
 
-                {/* List of Services for this Pet */}
                 <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {group.items.map((item, idx) => {
                     const itemStatus = getItemStatusConfig(item.status);
@@ -800,7 +782,6 @@ export default function CustomerBookingDetailPage() {
                           boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
                         }}
                       >
-                        {/* Service Item Header & Price */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
                           <div style={{ flex: 1, minWidth: 260 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
@@ -817,7 +798,6 @@ export default function CustomerBookingDetailPage() {
                               </Tag>
                             </div>
 
-                            {/* Service Assignments (Staff / Room) - Notice Schedule is NOT repeated here! */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6, fontSize: 13, color: '#64748b' }}>
                               {item.staffName ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -840,7 +820,6 @@ export default function CustomerBookingDetailPage() {
                             </div>
                           </div>
 
-                          {/* Price & Action Column */}
                           <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                             <div>
                               <div style={{ fontSize: 16, fontWeight: 800, color: '#785839' }}>
@@ -853,7 +832,6 @@ export default function CustomerBookingDetailPage() {
                               )}
                             </div>
 
-                            {/* Care History (Boarding) */}
                             {isBoarding && (
                               <Button
                                 type="link"
@@ -866,7 +844,6 @@ export default function CustomerBookingDetailPage() {
                               </Button>
                             )}
 
-                            {/* Review Button Logic */}
                             {!isBookingCompleted ? (
                               <Tooltip title="Reviews can only be submitted after check-out and pet handover are complete.">
                                 <Tag style={{ fontSize: 11, color: '#94a3b8', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', cursor: 'help' }}>
@@ -927,7 +904,6 @@ export default function CustomerBookingDetailPage() {
                           </div>
                         </div>
 
-                        {/* Care Results & Before / After Photos Section */}
                         {(hasPhotos || item.resultNote) && (
                           <div
                             style={{
@@ -1052,7 +1028,6 @@ export default function CustomerBookingDetailPage() {
         </div>
       )}
 
-      {/* Review Service Modal (Supports Create & Edit) */}
       {reviewingItem && (
         <CreateReviewModal
           open={reviewModalOpen}
@@ -1072,7 +1047,6 @@ export default function CustomerBookingDetailPage() {
         />
       )}
 
-      {/* View Submitted Review Modal (with Edit & Delete, Enforcing 1-Time Edit Limit) */}
       <Modal
         open={Boolean(viewingReview)}
         onCancel={() => setViewingReview(null)}
@@ -1097,7 +1071,6 @@ export default function CustomerBookingDetailPage() {
               </Button>
             </Popconfirm>
           ) : null,
-          /* Hide edit button if already edited once */
           !viewingReview?.updatedAt ? (
             <Tooltip key="edit-active" title="You are allowed to edit your review once">
               <Button
@@ -1184,7 +1157,6 @@ export default function CustomerBookingDetailPage() {
         )}
       </Modal>
 
-      {/* Boarding Care History Modal */}
       {careHistoryItem && (
         <CareRecordTimelineModal
           open={Boolean(careHistoryItem)}
@@ -1194,7 +1166,6 @@ export default function CustomerBookingDetailPage() {
         />
       )}
 
-      {/* Comparison Photos Modal */}
       <Modal
         open={Boolean(beforeAfterItem)}
         onCancel={() => setBeforeAfterItem(null)}
@@ -1264,7 +1235,6 @@ export default function CustomerBookingDetailPage() {
         )}
       </Modal>
 
-      {/* Cancellation Modal */}
       <Modal
         open={cancelModalOpen}
         onCancel={() => setCancelModalOpen(false)}

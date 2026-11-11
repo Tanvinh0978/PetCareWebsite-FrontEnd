@@ -26,7 +26,6 @@ const AdminVoucherFormPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Form fields
   const [code, setCode] = useState('');
   const [discountType, setDiscountType] = useState<DiscountType>(DiscountType.Percentage);
   const [discountValue, setDiscountValue] = useState<number | string>('');
@@ -35,7 +34,6 @@ const AdminVoucherFormPage: React.FC = () => {
   const [maxUsage, setMaxUsage] = useState<number | string>('');
   const [hasMaxUsage, setHasMaxUsage] = useState(false);
 
-  // Load existing voucher when editing
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -165,7 +163,6 @@ const AdminVoucherFormPage: React.FC = () => {
 
   return (
     <section className="page" style={{ maxWidth: '780px', margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
-      {/* Page Header */}
       <div
         style={{
           display: 'flex',
@@ -253,7 +250,6 @@ const AdminVoucherFormPage: React.FC = () => {
             </div>
           )}
 
-          {/* Luxury Card Container */}
           <div
             style={{
               background: '#ffffff',
@@ -266,7 +262,6 @@ const AdminVoucherFormPage: React.FC = () => {
               gap: '1.5rem',
             }}
           >
-            {/* Sanctuary Voucher Tip Box */}
             <div
               style={{
                 display: 'flex',
@@ -284,7 +279,6 @@ const AdminVoucherFormPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Voucher Code */}
             <div>
               <span
                 style={{
@@ -324,7 +318,6 @@ const AdminVoucherFormPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Discount Type */}
             <div>
               <span
                 style={{
@@ -384,7 +377,6 @@ const AdminVoucherFormPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Discount Value */}
             <div>
               <span
                 style={{
@@ -455,7 +447,6 @@ const AdminVoucherFormPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Start & End Date */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
@@ -537,7 +528,6 @@ const AdminVoucherFormPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Max Usage Limit */}
             <div
               style={{
                 backgroundColor: '#fdfbf7',
@@ -608,7 +598,6 @@ const AdminVoucherFormPage: React.FC = () => {
               )}
             </div>
 
-            {/* Form Actions */}
             <div
               style={{
                 display: 'flex',

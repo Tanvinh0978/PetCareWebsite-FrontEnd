@@ -35,7 +35,6 @@ export default function ServiceListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Confirmation modal state for deactivating a service
   const [serviceToDeactivate, setServiceToDeactivate] = useState<ServiceListItem | null>(null);
   const [deactivating, setDeactivating] = useState(false);
   const user = useAuthStore((s) => s.user);
@@ -110,14 +109,12 @@ export default function ServiceListPage() {
     }
   }
 
-  // Calculate pagination boundaries
   const totalCount = data?.totalCount ?? 0;
   const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, totalCount);
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1
@@ -160,7 +157,6 @@ export default function ServiceListPage() {
         )}
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -187,7 +183,6 @@ export default function ServiceListPage() {
           </form>
 
           <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* Category Dropdown */}
             <Select
               value={type || ''}
               onChange={(val) => pickType(val ? (val as ServiceType) : null)}
@@ -201,7 +196,6 @@ export default function ServiceListPage() {
               ]}
             />
 
-            {/* Status Dropdown */}
             <Select
               value={status}
               onChange={(val) => {
@@ -216,7 +210,6 @@ export default function ServiceListPage() {
               ]}
             />
 
-            {/* Page Size Dropdown */}
             <Select
               value={pageSize}
               onChange={(val) => {
@@ -260,7 +253,6 @@ export default function ServiceListPage() {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -486,7 +478,6 @@ export default function ServiceListPage() {
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {data && totalCount > 0 && (
           <div
             style={{
@@ -514,7 +505,6 @@ export default function ServiceListPage() {
         )}
       </div>
 
-      {/* Confirmation Modal for Deactivating */}
       {serviceToDeactivate && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">

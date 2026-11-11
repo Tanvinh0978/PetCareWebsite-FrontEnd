@@ -45,7 +45,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Modals
   const [detailBookingId, setDetailBookingId] = useState<string | null>(null)
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
 
@@ -67,7 +66,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
     fetchStats()
   }, [])
 
-  // Calculate highest revenue for chart scaling
   const maxRevenue = Math.max(
     ...(stats?.revenueTrend?.map((item) => Number(item.revenue)) || [1]),
     1000000
@@ -220,7 +218,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header bar */}
       <div className="page-head" style={{ marginBottom: 0 }}>
         <div>
           <h1
@@ -271,9 +268,7 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
       <Spin spinning={loading}>
         {stats && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Row 1: Primary Metrics Cards */}
             <Row gutter={[16, 16]}>
-              {/* Revenue Card */}
               <Col xs={24} sm={12} lg={6}>
                 <Card
                   hoverable
@@ -333,7 +328,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                 </Card>
               </Col>
 
-              {/* Bookings Card */}
               <Col xs={24} sm={12} lg={6}>
                 <Card
                   hoverable
@@ -427,7 +421,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                 </Card>
               </Col>
 
-              {/* Hotel Occupancy Card */}
               <Col xs={24} sm={12} lg={6}>
                 <Card
                   hoverable
@@ -498,7 +491,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                 </Card>
               </Col>
 
-              {/* Today's Salon & Hotel Operations */}
               <Col xs={24} sm={12} lg={6}>
                 <Card
                   hoverable
@@ -557,7 +549,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
               </Col>
             </Row>
 
-            {/* Row 2: Grooming Workflow Status & Demographics */}
             <Row gutter={[16, 16]}>
               <Col xs={24} md={16}>
                 <Card
@@ -717,7 +708,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
               </Col>
             </Row>
 
-            {/* Row 3: 7-Day Revenue Trend Chart */}
             <Card
               style={{
                 borderRadius: 16,
@@ -761,12 +751,10 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                             justifyContent: 'flex-end',
                           }}
                         >
-                          {/* Tooltip text on top */}
                           <div style={{ fontSize: 11, fontWeight: 700, color: '#785839', marginBottom: 6 }}>
                             {revenueNum > 0 ? (revenueNum >= 1000000 ? `${(revenueNum / 1000000).toFixed(1)}M` : `${Math.round(revenueNum / 1000)}k`) : '0'}
                           </div>
 
-                          {/* Bar */}
                           <Tooltip
                             title={
                               <div>
@@ -800,7 +788,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
                             </div>
                           </Tooltip>
 
-                          {/* Date Label */}
                           <div style={{ fontSize: 12, fontWeight: 600, color: '#6b5a4e', marginTop: 8 }}>
                             {day.dateLabel || day.date}
                           </div>
@@ -827,7 +814,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
               )}
             </Card>
 
-            {/* Row 4: Top 5 Recent Bookings Table */}
             <Card
               style={{
                 borderRadius: 16,
@@ -861,7 +847,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
         )}
       </Spin>
 
-      {/* Detail Modal */}
       <BookingDetailModal
         open={Boolean(detailBookingId)}
         bookingId={detailBookingId}
@@ -869,7 +854,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
         onOpenCheckout={(id) => setCheckoutBookingId(id)}
       />
 
-      {/* Check-out Modal */}
       <CheckoutBookingModal
         open={Boolean(checkoutBookingId)}
         bookingId={checkoutBookingId}

@@ -33,7 +33,6 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-shell">
-      {/* ══ LEFT PANEL ══ */}
       <div className="auth-left">
         <div className="auth-left-bg-image"
           style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1517849845537-4d257902454a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80")' }}
@@ -50,7 +49,6 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* ══ RIGHT PANEL ══ */}
       <div className="auth-right">
         <div className="auth-form-card">
           <div className="auth-form-header">

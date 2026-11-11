@@ -1,25 +1,15 @@
 import type { ServiceDTO } from '@/types/service.types';
 
-/**
- * Checks whether a pet species is Cat (1 or 'cat')
- */
 export function isPetCat(species: number | string | undefined | null): boolean {
   if (species === undefined || species === null) return false;
   return species === 1 || String(species).toLowerCase() === 'cat';
 }
 
-/**
- * Checks whether a pet species is Dog (0 or 'dog')
- */
 export function isPetDog(species: number | string | undefined | null): boolean {
   if (species === undefined || species === null) return false;
   return species === 0 || String(species).toLowerCase() === 'dog';
 }
 
-/**
- * Checks whether a given service is compatible with the pet's species.
- * Analyzes service name, roomTypeName, and description.
- */
 export function isServiceCompatibleWithPet(service: ServiceDTO, petSpecies: number | string | undefined | null): boolean {
   if (petSpecies === undefined || petSpecies === null) return true;
 
@@ -38,17 +28,14 @@ export function isServiceCompatibleWithPet(service: ServiceDTO, petSpecies: numb
   const matchesCat = catKeywords.some((kw) => combinedText.includes(kw));
   const matchesDog = dogKeywords.some((kw) => combinedText.includes(kw));
 
-  // If service specifically mentions cats and not dogs
   if (matchesCat && !matchesDog) {
     return isCat;
   }
 
-  // If service specifically mentions dogs and not cats
   if (matchesDog && !matchesCat) {
     return isDog;
   }
 
-  // Universal / neutral service
   return true;
 }
 
@@ -64,9 +51,6 @@ export interface RoomTierConfig {
   features: string[];
 }
 
-/**
- * Determines room tier (Standard, Suite, VIP) from room type name and service name.
- */
 export function getRoomTierInfo(roomTypeName?: string, serviceName?: string): RoomTierConfig {
   const text = `${roomTypeName || ''} ${serviceName || ''}`.toLowerCase();
 

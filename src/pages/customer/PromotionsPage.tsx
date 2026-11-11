@@ -37,7 +37,6 @@ const PromotionsPage: React.FC = () => {
       });
       const data = res?.result ?? res?.data ?? res;
       const items: VoucherDTO[] = data?.items ?? (Array.isArray(data) ? data : []);
-      // Client-side filter to only keep active ones
       const now = new Date();
       const active = items.filter((v) => {
         const start = parseUtcDate(v.startDate);
@@ -80,7 +79,6 @@ const PromotionsPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem 1.5rem 4rem' }}>
-      {/* Hero Header */}
       <div
         style={{
           background: 'linear-gradient(135deg, #3d2d23 0%, #5a4234 100%)',
@@ -136,7 +134,6 @@ const PromotionsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Decorative background element */}
         <div
           style={{
             position: 'absolute',
@@ -152,7 +149,6 @@ const PromotionsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
       <div
         style={{
           display: 'flex',
@@ -205,7 +201,6 @@ const PromotionsPage: React.FC = () => {
         </span>
       </div>
 
-      {/* Vouchers Grid */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
           <Spin size="large" />
@@ -265,7 +260,6 @@ const PromotionsPage: React.FC = () => {
                   position: 'relative',
                 }}
               >
-                {/* Voucher Top Strip */}
                 <div
                   style={{
                     backgroundColor: '#faf6f0',
@@ -330,7 +324,6 @@ const PromotionsPage: React.FC = () => {
                   </Tag>
                 </div>
 
-                {/* Voucher Content */}
                 <div
                   style={{
                     padding: '20px',
@@ -341,7 +334,6 @@ const PromotionsPage: React.FC = () => {
                     gap: 16,
                   }}
                 >
-                  {/* Coupon Code Box */}
                   <div>
                     <div
                       style={{
@@ -396,7 +388,6 @@ const PromotionsPage: React.FC = () => {
                       </Button>
                     </div>
 
-                    {/* Metadata details */}
                     <div style={{ marginTop: 14, fontSize: '0.83rem', color: '#7a6b61' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                         <CalendarOutlined style={{ color: '#8c735f' }} />
@@ -416,7 +407,6 @@ const PromotionsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Action Button */}
                   <Button
                     type="primary"
                     block

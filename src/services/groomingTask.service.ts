@@ -38,11 +38,6 @@ function getStaffId(): string | undefined {
 }
 
 export const groomingTaskService = {
-  /**
-   * GET /api/bookings/my-grooming-tasks
-   * Lấy danh sách ca làm việc Grooming của chính nhân viên đang đăng nhập.
-   * Có fallback sang /api/bookings/staff/{staffId}/grooming-tasks nếu endpoint chưa sẵn sàng.
-   */
   getMyTasks: async (params?: GetGroomingTasksParams): Promise<PagedGroomingTasks> => {
     try {
       const res: any = await axiosClient.get('/api/bookings/my-grooming-tasks', { params })
@@ -54,7 +49,6 @@ export const groomingTaskService = {
         pageSize: result?.pageSize ?? 10,
       }
     } catch (err: any) {
-      // Fallback: nếu /api/bookings/my-grooming-tasks trả 404 (do backend cũ chưa reload route), gọi qua staffId
       if (err?.response?.status === 404) {
         const staffId = getStaffId()
         if (staffId) {
@@ -75,10 +69,6 @@ export const groomingTaskService = {
     }
   },
 
-  /**
-   * PUT /api/bookings/{bookingId}/items/{itemId}/status
-   * Cập nhật trạng thái ca làm việc (bắt đầu In_Progress = 3, hoàn tất Completed = 4 kèm ảnh & ghi chú)
-   */
   updateTaskStatus: async (
     bookingId: string,
     itemId: string,
@@ -105,7 +95,6 @@ export const groomingTaskService = {
       body.resultImageUrl = payload.resultImageUrl
     }
 
-    // Backend validator: ResultNote is required when status is Completed (4)
     if (payload.status === 4) {
       body.resultNote = payload.resultNote?.trim() || 'Service completed successfully.'
     } else if (payload.resultNote) {

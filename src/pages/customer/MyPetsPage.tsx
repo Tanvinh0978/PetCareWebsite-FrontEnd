@@ -61,7 +61,6 @@ const MyPetsPage: React.FC = () => {
 
   return (
     <section className="page wide">
-      {/* Toast */}
       {toast && (
         <div
           role="status"
@@ -83,7 +82,6 @@ const MyPetsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Header */}
       <div className="page-head">
         <div>
           <h1>My Pets</h1>
@@ -151,7 +149,6 @@ const MyPetsPage: React.FC = () => {
                 onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.1)')}
                 onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)')}
               >
-                {/* Card Image */}
                 <div
                   style={{
                     height: 150,
@@ -195,7 +192,6 @@ const MyPetsPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Card Body */}
                 <div style={{ padding: '14px 16px', flex: 1 }}>
                   <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
                     <Link to={`/customer/pets/${pet.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -213,7 +209,6 @@ const MyPetsPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Card Actions */}
                 <div
                   style={{
                     padding: '10px 14px',
@@ -272,7 +267,6 @@ const MyPetsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       <Modal
         open={Boolean(petToDelete)}
         onCancel={() => setPetToDelete(null)}

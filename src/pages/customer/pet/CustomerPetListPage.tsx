@@ -22,7 +22,6 @@ const CustomerPetListPage: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      // Sử dụng endpoint /api/Pets/my-pets — backend đọc customerId từ JWT token
       const myPets = await petService.fetchMyPets(true)
       setPets(myPets.filter((p: any) => p.isActive !== false && !p.isDeleted))
     } catch (err) {
@@ -53,7 +52,6 @@ const CustomerPetListPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 1.5rem 4rem' }}>
-      {/* Header Banner */}
       <div
         style={{
           display: 'flex',
@@ -229,7 +227,6 @@ const CustomerPetListPage: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Attributes Badges */}
                   <div
                     style={{
                       display: 'flex',
@@ -265,7 +262,6 @@ const CustomerPetListPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Health notes snippet */}
                   {pet.healthNotes && (
                     <div
                       style={{
@@ -284,7 +280,6 @@ const CustomerPetListPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Card Actions */}
                 <div
                   style={{
                     display: 'flex',
@@ -324,7 +319,6 @@ const CustomerPetListPage: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {petToDelete && (
         <Modal
           open={Boolean(petToDelete)}

@@ -112,7 +112,6 @@ export default function BoardingTasksPage() {
     void loadTasks()
   }, [loadTasks])
 
-  // Quick date switches
   const handlePrevDay = () => {
     setDate((prev) => prev.subtract(1, 'day'))
     setPageNumber(1)
@@ -252,7 +251,6 @@ export default function BoardingTasksPage() {
         }
       `}</style>
 
-      {/* Top Banner */}
       <div
         style={{
           display: 'flex',
@@ -280,7 +278,6 @@ export default function BoardingTasksPage() {
           </p>
         </div>
 
-        {/* Date Filter & Quick Switch Controls */}
         <div
           style={{
             display: 'inline-flex',
@@ -399,7 +396,6 @@ export default function BoardingTasksPage() {
         </div>
       </div>
 
-      {/* Metric Summary Statistics Row */}
       <div
         style={{
           display: 'grid',
@@ -577,7 +573,6 @@ export default function BoardingTasksPage() {
         </div>
       </div>
 
-      {/* View Tabs */}
       <div style={{ display: 'flex', gap: 10, margin: '0 0 20px', flexWrap: 'wrap' }}>
         <button
           type="button"
@@ -703,7 +698,6 @@ export default function BoardingTasksPage() {
                       transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                     }}
                   >
-                    {/* Card Header Banner */}
                     <div
                       style={{
                         backgroundColor: '#faf6f0',
@@ -745,7 +739,6 @@ export default function BoardingTasksPage() {
                       </span>
                     </div>
 
-                    {/* Card Body */}
                     <div
                       style={{
                         padding: '18px 20px',
@@ -754,7 +747,6 @@ export default function BoardingTasksPage() {
                         flexDirection: 'column',
                       }}
                     >
-                      {/* Pet Heading */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                         <div
                           style={{
@@ -811,7 +803,6 @@ export default function BoardingTasksPage() {
                         </span>
                       </div>
 
-                      {/* Stay Information Grid */}
                       <div
                         style={{
                           display: 'grid',
@@ -901,7 +892,6 @@ export default function BoardingTasksPage() {
                         </div>
                       </div>
 
-                      {/* Health Notes Alert */}
                       {task.petHealthNotes && (
                         <div
                           style={{
@@ -927,7 +917,6 @@ export default function BoardingTasksPage() {
                         </div>
                       )}
 
-                      {/* Diet Add-on Box */}
                       {task.dietServiceName && (
                         <div
                           style={{
@@ -951,7 +940,6 @@ export default function BoardingTasksPage() {
                         </div>
                       )}
 
-                      {/* Latest Health Update */}
                       <div
                         style={{
                           padding: '11px 14px',
@@ -969,7 +957,6 @@ export default function BoardingTasksPage() {
                         </span>
                       </div>
 
-                      {/* Card Footer */}
                       <div
                         style={{
                           display: 'flex',
@@ -1054,7 +1041,6 @@ export default function BoardingTasksPage() {
         )}
       </Spin>
 
-      {/* Pagination Footer */}
       {total > 0 && (
         <div
           style={{
@@ -1096,7 +1082,6 @@ export default function BoardingTasksPage() {
         </div>
       )}
 
-      {/* Modals */}
       <CreateCareRecordModal
         open={Boolean(careTask)}
         task={careTask}
@@ -1111,7 +1096,6 @@ export default function BoardingTasksPage() {
         onClose={() => setHistoryTask(null)}
       />
 
-      {/* Complete Stay Modal */}
       <Modal
         wrapClassName="haven-boarding-modal"
         open={Boolean(completionTask)}

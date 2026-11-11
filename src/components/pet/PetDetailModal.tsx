@@ -14,7 +14,6 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
 
   const isPetCat = isCat(pet.species)
   const speciesLabel = getPetSpeciesLabel(pet.species)
-  // speciesIcon removed
 
   return (
     <div
@@ -29,7 +28,6 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
         style={{ maxWidth: 520, width: '95vw', textAlign: 'left', padding: 0, overflow: 'hidden' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div
           style={{
             display: 'flex',
@@ -95,7 +93,6 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
           </button>
         </div>
 
-        {/* Body */}
         <div style={{ padding: '20px 22px' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
             <tbody>
@@ -164,7 +161,6 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
             </tbody>
           </table>
 
-          {/* Health Notes */}
           {pet.healthNotes && (
             <div style={{ marginTop: 14 }}>
               <p
@@ -197,7 +193,6 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
           )}
         </div>
 
-        {/* Footer */}
         <div
           style={{
             padding: '12px 22px',

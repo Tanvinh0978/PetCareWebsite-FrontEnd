@@ -41,12 +41,10 @@ export const GroomingTasksPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('all');
 
-  // Action states
   const [actionLoadingItemId, setActionLoadingItemId] = useState<string | null>(null);
   const [completingTask, setCompletingTask] = useState<GroomingTaskResponseDTO | null>(null);
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
 
-  // Fetch tasks
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
@@ -71,12 +69,10 @@ export const GroomingTasksPage: React.FC = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // Quick date switches
   const handlePrevDay = () => setSelectedDate((prev) => prev.subtract(1, 'day'));
   const handleToday = () => setSelectedDate(dayjs());
   const handleNextDay = () => setSelectedDate((prev) => prev.add(1, 'day'));
 
-  // Filter tasks by active tab
   const filteredTasks = useMemo(() => {
     if (activeTab === 'all') return tasks;
     const tabNum = Number(activeTab);
@@ -89,7 +85,6 @@ export const GroomingTasksPage: React.FC = () => {
     return tasks.filter((t) => normalizeStatus(t.status) === tabNum);
   }, [tasks, activeTab]);
 
-  // Count by status
   const counts = useMemo(() => {
     let confirmed = 0;
     let checkedIn = 0;
@@ -107,7 +102,6 @@ export const GroomingTasksPage: React.FC = () => {
     return { total: tasks.length, confirmed, checkedIn, inProgress, completed };
   }, [tasks]);
 
-  // Check-In task handler (status -> 2)
   const handleCheckInTask = async (task: GroomingTaskResponseDTO) => {
     try {
       setActionLoadingItemId(task.itemId);
@@ -119,7 +113,7 @@ export const GroomingTasksPage: React.FC = () => {
         });
       }
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
-        status: 2, // Checked_In
+        status: 2,
         roomId: task.roomId || undefined,
       });
       message.success(`Checked in ${task.petName} successfully!`);
@@ -135,12 +129,10 @@ export const GroomingTasksPage: React.FC = () => {
     }
   };
 
-  // Start task handler (status -> 3)
   const handleStartTask = async (task: GroomingTaskResponseDTO) => {
     try {
       setActionLoadingItemId(task.itemId);
       const currentStatus = normalizeStatus(task.status);
-      // Advance to Checked_In first if needed
       if (currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 1,
@@ -149,12 +141,12 @@ export const GroomingTasksPage: React.FC = () => {
       }
       if (currentStatus === 1 || currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
-          status: 2, // Checked_In
+          status: 2,
           roomId: task.roomId || undefined,
         });
       }
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
-        status: 3, // In_Progress
+        status: 3,
         roomId: task.roomId || undefined,
       });
       message.success(`Started grooming session for ${task.petName}!`);
@@ -170,7 +162,6 @@ export const GroomingTasksPage: React.FC = () => {
     }
   };
 
-  // Open complete modal
   const handleOpenCompleteModal = (task: GroomingTaskResponseDTO) => {
     setCompletingTask(task);
     setCompleteModalOpen(true);
@@ -186,7 +177,6 @@ export const GroomingTasksPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 1300, margin: '0 auto', padding: '16px 20px 48px' }}>
-      {/* Top Banner */}
       <div
         style={{
           display: 'flex',
@@ -214,7 +204,6 @@ export const GroomingTasksPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Date Filter & Quick Switch Controls */}
         <div
           style={{
             display: 'inline-flex',
@@ -328,7 +317,6 @@ export const GroomingTasksPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Sanctuary Filter Tabs */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '22px' }}>
         {tabItems.map((t) => {
           const isActive = activeTab === t.key;
@@ -374,7 +362,6 @@ export const GroomingTasksPage: React.FC = () => {
         })}
       </div>
 
-      {/* Task Cards Grid */}
       <Spin spinning={loading} tip="Loading grooming tasks...">
         {filteredTasks.length === 0 ? (
           <div
@@ -449,7 +436,6 @@ export const GroomingTasksPage: React.FC = () => {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    {/* Card Header: Time, Station, Status Badge */}
                     <div
                       style={{
                         display: 'flex',
@@ -497,7 +483,6 @@ export const GroomingTasksPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Status Tag */}
                       {isConfirmed && (
                         <span
                           style={{
@@ -576,9 +561,7 @@ export const GroomingTasksPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Card Body: Pet Info, Service, Customer */}
                     <div style={{ flex: 1 }}>
-                      {/* Pet Profile */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                         <div
                           style={{
@@ -614,7 +597,6 @@ export const GroomingTasksPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Service Booked */}
                       <div
                         style={{
                           backgroundColor: '#faf6f0',
@@ -633,7 +615,6 @@ export const GroomingTasksPage: React.FC = () => {
                         </strong>
                       </div>
 
-                      {/* Customer Info */}
                       <div
                         style={{
                           display: 'flex',
@@ -663,7 +644,6 @@ export const GroomingTasksPage: React.FC = () => {
                         </a>
                       </div>
 
-                      {/* Health & Behavior Warning Box */}
                       {task.petHealthNotes ? (
                         <div
                           style={{
@@ -684,7 +664,6 @@ export const GroomingTasksPage: React.FC = () => {
                         </div>
                       ) : null}
 
-                      {/* Completed Result Thumbnail & Note */}
                       {isCompleted && (
                         <div
                           style={{
@@ -740,12 +719,10 @@ export const GroomingTasksPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Card Footer Actions */}
                     <div
                       style={{ borderTop: '1px solid #f1ece5', paddingTop: 14, marginTop: 'auto' }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {/* Step 1: Chưa check in -> Nút Check In */}
                       {isConfirmed && (
                         <button
                           type="button"
@@ -775,7 +752,6 @@ export const GroomingTasksPage: React.FC = () => {
                         </button>
                       )}
 
-                      {/* Step 2: Đã check in -> Nút Start Service (Đồng bộ espresso, không dùng màu xanh dương chói lọi) */}
                       {isCheckedIn && (
                         <button
                           type="button"
@@ -805,7 +781,6 @@ export const GroomingTasksPage: React.FC = () => {
                         </button>
                       )}
 
-                      {/* Step 3: Đang làm -> Nút Finish & Submit Result */}
                       {isInProgress && (
                         <button
                           type="button"
@@ -833,7 +808,6 @@ export const GroomingTasksPage: React.FC = () => {
                         </button>
                       )}
 
-                      {/* Step 4: Đã hoàn tất -> View / Edit Result */}
                       {isCompleted && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span
@@ -879,7 +853,6 @@ export const GroomingTasksPage: React.FC = () => {
         )}
       </Spin>
 
-      {/* Complete Task Modal */}
       <CompleteGroomingTaskModal
         open={completeModalOpen}
         onClose={() => {

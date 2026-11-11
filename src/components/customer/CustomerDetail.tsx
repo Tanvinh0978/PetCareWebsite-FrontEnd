@@ -97,7 +97,6 @@ export default function CustomerDetail({ backTo, editTo }: CustomerDetailProps) 
         </div>
       </div>
 
-      {/* Main Info Card */}
       <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '1.75rem', marginBottom: '1.75rem', boxShadow: 'var(--shadow-sm)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -143,7 +142,6 @@ export default function CustomerDetail({ backTo, editTo }: CustomerDetailProps) 
         </div>
       </div>
 
-      {/* Customer's Pets Section */}
       <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '1.75rem', marginBottom: '2rem', boxShadow: 'var(--shadow-sm)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div>

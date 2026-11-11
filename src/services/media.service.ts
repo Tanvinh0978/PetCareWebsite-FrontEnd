@@ -1,12 +1,6 @@
 import axiosClient from './axiosClient'
 
 export const mediaService = {
-  /**
-   * Upload single image/file to /api/Media/upload
-   * @param file File to upload
-   * @param folder Folder name to categorize uploads (e.g. 'pets', 'room-types')
-   * @returns URL string of the uploaded file
-   */
   upload: async (file: File | Blob, folder: string = 'general'): Promise<string> => {
     const formData = new FormData()
     formData.append('File', file)
@@ -18,7 +12,6 @@ export const mediaService = {
       },
     })
 
-    // Handle different possible backend response formats
     if (typeof res === 'string') return res
     if (res?.result) {
       if (typeof res.result === 'string') return res.result

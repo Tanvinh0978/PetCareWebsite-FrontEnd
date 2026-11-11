@@ -74,10 +74,8 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero Section */}
       <section className="home-hero-wrap">
         <div className="home-hero-container">
-          {/* Left Text Column */}
           <div className="home-hero-content">
             <div className="hero-pill-badge">
               <PawIcon size={14} style={{ marginRight: 6, color: 'var(--secondary)' }} /> Cotswolds Country Retreat &amp; Luxury Spa
@@ -96,7 +94,6 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Social Proof & Rating Badge */}
             <div className="hero-social-proof">
               <div className="avatar-group">
                 <img
@@ -119,7 +116,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Hero Photography */}
           <div className="home-hero-image-wrap">
             <img
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu2kxRQOsqJLyTIrW4Y7OpZhRDdJArlfSkk6_sabPBbjbWnjkkZoON0nQEKU2mOyD4bSQFHjPEnoX_dMGNbGnVpJirdItDmVZgLjRonBIiPu56s_NXGIgzNflMfKnM4VaG_br_ecQe5PlATgy7XmuLw2fLEUNlVM422B7M2cR9LnOWqTfULEJO6DHeczusBY7XSd0oHEpAmDwBuw0A68_1Fz_Bt90rJaQs8CQ73Xj7qZdzyKqeW3BM"
@@ -129,7 +125,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Sanctuary Suites & Chambers Showcase (Real RoomTypes from Database) */}
       <section className="home-section" id="suites">
         <div className="section-header">
           <span className="section-tag">Suites &amp; Lodgings</span>
@@ -180,7 +175,6 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Curated Daily Rhythms (4 Pillars Grid) */}
       <section className="home-section" id="services">
         <div className="section-header">
           <span className="section-tag">Care Protocol</span>
@@ -211,7 +205,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Real Customer Reviews Section (From Database) */}
       {!loadingReviews && reviews.length > 0 && (
         <section className="home-section">
           <div className="section-header">
@@ -260,7 +253,6 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Call To Action Banner */}
       <div className="cta-banner">
         <h2>Give Your Companion the Stay They Deserve.</h2>
         <p>

@@ -59,19 +59,19 @@ export interface CheckoutSummaryDTO {
   totalPrice: number
   totalPaid: number
   remainingAmount: number
-  paymentStatus: string // "UNPAID" | "PARTIALLY_PAID" | "PAID"
+  paymentStatus: string
   canCheckout: boolean
   restrictionReason?: string
   paymentHistory: PaymentTransactionDTO[]
 }
 
 export interface CheckoutBookingPayload {
-  paymentMethod: string // "CASH" | "BANK_TRANSFER" | "CARD" | "VNPAY"
+  paymentMethod: string
   amount?: number
   transactionCode?: string
   note?: string
 }
 
 export interface UpdateBookingStatusPayload {
-  status: number // 1: Confirmed, 3: Cancelled, etc.
+  status: number
 }

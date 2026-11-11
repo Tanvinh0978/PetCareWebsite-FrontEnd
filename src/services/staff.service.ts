@@ -130,7 +130,6 @@ export const staffService = {
       console.warn('Backend /api/Staffs error, falling back to local storage:', err)
     }
 
-    // Local fallback
     const all = getLocalStaff()
     const term = params?.searchTerm?.trim().toLowerCase()
     const status = params?.status

@@ -9,10 +9,6 @@ export const weightLabel = (min: number | null, max: number | null) => {
   return `${min} to ${max} kg`
 }
 
-/**
- * Safely parse UTC ISO date string from backend, even if it lacks the 'Z' suffix.
- * Browser Date parses strings with 'Z' as UTC and converts to local timezone.
- */
 export const parseUtcDate = (dateStr: string | null | undefined): Date => {
   if (!dateStr) return new Date()
   const str = String(dateStr).trim()
@@ -22,9 +18,6 @@ export const parseUtcDate = (dateStr: string | null | undefined): Date => {
   return isNaN(d.getTime()) ? new Date(str) : d
 }
 
-/**
- * Format a UTC date string into Vietnam local date & time: DD/MM/YYYY HH:mm
- */
 export const formatDateTime = (dateStr: string | null | undefined): string => {
   if (!dateStr) return '—'
   try {
@@ -41,9 +34,6 @@ export const formatDateTime = (dateStr: string | null | undefined): string => {
   }
 }
 
-/**
- * Format a UTC date string into Vietnam local date only: DD/MM/YYYY
- */
 export const formatDateOnly = (dateStr: string | null | undefined): string => {
   if (!dateStr) return '—'
   try {
@@ -58,9 +48,6 @@ export const formatDateOnly = (dateStr: string | null | undefined): string => {
   }
 }
 
-/**
- * Convert ISO UTC string to input[type="datetime-local"] format: YYYY-MM-DDTHH:mm
- */
 export const isoToLocalInput = (iso: string | null | undefined): string => {
   if (!iso) return ''
   try {
@@ -72,9 +59,6 @@ export const isoToLocalInput = (iso: string | null | undefined): string => {
   }
 }
 
-/**
- * Convert input[type="datetime-local"] value (YYYY-MM-DDTHH:mm) to UTC ISO string
- */
 export const localInputToISO = (local: string | null | undefined): string => {
   if (!local) return ''
   const d = new Date(local)
