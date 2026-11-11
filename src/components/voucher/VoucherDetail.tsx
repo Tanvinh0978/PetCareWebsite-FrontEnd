@@ -1,199 +1,522 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams, useLocation } from 'react-router-dom'
-import { voucherService } from '@/services/voucher.service'
-import type { VoucherDTO } from '@/types/voucher.types'
-import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types'
-import { getApiErrorMessage } from '@/utils/apiError'
+import React, { useEffect, useState } from 'react';
+import { Link, useParams, useLocation } from 'react-router-dom';
+import {
+  ArrowLeftOutlined,
+  EditOutlined,
+  TagOutlined,
+  CalendarOutlined,
+  BarChartOutlined,
+  DollarOutlined,
+  KeyOutlined,
+} from '@ant-design/icons';
+import { voucherService } from '@/services/voucher.service';
+import { useAuthStore } from '@/store/useAuthStore';
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
+import type { VoucherDTO } from '@/types/voucher.types';
+import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types';
+import { getApiErrorMessage } from '@/utils/apiError';
+import { parseUtcDate, formatDateTime } from '@/utils/format';
 
 interface VoucherDetailProps {
-  backTo?: string
-  editTo?: (id: string) => string
+  backTo?: string;
+  editTo?: (id: string) => string;
 }
 
-const formatDate = (iso: string) => {
-  try {
-    return new Date(iso).toLocaleDateString('vi-VN', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-    })
-  } catch {
-    return iso
-  }
-}
+const formatDate = (iso: string) => formatDateTime(iso);
 
 const formatValue = (v: VoucherDTO) => {
   if (v.discountType === DiscountType.Percentage) {
-    return `${v.discountValue}%`
+    return `${v.discountValue}%`;
   }
-  return `${v.discountValue.toLocaleString('vi-VN')} ₫`
-}
+  return `${v.discountValue.toLocaleString('vi-VN')} ₫`;
+};
 
-function getValidityBadge(v: VoucherDTO): { label: string; cls: string } {
-  const now = new Date()
-  const start = new Date(v.startDate)
-  const end = new Date(v.endDate)
+function getValidityBadge(v: VoucherDTO) {
+  const now = new Date();
+  const start = parseUtcDate(v.startDate);
+  const end = parseUtcDate(v.endDate);
+  const maxReached = v.maxUsage !== null && v.currentUsage >= v.maxUsage;
 
-  if (v.maxUsage !== null && v.currentUsage >= v.maxUsage) {
-    return { label: 'Depleted', cls: 'inactive' }
+  if (maxReached) {
+    return {
+      label: 'Exhausted',
+      bg: '#fffbeb',
+      color: '#b45309',
+      border: '#fde68a',
+      dot: '#f59e0b',
+    };
   }
   if (now < start) {
-    return { label: 'Upcoming', cls: 'pending' }
+    return {
+      label: 'Scheduled',
+      bg: '#f0f9ff',
+      color: '#0369a1',
+      border: '#bae6fd',
+      dot: '#0284c7',
+    };
   }
   if (now > end) {
-    return { label: 'Expired', cls: 'inactive' }
+    return {
+      label: 'Expired',
+      bg: '#fef2f2',
+      color: '#dc2626',
+      border: '#fecaca',
+      dot: '#ef4444',
+    };
   }
-  return { label: 'Active', cls: 'active' }
+  return {
+    label: 'Active',
+    bg: '#ecfdf5',
+    color: '#047857',
+    border: '#a7f3d0',
+    dot: '#10b981',
+  };
 }
 
 export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
-  const { id = '' } = useParams()
-  const location = useLocation()
-  const isStaff = location.pathname.startsWith('/staff')
-  const defaultBackTo = isStaff ? '/staff/vouchers' : '/admin/vouchers'
-  const resolvedBackTo = backTo || defaultBackTo
-  const resolvedEditTo = editTo || ((vid: string) => `${defaultBackTo}/${vid}/edit`)
+  const { id = '' } = useParams();
+  const location = useLocation();
+  const isStaff = location.pathname.startsWith('/staff');
+  const defaultBackTo = isStaff ? '/staff/vouchers' : '/admin/vouchers';
+  const resolvedBackTo = backTo || defaultBackTo;
+  const resolvedEditTo = editTo || ((vid: string) => `${defaultBackTo}/${vid}/edit`);
 
-  const [voucher, setVoucher] = useState<VoucherDTO | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const user = useAuthStore((s) => s.user);
+  const canManage = hasPermission(user, PERMISSIONS.VOUCHER_MANAGE);
+
+  const [voucher, setVoucher] = useState<VoucherDTO | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError('')
+    let cancelled = false;
+    setLoading(true);
+    setError('');
 
     voucherService
       .fetchById(id)
       .then((res: any) => {
         if (!cancelled) {
-          const v = res?.result ?? res
-          setVoucher(v)
+          const v = res?.result ?? res;
+          setVoucher(v);
         }
       })
       .catch((e) => {
-        if (!cancelled) setError(getApiErrorMessage(e))
+        if (!cancelled) setError(getApiErrorMessage(e));
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
-      cancelled = true
-    }
-  }, [id])
+      cancelled = true;
+    };
+  }, [id]);
 
   if (loading) {
     return (
-      <section className="page narrow">
-        <p style={{ color: '#557268', padding: '2rem 0' }}>Loading voucher details...</p>
+      <section className="page" style={{ maxWidth: '820px', margin: '0 auto', padding: '3rem 1.5rem' }}>
+        <p style={{ color: '#785839', textAlign: 'center', fontWeight: 600 }}>Loading voucher details...</p>
       </section>
-    )
+    );
   }
 
   if (error || !voucher) {
     return (
-      <section className="page narrow">
-        <p className="msg error" role="alert">{error || 'Voucher not found.'}</p>
-        <Link to={resolvedBackTo} className="btn btn-secondary">
-          ← Back to vouchers
+      <section className="page" style={{ maxWidth: '820px', margin: '0 auto', padding: '3rem 1.5rem' }}>
+        <div
+          style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            color: '#991b1b',
+            borderRadius: 12,
+            padding: '1.25rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          {error || 'Voucher not found.'}
+        </div>
+        <Link
+          to={resolvedBackTo}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '0.45rem 1.1rem',
+            borderRadius: 8,
+            backgroundColor: '#ffffff',
+            border: '1px solid #e8ded6',
+            color: '#3d2d23',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          <ArrowLeftOutlined /> Back to vouchers
         </Link>
       </section>
-    )
+    );
   }
 
-  const badge = getValidityBadge(voucher)
+  const badge = getValidityBadge(voucher);
 
   return (
-    <section className="page narrow">
-      <div className="page-head">
-        <div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#785839', background: '#fdf9f3', padding: '0.2rem 0.75rem', borderRadius: '999px', border: '1px solid #e8ded6' }}>
-            🎟️ Promotion Voucher
-          </span>
-          <h1 style={{ marginTop: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.05em' }}>{voucher.code}</h1>
-        </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          {resolvedEditTo && (
-            <Link to={resolvedEditTo(voucher.id)} className="btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-              Edit Voucher
-            </Link>
-          )}
-        </div>
+    <section className="page" style={{ maxWidth: '820px', margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1.75rem',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <Link
+          to={resolvedBackTo}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '0.45rem 1.15rem',
+            borderRadius: 999,
+            backgroundColor: '#ffffff',
+            border: '1.5px solid #eeddc8',
+            color: '#785839',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+            textDecoration: 'none',
+            boxShadow: '0 1px 3px rgba(61,45,35,0.04)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <ArrowLeftOutlined style={{ fontSize: 12 }} />
+          <span>Back to vouchers</span>
+        </Link>
+
+        {canManage && resolvedEditTo && (
+          <Link
+            to={resolvedEditTo(voucher.id)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.55rem 1.35rem',
+              borderRadius: 999,
+              backgroundColor: '#3d2d23',
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '0.875rem',
+              textDecoration: 'none',
+              boxShadow: '0 4px 14px rgba(61,45,35,0.18)',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <EditOutlined style={{ fontSize: 13 }} />
+            <span>Edit Voucher</span>
+          </Link>
+        )}
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '1.75rem', marginBottom: '1.75rem', boxShadow: 'var(--shadow-sm)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', paddingBottom: '1.25rem', borderBottom: '1px solid #f1f5f9', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: 48, height: 48, borderRadius: '12px', background: '#fef3c7', color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', border: '1px solid #fde68a' }}>
-              🎟️
+      <div
+        style={{
+          backgroundColor: '#ffffff',
+          border: '1.5px solid #eeddc8',
+          borderRadius: '20px',
+          padding: '32px 36px',
+          boxShadow: '0 4px 20px rgba(61,45,35,0.04)',
+          marginBottom: '1.75rem',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1.25rem',
+            paddingBottom: '1.5rem',
+            borderBottom: '1px solid #f1ece5',
+            marginBottom: '1.75rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div
+              style={{
+                width: 54,
+                height: 54,
+                borderRadius: '14px',
+                backgroundColor: '#faf6f0',
+                border: '1.5px solid #eeddc8',
+                color: '#785839',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem',
+                flexShrink: 0,
+              }}
+            >
+              <TagOutlined />
             </div>
             <div>
-              <code style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+              <div
+                style={{
+                  fontSize: '1.65rem',
+                  fontWeight: 800,
+                  color: '#3d2d23',
+                  fontFamily: 'monospace',
+                  letterSpacing: '0.06em',
+                }}
+              >
                 {voucher.code}
-              </code>
-              <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
+              </div>
+              <div style={{ fontSize: '0.88rem', color: '#8c735f', marginTop: 2 }}>
+                Promotion Campaign •{' '}
                 {DISCOUNT_TYPE_LABEL[voucher.discountType as DiscountType] ?? voucher.discountType}
               </div>
             </div>
           </div>
-          <span className={`status-pill ${badge.cls}`}>
-            <span className="status-dot"></span>
+
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '4px 14px',
+              borderRadius: 999,
+              backgroundColor: badge.bg,
+              color: badge.color,
+              border: `1px solid ${badge.border}`,
+              fontSize: '0.85rem',
+              fontWeight: 700,
+            }}
+          >
+            <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: badge.dot }} />
             {badge.label}
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
-          <div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Discount Value</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#059669', marginTop: '0.2rem' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+            gap: '1.5rem',
+          }}
+        >
+          <div
+            style={{
+              padding: '16px 20px',
+              backgroundColor: '#fdfbf7',
+              borderRadius: '12px',
+              border: '1px solid #eeddc8',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#8c735f',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <DollarOutlined />
+              <span>Discount Benefit</span>
+            </div>
+            <div
+              style={{
+                fontSize: '1.45rem',
+                fontWeight: 800,
+                color: '#3d2d23',
+                marginTop: '0.4rem',
+              }}
+            >
               {formatValue(voucher)}
             </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Discount Type</div>
-            <div style={{ fontSize: '0.98rem', fontWeight: 600, color: '#1e293b', marginTop: '0.2rem' }}>
+
+          <div
+            style={{
+              padding: '16px 20px',
+              backgroundColor: '#fdfbf7',
+              borderRadius: '12px',
+              border: '1px solid #eeddc8',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#8c735f',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <TagOutlined />
+              <span>Discount Type</span>
+            </div>
+            <div
+              style={{
+                fontSize: '1rem',
+                fontWeight: 700,
+                color: '#3d2d23',
+                marginTop: '0.4rem',
+              }}
+            >
               {DISCOUNT_TYPE_LABEL[voucher.discountType as DiscountType] ?? voucher.discountType}
             </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Start Date</div>
-            <div style={{ fontSize: '0.98rem', fontWeight: 600, color: '#1e293b', marginTop: '0.2rem' }}>
+
+          <div
+            style={{
+              padding: '16px 20px',
+              backgroundColor: '#fdfbf7',
+              borderRadius: '12px',
+              border: '1px solid #eeddc8',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#8c735f',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <CalendarOutlined />
+              <span>Valid From</span>
+            </div>
+            <div
+              style={{
+                fontSize: '0.96rem',
+                fontWeight: 700,
+                color: '#3d2d23',
+                marginTop: '0.4rem',
+              }}
+            >
               {formatDate(voucher.startDate)}
             </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>End Date</div>
-            <div style={{ fontSize: '0.98rem', fontWeight: 600, color: '#1e293b', marginTop: '0.2rem' }}>
+
+          <div
+            style={{
+              padding: '16px 20px',
+              backgroundColor: '#fdfbf7',
+              borderRadius: '12px',
+              border: '1px solid #eeddc8',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#8c735f',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <CalendarOutlined />
+              <span>Valid Until</span>
+            </div>
+            <div
+              style={{
+                fontSize: '0.96rem',
+                fontWeight: 700,
+                color: '#3d2d23',
+                marginTop: '0.4rem',
+              }}
+            >
               {formatDate(voucher.endDate)}
             </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Usage Quota</div>
-            <div style={{ fontSize: '0.98rem', fontWeight: 700, color: '#1e293b', marginTop: '0.2rem' }}>
+
+          <div
+            style={{
+              padding: '16px 20px',
+              backgroundColor: '#fdfbf7',
+              borderRadius: '12px',
+              border: '1px solid #eeddc8',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#8c735f',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <BarChartOutlined />
+              <span>Redemption Quota</span>
+            </div>
+            <div
+              style={{
+                fontSize: '0.96rem',
+                fontWeight: 700,
+                color: '#3d2d23',
+                marginTop: '0.4rem',
+              }}
+            >
               {voucher.maxUsage !== null
-                ? `${voucher.currentUsage} used / ${voucher.maxUsage} max`
-                : `${voucher.currentUsage} used / Unlimited`}
+                ? `${voucher.currentUsage} redeemed / ${voucher.maxUsage} limit`
+                : `${voucher.currentUsage} redeemed / Unlimited`}
             </div>
           </div>
+
           {voucher.id && (
-            <div>
-              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Voucher ID</div>
-              <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.2rem', fontFamily: 'monospace' }}>
+            <div
+              style={{
+                padding: '16px 20px',
+                backgroundColor: '#fdfbf7',
+                borderRadius: '12px',
+                border: '1px solid #eeddc8',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  color: '#8c735f',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <KeyOutlined />
+                <span>System Identifier</span>
+              </div>
+              <div
+                style={{
+                  fontSize: '0.82rem',
+                  color: '#8c735f',
+                  marginTop: '0.4rem',
+                  fontFamily: 'monospace',
+                }}
+              >
                 {voucher.id}
               </div>
             </div>
           )}
         </div>
       </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        <Link to={resolvedBackTo} className="btn btn-secondary">
-          ← Back to vouchers
-        </Link>
-      </div>
     </section>
-  )
+  );
 }

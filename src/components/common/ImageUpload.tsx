@@ -21,6 +21,7 @@ interface ImageUploadProps {
   title?: string
   helperText?: string
   disabled?: boolean
+  align?: 'center' | 'left'
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -33,6 +34,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   title = 'Upload Image',
   helperText = 'PNG, JPG, WEBP up to 5MB',
   disabled = false,
+  align = 'left',
 }) => {
   const [uploading, setUploading] = useState(false)
   const [previewVisible, setPreviewVisible] = useState(false)
@@ -80,9 +82,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   }
 
   const isCircle = shape === 'circle'
+  const isCentered = align === 'center'
 
   return (
-    <div className="image-upload">
+    <div className="image-upload" style={isCentered ? { width: '100%', alignItems: 'center' } : undefined}>
       <input
         ref={fileInputRef}
         type="file"
@@ -95,9 +98,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       <div
         style={{
           display: 'flex',
+          flexDirection: isCentered ? 'column' : 'row',
           alignItems: 'center',
-          gap: '16px',
-          flexWrap: 'wrap',
+          justifyContent: isCentered ? 'center' : 'flex-start',
+          gap: isCentered ? '10px' : '16px',
+          flexWrap: isCentered ? 'nowrap' : 'wrap',
+          width: '100%',
         }}
       >
         <div
@@ -184,7 +190,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           )}
         </div>
 
-        <div className="image-upload-controls">
+        <div
+          className="image-upload-controls"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: isCentered ? 'center' : 'flex-start',
+            textAlign: isCentered ? 'center' : 'left',
+            width: isCentered ? '100%' : 'auto',
+            gap: '6px',
+          }}
+        >
           <Space orientation="horizontal" size="small">
             <Button
               size="small"

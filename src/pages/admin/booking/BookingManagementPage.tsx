@@ -3,15 +3,13 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   Table,
   Tag,
-  Button,
   Input,
   DatePicker,
-  Radio,
+  Select,
   Space,
   Card,
   Popconfirm,
   message,
-  Tooltip,
   Typography,
   Modal,
 } from 'antd'
@@ -19,25 +17,21 @@ import {
   SearchOutlined,
   CalendarOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined,
   EyeOutlined,
   ReloadOutlined,
   DollarCircleOutlined,
-  ShopOutlined,
   CheckOutlined,
   CloseOutlined,
-  PlusOutlined,
-  SyncOutlined,
   StopOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { bookingService, type BookingListItem } from '@/services/booking.service'
-import BookingDetailModal from '@/components/admin/BookingDetailModal'
 import CheckoutBookingModal from '@/components/admin/CheckoutBookingModal'
+import { BookingStatusBadge, ServiceTypeBadge } from '@/components/common/PetIcons'
 import { useAuthStore } from '@/store/useAuthStore'
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
 
 export default function BookingManagementPage() {
@@ -55,7 +49,6 @@ export default function BookingManagementPage() {
   const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined)
   const [serviceDate, setServiceDate] = useState<string | undefined>(dayjs().format('YYYY-MM-DD'))
 
-  const [detailBookingId, setDetailBookingId] = useState<string | null>(null)
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const currentUser = useAuthStore((s) => s.user)
@@ -108,7 +101,7 @@ export default function BookingManagementPage() {
 
   const openCancelModal = (bookingId: string) => {
     setCancellingBookingId(bookingId)
-    setCancellationReason('Khách liên hệ xin hủy hẹn')
+    setCancellationReason('Customer requested cancellation')
     setCancelModalOpen(true)
   }
 
@@ -116,14 +109,14 @@ export default function BookingManagementPage() {
     if (!cancellingBookingId) return
     setCancelLoading(true)
     try {
-      await bookingService.cancelBooking(cancellingBookingId, cancellationReason.trim() || 'Khách liên hệ xin hủy hẹn')
-      message.success('Đơn đặt lịch đã được hủy thành công.')
+      await bookingService.cancelBooking(cancellingBookingId, cancellationReason.trim() || 'Customer requested cancellation')
+      message.success('Booking has been successfully cancelled.')
       setCancelModalOpen(false)
       setCancellingBookingId(null)
       setCancellationReason('')
       fetchBookings()
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Không thể hủy đơn đặt lịch.'
+      const msg = err?.response?.data?.message || err?.message || 'Failed to cancel booking.'
       message.error(msg)
     } finally {
       setCancelLoading(false)
@@ -134,10 +127,10 @@ export default function BookingManagementPage() {
     setActionLoadingId(bookingId)
     try {
       await bookingService.markNoShow(bookingId)
-      message.success('Đã đánh dấu khách không đến (No-Show). Lịch hẹn và phòng đã được giải phóng.')
+      message.success('Marked as No-Show. Scheduled room and staff resources released.')
       fetchBookings()
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Không thể đánh dấu No-Show.'
+      const msg = err?.response?.data?.message || err?.message || 'Failed to mark as No-Show.'
       message.error(msg)
     } finally {
       setActionLoadingId(null)
@@ -159,78 +152,39 @@ export default function BookingManagementPage() {
   }
 
   const getStatusBadge = (status: number | string, record?: BookingListItem) => {
-    const s = Number(status)
-    const isNoShow =
-      s === 4 ||
-      status === 'No_Show' ||
-      status === 'No-Show' ||
-      record?.isNoShow ||
-      (record?.cancellationReason && record.cancellationReason.toLowerCase().includes('no-show'))
-
-    if (isNoShow) {
-      return (
-        <Tooltip title={record?.cancellationReason || 'Khách không đến theo lịch hẹn (No-Show)'}>
-          <Tag color="purple" style={{ fontWeight: 600 }}>
-            No-Show
-          </Tag>
-        </Tooltip>
-      )
-    }
-
-    if (s === 0 || status === 'Pending') {
-      return (
-        <Tag color="warning" style={{ fontWeight: 600 }}>
-          Pending
-        </Tag>
-      )
-    }
-    if (s === 1 || status === 'Confirmed') {
-      return (
-        <Tag color="blue" style={{ fontWeight: 600 }}>
-          Confirmed
-        </Tag>
-      )
-    }
-    if (s === 2 || status === 'Completed') {
-      return (
-        <Tag color="success" style={{ fontWeight: 600 }}>
-          Completed
-        </Tag>
-      )
-    }
-    if (s === 3 || status === 'Cancelled') {
-      return (
-        <Tooltip title={record?.cancellationReason || undefined}>
-          <Tag color="error" style={{ fontWeight: 600 }}>
-            Cancelled
-          </Tag>
-        </Tooltip>
-      )
-    }
-    return <Tag>{status}</Tag>
+    return (
+      <BookingStatusBadge
+        status={status}
+        reason={record?.cancellationReason}
+        isNoShow={record?.isNoShow}
+      />
+    )
   }
 
   const columns = [
     {
-      title: 'Booking ID',
+      title: 'BOOKING ID',
       dataIndex: 'id',
       key: 'id',
       width: 140,
       render: (id: string) => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#6366f1' }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#4338ca' }}>
           #{id ? id.slice(0, 8).toUpperCase() : '—'}
         </span>
       ),
     },
     {
-      title: 'Customer',
+      title: 'CUSTOMER',
       key: 'customer',
-      width: 220,
+      width: 200,
       render: (_: any, record: BookingListItem) => (
         <div>
-          <Text strong style={{ fontSize: 14, color: '#0f172a', display: 'block' }}>
+          <Link
+            to={`${isStaff ? '/staff/bookings' : '/admin/bookings'}/${record.id}`}
+            style={{ fontWeight: 700, fontSize: 14, color: 'var(--slate-900)', textDecoration: 'none', display: 'block' }}
+          >
             {record.customerName || 'Guest'}
-          </Text>
+          </Link>
           <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
             Booked: {record.createdAt ? dayjs(record.createdAt).format('DD/MM/YYYY HH:mm') : '—'}
           </div>
@@ -238,49 +192,85 @@ export default function BookingManagementPage() {
       ),
     },
     {
-      title: 'Services / Items',
-      dataIndex: 'itemsCount',
-      key: 'itemsCount',
-      width: 150,
-      render: (count: number, record: BookingListItem) => (
-        <div>
-          <Tag color="blue" style={{ fontWeight: 600 }}>
-            {count || 1} Service Item(s)
-          </Tag>
-          <div style={{ marginTop: 4 }}>
-            <Button
-              type="link"
-              size="small"
-              onClick={() => setDetailBookingId(record.id)}
-              style={{ padding: 0, fontSize: 12, height: 'auto', color: '#059669' }}
-            >
-              View Service Items →
-            </Button>
+      title: 'SCHEDULED TIME',
+      key: 'scheduledTime',
+      width: 210,
+      render: (_: any, record: BookingListItem) => {
+        const isBoarding =
+          record.bookingType === 'Boarding' ||
+          (record.serviceNames && record.serviceNames.some((s) => s.toLowerCase().includes('boarding')));
+
+        if (isBoarding) {
+          const startStr = record.scheduledStartAt ? dayjs(record.scheduledStartAt).format('DD/MM/YYYY HH:mm') : '—';
+          const endStr = record.scheduledEndAt ? dayjs(record.scheduledEndAt).format('DD/MM/YYYY HH:mm') : '—';
+          return (
+            <div>
+              <div style={{ fontWeight: 600, color: 'var(--slate-800)', fontSize: 13 }}>
+                <CalendarOutlined style={{ marginRight: 6, color: 'var(--secondary)' }} />
+                {startStr}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 2 }}>
+                → Out: {endStr}
+              </div>
+              <ServiceTypeBadge type="Boarding" style={{ marginTop: 4 }} />
+            </div>
+          );
+        }
+
+        const apptStr = record.scheduledStartAt ? dayjs(record.scheduledStartAt).format('DD/MM/YYYY HH:mm') : '—';
+        return (
+          <div>
+            <div style={{ fontWeight: 600, color: 'var(--slate-800)', fontSize: 13 }}>
+              <CalendarOutlined style={{ marginRight: 6, color: 'var(--secondary)' }} />
+              {apptStr}
+            </div>
+            <ServiceTypeBadge type="Grooming" style={{ marginTop: 4 }} />
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
-      title: 'Total Price',
+      title: 'SERVICES',
+      dataIndex: 'itemsCount',
+      key: 'itemsCount',
+      width: 180,
+      render: (count: number, record: BookingListItem) => {
+        const names = record.serviceNames && record.serviceNames.length > 0
+          ? record.serviceNames.join(', ')
+          : `${count || 1} Service Item(s)`;
+        return (
+          <div>
+            <div style={{ fontWeight: 500, color: 'var(--slate-800)', fontSize: 13, lineHeight: 1.3 }}>
+              {names}
+            </div>
+            <Tag color="blue" style={{ fontSize: 11, marginTop: 4, borderRadius: 6 }}>
+              {count || 1} Item(s)
+            </Tag>
+          </div>
+        );
+      },
+    },
+    {
+      title: 'TOTAL PRICE',
       dataIndex: 'totalPrice',
       key: 'totalPrice',
       width: 160,
       render: (price: number) => (
-        <Text strong style={{ fontSize: 15, color: '#059669' }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--secondary)' }}>
           {vnd.format(price)}
-        </Text>
+        </span>
       ),
     },
     {
-      title: 'Status',
+      title: 'STATUS',
       key: 'status',
       width: 190,
       render: (_: any, record: BookingListItem) => getStatusBadge(record.status, record),
     },
     {
-      title: 'Front Desk Actions',
+      title: 'ACTIONS',
       key: 'actions',
-      width: 270,
+      width: 250,
       render: (_: any, record: BookingListItem) => {
         const isPending = Number(record.status) === 0 || record.status === 'Pending'
         const isConfirmed = Number(record.status) === 1 || record.status === 'Confirmed'
@@ -288,6 +278,16 @@ export default function BookingManagementPage() {
 
         return (
           <Space size={6} wrap>
+            <Link
+              to={`${isStaff ? '/staff/bookings' : '/admin/bookings'}/${record.id}`}
+              className="btn-action view"
+              title="View booking details"
+              style={{ textDecoration: 'none' }}
+            >
+              <EyeOutlined style={{ fontSize: 13 }} />
+              View
+            </Link>
+
             {isPending && (
               <>
                 <Popconfirm
@@ -297,33 +297,28 @@ export default function BookingManagementPage() {
                   cancelText="Dismiss"
                   onConfirm={() => handleConfirmBooking(record.id)}
                 >
-                  <Button
-                    type="primary"
-                    size="small"
-                    loading={isLoading}
-                    icon={<CheckOutlined />}
-                    style={{
-                      backgroundColor: '#059669',
-                      borderColor: '#059669',
-                      fontWeight: 600,
-                      borderRadius: 6,
-                    }}
+                  <button
+                    type="button"
+                    className="btn-action edit"
+                    disabled={isLoading}
+                    title="Confirm booking"
                   >
+                    <CheckOutlined style={{ fontSize: 12 }} />
                     Confirm
-                  </Button>
+                  </button>
                 </Popconfirm>
 
                 {canCancelPerm && (
-                  <Button
-                    danger
-                    size="small"
-                    loading={isLoading}
-                    icon={<CloseOutlined />}
+                  <button
+                    type="button"
+                    className="btn-action danger"
+                    disabled={isLoading}
                     onClick={() => openCancelModal(record.id)}
-                    style={{ borderRadius: 6 }}
+                    title="Cancel booking"
                   >
+                    <CloseOutlined style={{ fontSize: 12 }} />
                     Cancel
-                  </Button>
+                  </button>
                 )}
               </>
             )}
@@ -338,298 +333,206 @@ export default function BookingManagementPage() {
                     cancelText="Dismiss"
                     onConfirm={() => handleCheckInBooking(record.id)}
                   >
-                    <Button
-                      type="primary"
-                      size="small"
-                      loading={isLoading}
-                      icon={<CheckCircleOutlined />}
+                    <button
+                      type="button"
+                      className="btn-action"
+                      disabled={isLoading}
                       style={{
-                        backgroundColor: '#f59e0b',
-                        borderColor: '#f59e0b',
-                        fontWeight: 600,
-                        borderRadius: 6,
+                        background: '#fef3c7',
+                        borderColor: '#fde68a',
+                        color: '#b45309',
                       }}
+                      title="Check in pet"
                     >
-                      Check-in Pet
-                    </Button>
+                      <CheckCircleOutlined style={{ fontSize: 12 }} />
+                      Check-in
+                    </button>
                   </Popconfirm>
                 )}
 
                 {!record.hasInServiceItems && !record.canCheckout && canCancelPerm && (
                   <>
-                    <Button
-                      danger
-                      size="small"
-                      loading={isLoading}
-                      icon={<CloseOutlined />}
+                    <button
+                      type="button"
+                      className="btn-action danger"
+                      disabled={isLoading}
                       onClick={() => openCancelModal(record.id)}
-                      style={{ borderRadius: 6 }}
+                      title="Cancel booking"
                     >
+                      <CloseOutlined style={{ fontSize: 12 }} />
                       Cancel
-                    </Button>
+                    </button>
 
                     {(record.canMarkNoShow ?? true) && (
                       <Popconfirm
-                        title="Đánh dấu khách không đến (No-Show)?"
-                        description="Khách bùng hẹn. Hệ thống sẽ giải phóng phòng và lịch thợ đã xếp."
-                        okText="Xác nhận No-Show"
-                        cancelText="Bỏ qua"
+                        title="Mark customer as No-Show?"
+                        description="Customer missed the appointment. Room and staff assignments will be released."
+                        okText="Mark No-Show"
+                        cancelText="Dismiss"
                         okButtonProps={{ danger: true }}
                         onConfirm={() => handleMarkNoShow(record.id)}
                       >
-                        <Button
-                          size="small"
-                          loading={isLoading}
-                          icon={<StopOutlined />}
+                        <button
+                          type="button"
+                          className="btn-action"
+                          disabled={isLoading}
                           style={{
                             borderRadius: 6,
                             color: '#7c3aed',
                             borderColor: '#c4b5fd',
                             backgroundColor: '#f5f3ff',
-                            fontWeight: 600,
                           }}
+                          title="Mark as No-Show"
                         >
+                          <StopOutlined style={{ fontSize: 12 }} />
                           No-Show
-                        </Button>
+                        </button>
                       </Popconfirm>
                     )}
                   </>
                 )}
 
                 {record.canCheckout && (
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<DollarCircleOutlined />}
-                    onClick={() => setCheckoutBookingId(record.id)}
+                  <button
+                    type="button"
+                    className="btn-action"
                     style={{
-                      backgroundColor: '#0284c7',
-                      borderColor: '#0284c7',
-                      fontWeight: 600,
-                      borderRadius: 6,
+                      background: '#e0f2fe',
+                      borderColor: '#bae6fd',
+                      color: '#0369a1',
                     }}
+                    onClick={() => setCheckoutBookingId(record.id)}
+                    title="Check out"
                   >
-                    Check-out at Counter
-                  </Button>
+                    <DollarCircleOutlined style={{ fontSize: 12 }} />
+                    Check-out
+                  </button>
                 )}
               </>
             )}
-
-            <Button
-              size="small"
-              icon={<EyeOutlined />}
-              onClick={() => setDetailBookingId(record.id)}
-              style={{ borderRadius: 6 }}
-            >
-              Detail & Assign
-            </Button>
           </Space>
         )
       },
     },
   ]
 
-  const todayStr = dayjs().format('YYYY-MM-DD')
-  const tomorrowStr = dayjs().add(1, 'day').format('YYYY-MM-DD')
-
   return (
     <section className="page wide">
-      <div className="page-head" style={{ marginBottom: '1.25rem' }}>
+      <div className="page-head">
         <div>
-          <Title level={2} style={{ margin: 0, color: '#0f172a' }}>
-            Bookings & Front Desk Management
-          </Title>
-          <Text type="secondary" style={{ fontSize: 14 }}>
-            Search bookings, filter by scheduled service date, confirm phone reservations, and handle customer check-outs.
-          </Text>
+          <h1>Bookings Management</h1>
+          <p className="page-subtitle">View, search, and manage bookings in table format.</p>
         </div>
-        <Space size={8}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {canCreate && (
-            <Link to={createBookingPath}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                style={{
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  backgroundColor: '#059669',
-                  borderColor: '#059669',
-                }}
-              >
-                + Counter Booking
-              </Button>
+            <Link to={createBookingPath} className="btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add booking
             </Link>
           )}
-          <Button
-            icon={<ReloadOutlined />}
+          <button
+            type="button"
+            className="btn-action view"
             onClick={() => fetchBookings()}
-            loading={loading}
-            style={{ borderRadius: 8, fontWeight: 500 }}
+            disabled={loading}
+            title="Refresh"
+            style={{
+              width: 42,
+              height: 42,
+              padding: 0,
+              borderRadius: '50%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            Refresh
-          </Button>
-        </Space>
+            <ReloadOutlined spin={loading} style={{ fontSize: 14 }} />
+          </button>
+        </div>
       </div>
 
       <Card
         style={{
           marginBottom: 18,
-          borderRadius: 12,
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          borderRadius: 14,
+          border: '1px solid var(--slate-200)',
+          boxShadow: 'var(--shadow-xs)',
         }}
-        styles={{ body: { padding: '16px' } }}
+        styles={{ body: { padding: '16px 20px' } }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 12,
-              alignItems: 'center',
-              justifyContent: 'space-between',
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 12,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Input
+            placeholder="Search customer name, phone number..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setPageNumber(1)
             }}
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', flex: 1 }}>
-              <Input
-                placeholder="Search customer name, phone number..."
-                prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onPressEnter={() => {
+            allowClear
+            style={{ flex: '1 1 260px', maxWidth: 380, height: 38, borderRadius: 8 }}
+          />
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CalendarOutlined style={{ color: 'var(--secondary)', fontSize: 15 }} />
+              <Text strong style={{ fontSize: 13, color: 'var(--slate-700)' }}>
+                Service Date:
+              </Text>
+              <DatePicker
+                value={serviceDate ? dayjs(serviceDate, 'YYYY-MM-DD') : null}
+                onChange={(date: Dayjs | null) => {
+                  setServiceDate(date ? date.format('YYYY-MM-DD') : undefined)
                   setPageNumber(1)
-                  fetchBookings()
                 }}
+                format="YYYY-MM-DD"
+                placeholder="Select date"
                 allowClear
-                style={{ width: 280, borderRadius: 8 }}
+                style={{ width: 155, height: 38, borderRadius: 8 }}
               />
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CalendarOutlined style={{ color: '#059669', fontSize: 16 }} />
-                <Text strong style={{ fontSize: 13, color: '#475569' }}>
-                  Service Date:
-                </Text>
-                <DatePicker
-                  value={serviceDate ? dayjs(serviceDate, 'YYYY-MM-DD') : null}
-                  onChange={(date: Dayjs | null) => {
-                    setServiceDate(date ? date.format('YYYY-MM-DD') : undefined)
-                    setPageNumber(1)
-                  }}
-                  format="YYYY-MM-DD"
-                  placeholder="Select service date"
-                  allowClear
-                  style={{ width: 150, borderRadius: 8 }}
-                />
-              </div>
-
-              <Space size={6}>
-                <Button
-                  size="small"
-                  type={serviceDate === todayStr ? 'primary' : 'default'}
-                  onClick={() => {
-                    setServiceDate(todayStr)
-                    setPageNumber(1)
-                  }}
-                  style={{
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    ...(serviceDate === todayStr
-                      ? { backgroundColor: '#059669', borderColor: '#059669' }
-                      : {}),
-                  }}
-                >
-                  Today
-                </Button>
-                <Button
-                  size="small"
-                  type={serviceDate === tomorrowStr ? 'primary' : 'default'}
-                  onClick={() => {
-                    setServiceDate(tomorrowStr)
-                    setPageNumber(1)
-                  }}
-                  style={{
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    ...(serviceDate === tomorrowStr
-                      ? { backgroundColor: '#059669', borderColor: '#059669' }
-                      : {}),
-                  }}
-                >
-                  Tomorrow
-                </Button>
-                <Button
-                  size="small"
-                  type={!serviceDate ? 'primary' : 'default'}
-                  onClick={() => {
-                    setServiceDate(undefined)
-                    setPageNumber(1)
-                  }}
-                  style={{
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    ...(!serviceDate ? { backgroundColor: '#475569', borderColor: '#475569' } : {}),
-                  }}
-                >
-                  All Dates
-                </Button>
-              </Space>
             </div>
 
-            <Button
-              type="primary"
-              onClick={() => {
-                setPageNumber(1)
-                fetchBookings()
-              }}
-              style={{
-                borderRadius: 8,
-                fontWeight: 600,
-                backgroundColor: '#059669',
-                borderColor: '#059669',
-              }}
-            >
-              Filter
-            </Button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-              Status:
-            </Text>
-            <Radio.Group
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value)
-                setPageNumber(1)
-              }}
-              buttonStyle="solid"
-              size="middle"
-            >
-              <Radio.Button value={undefined}>All</Radio.Button>
-              <Radio.Button value={0}>⏳ Pending</Radio.Button>
-              <Radio.Button value={1}>🔵 Confirmed</Radio.Button>
-              <Radio.Button value={2}>✓ Completed</Radio.Button>
-              <Radio.Button value={3}>✕ Cancelled</Radio.Button>
-              <Radio.Button value={4}>🚫 No-Show</Radio.Button>
-            </Radio.Group>
-
-            {serviceDate && (
-              <span style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginLeft: 8 }}>
-                Showing appointments for {serviceDate === todayStr ? 'Today' : serviceDate}
-              </span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text strong style={{ fontSize: 13, color: 'var(--slate-700)' }}>
+                Status:
+              </Text>
+              <Select
+                value={statusFilter ?? 'all'}
+                onChange={(val) => {
+                  setStatusFilter(val === 'all' ? undefined : Number(val))
+                  setPageNumber(1)
+                }}
+                style={{ minWidth: 155, height: 38 }}
+                options={[
+                  { value: 'all', label: 'All Statuses' },
+                  { value: 0, label: 'Pending' },
+                  { value: 1, label: 'Confirmed' },
+                  { value: 2, label: 'Completed' },
+                  { value: 3, label: 'Cancelled' },
+                  { value: 4, label: 'No-Show' },
+                ]}
+              />
+            </div>
           </div>
         </div>
       </Card>
 
       <Card
         style={{
-          borderRadius: 12,
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          borderRadius: 14,
+          border: '1px solid var(--slate-200)',
+          boxShadow: 'var(--shadow-xs)',
         }}
         styles={{ body: { padding: '16px' } }}
       >
@@ -654,14 +557,6 @@ export default function BookingManagementPage() {
         />
       </Card>
 
-      <BookingDetailModal
-        open={Boolean(detailBookingId)}
-        bookingId={detailBookingId}
-        onClose={() => setDetailBookingId(null)}
-        onOpenCheckout={(id) => setCheckoutBookingId(id)}
-        onUpdated={fetchBookings}
-      />
-
       <CheckoutBookingModal
         open={Boolean(checkoutBookingId)}
         bookingId={checkoutBookingId}
@@ -672,7 +567,7 @@ export default function BookingManagementPage() {
       />
 
       <Modal
-        title="Hủy đơn đặt lịch"
+        title="Cancel Booking"
         open={cancelModalOpen}
         onCancel={() => {
           setCancelModalOpen(false)
@@ -681,19 +576,19 @@ export default function BookingManagementPage() {
         }}
         onOk={handleConfirmCancel}
         confirmLoading={cancelLoading}
-        okText="Xác nhận hủy đơn"
+        okText="Confirm Cancel"
         okButtonProps={{ danger: true }}
-        cancelText="Bỏ qua"
+        cancelText="Dismiss"
         centered
       >
-        <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
-          Lễ tân thực hiện hủy đơn theo yêu cầu của khách hàng (hoặc trường hợp bất khả kháng). Vui lòng nhập lý do hủy:
+        <p style={{ color: 'var(--slate-600)', fontSize: 13, marginBottom: 12 }}>
+          Receptionist is cancelling this booking per customer request or unexpected circumstances. Please provide a cancellation reason:
         </p>
         <Input.TextArea
           rows={3}
           value={cancellationReason}
           onChange={(e) => setCancellationReason(e.target.value)}
-          placeholder="Ví dụ: Khách gọi điện xin hủy vì bận đột xuất / Thú cưng đang ốm..."
+          placeholder="e.g. Customer called to cancel / Pet is unwell..."
         />
       </Modal>
     </section>

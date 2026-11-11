@@ -1,176 +1,186 @@
-import React, { useEffect, useState, useMemo } from 'react'
-import { App, Spin, Tag, Tooltip, Input, Card } from 'antd'
-import { roleService } from '@/services/role.service'
-import type { RoleDTO, RolePermissionDetailDTO, PermissionDTO } from '@/types/role.types'
-import { getApiErrorMessage } from '@/utils/apiError'
-import { useAuthStore } from '@/store/useAuthStore'
+import React, { useEffect, useState, useMemo } from 'react';
+import { Spin, message } from 'antd';
+import {
+  SaveOutlined,
+  CheckOutlined,
+  SearchOutlined,
+  SafetyCertificateOutlined,
+} from '@ant-design/icons';
+import { roleService } from '@/services/role.service';
+import type { RoleDTO, RolePermissionDetailDTO, PermissionDTO } from '@/types/role.types';
+import { getApiErrorMessage } from '@/utils/apiError';
+import { useAuthStore } from '@/store/useAuthStore';
 
-const getRoleBadgeColor = (roleName: string) => {
-  const lower = roleName.toLowerCase()
-  if (lower.includes('admin')) return 'red'
-  if (lower.includes('receptionist')) return 'blue'
-  if (lower.includes('boarding')) return 'green'
-  if (lower.includes('grooming')) return 'purple'
-  return 'default'
-}
+const getRoleBadgeStyle = (roleName: string) => {
+  const lower = roleName.toLowerCase();
+  if (lower.includes('admin')) {
+    return { bg: '#fef2f2', color: '#991b1b', border: '#fecaca' };
+  }
+  if (lower.includes('receptionist')) {
+    return { bg: '#f0f9ff', color: '#0369a1', border: '#bae6fd' };
+  }
+  if (lower.includes('boarding')) {
+    return { bg: '#fffbeb', color: '#b45309', border: '#fde68a' };
+  }
+  if (lower.includes('grooming')) {
+    return { bg: '#faf5ff', color: '#7e22ce', border: '#e9d5ff' };
+  }
+  return { bg: '#faf6f0', color: '#785839', border: '#eeddc8' };
+};
 
 export default function RolePermissionPage() {
-  const { message } = App.useApp()
+  const [roles, setRoles] = useState<RoleDTO[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('');
 
-  const [roles, setRoles] = useState<RoleDTO[]>([])
-  const [loadingRoles, setLoadingRoles] = useState(true)
-  const [selectedRoleId, setSelectedRoleId] = useState<string>('')
-  
-  const [roleDetail, setRoleDetail] = useState<RolePermissionDetailDTO | null>(null)
-  const [loadingDetail, setLoadingDetail] = useState(false)
-  const [selectedPermIds, setSelectedPermIds] = useState<string[]>([])
-  const [saving, setSaving] = useState(false)
-  const [filterModule, setFilterModule] = useState<string>('all')
-  const [searchTerm, setSearchTerm] = useState('')
+  const [roleDetail, setRoleDetail] = useState<RolePermissionDetailDTO | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [selectedPermIds, setSelectedPermIds] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    let cancelled = false
-    setLoadingRoles(true)
+    let cancelled = false;
+    setLoadingRoles(true);
     roleService
       .getRoles()
       .then((data) => {
         if (!cancelled) {
-          setRoles(data)
+          setRoles(data);
           if (data.length > 0 && !selectedRoleId) {
-            setSelectedRoleId(data[0].id)
+            setSelectedRoleId(data[0].id);
           }
         }
       })
       .catch((err) => {
-        console.warn('Backend roles error, using defaults:', err)
+        console.warn('Backend roles error, using defaults:', err);
         if (!cancelled) {
           const fallback = [
             { id: 'A0000000-0000-0000-0000-000000000001', roleName: 'Admin', description: 'System Administrator', totalPermissions: 24 },
             { id: 'A0000000-0000-0000-0000-000000000002', roleName: 'Receptionist', description: 'Front desk intake, scheduling & billing', totalPermissions: 14 },
             { id: 'A0000000-0000-0000-0000-000000000003', roleName: 'Boarding Staff', description: 'Hotel facility & daily care log', totalPermissions: 9 },
             { id: 'A0000000-0000-0000-0000-000000000004', roleName: 'Grooming Staff', description: 'Spa styling & grooming task updates', totalPermissions: 4 },
-          ]
-          setRoles(fallback)
-          setSelectedRoleId(fallback[0].id)
+          ];
+          setRoles(fallback);
+          setSelectedRoleId(fallback[0].id);
         }
       })
       .finally(() => {
-        if (!cancelled) setLoadingRoles(false)
-      })
+        if (!cancelled) setLoadingRoles(false);
+      });
 
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
-    if (!selectedRoleId) return
-    let cancelled = false
-    setLoadingDetail(true)
+    if (!selectedRoleId) return;
+    let cancelled = false;
+    setLoadingDetail(true);
 
     roleService
       .getRolePermissions(selectedRoleId)
       .then((detail) => {
         if (!cancelled) {
-          setRoleDetail(detail)
-          setSelectedPermIds(detail.assignedPermissions.map((p) => p.id))
+          setRoleDetail(detail);
+          setSelectedPermIds(detail.assignedPermissions.map((p) => p.id));
         }
       })
       .catch((err) => {
         if (!cancelled) {
-          message.error(getApiErrorMessage(err))
+          message.error(getApiErrorMessage(err));
         }
       })
       .finally(() => {
-        if (!cancelled) setLoadingDetail(false)
-      })
+        if (!cancelled) setLoadingDetail(false);
+      });
 
     return () => {
-      cancelled = true
-    }
-  }, [selectedRoleId])
+      cancelled = true;
+    };
+  }, [selectedRoleId]);
 
   const { modules, groupedPermissions } = useMemo(() => {
     if (!roleDetail?.allAvailablePermissions) {
-      return { modules: [], groupedPermissions: {} as Record<string, PermissionDTO[]> }
+      return { modules: [], groupedPermissions: {} as Record<string, PermissionDTO[]> };
     }
 
-    const groups: Record<string, PermissionDTO[]> = {}
+    const groups: Record<string, PermissionDTO[]> = {};
     roleDetail.allAvailablePermissions.forEach((p) => {
-      const mod = p.moduleName || 'General'
-      if (!groups[mod]) groups[mod] = []
-      groups[mod].push(p)
-    })
+      const mod = p.moduleName || 'General';
+      if (!groups[mod]) groups[mod] = [];
+      groups[mod].push(p);
+    });
 
-    const mods = Object.keys(groups).sort()
-    return { modules: mods, groupedPermissions: groups }
-  }, [roleDetail])
+    const mods = Object.keys(groups).sort();
+    return { modules: mods, groupedPermissions: groups };
+  }, [roleDetail]);
 
   const handleTogglePerm = (permId: string) => {
     setSelectedPermIds((prev) =>
       prev.includes(permId) ? prev.filter((id) => id !== permId) : [...prev, permId]
-    )
-  }
+    );
+  };
 
   const handleToggleModule = (moduleName: string) => {
-    const permsInMod = groupedPermissions[moduleName] || []
-    const permIdsInMod = permsInMod.map((p) => p.id)
-    const allChecked = permIdsInMod.every((id) => selectedPermIds.includes(id))
+    const permsInMod = groupedPermissions[moduleName] || [];
+    const permIdsInMod = permsInMod.map((p) => p.id);
+    const allChecked = permIdsInMod.every((id) => selectedPermIds.includes(id));
 
     if (allChecked) {
-      setSelectedPermIds((prev) => prev.filter((id) => !permIdsInMod.includes(id)))
+      setSelectedPermIds((prev) => prev.filter((id) => !permIdsInMod.includes(id)));
     } else {
-      setSelectedPermIds((prev) => Array.from(new Set([...prev, ...permIdsInMod])))
+      setSelectedPermIds((prev) => Array.from(new Set([...prev, ...permIdsInMod])));
     }
-  }
+  };
 
   const handleSelectAll = () => {
-    if (!roleDetail) return
+    if (!roleDetail) return;
     if (selectedPermIds.length === roleDetail.allAvailablePermissions.length) {
-      setSelectedPermIds([])
+      setSelectedPermIds([]);
     } else {
-      setSelectedPermIds(roleDetail.allAvailablePermissions.map((p) => p.id))
+      setSelectedPermIds(roleDetail.allAvailablePermissions.map((p) => p.id));
     }
-  }
+  };
 
   const handleSave = async () => {
-    if (!selectedRoleId) return
-    setSaving(true)
+    if (!selectedRoleId) return;
+    setSaving(true);
     try {
       await roleService.updateRolePermissions({
         roleId: selectedRoleId,
         permissionIds: selectedPermIds,
-      })
+      });
 
       if (roleDetail) {
         const assignedCodes = roleDetail.allAvailablePermissions
           .filter((p) => selectedPermIds.includes(p.id))
-          .map((p) => p.permissionCode)
-        localStorage.setItem(`petcare.role_perms.${roleDetail.roleName}`, JSON.stringify(assignedCodes))
-        localStorage.setItem(`petcare.role_perms.${selectedRoleId}`, JSON.stringify(assignedCodes))
+          .map((p) => p.permissionCode);
+        localStorage.setItem(`petcare.role_perms.${roleDetail.roleName}`, JSON.stringify(assignedCodes));
+        localStorage.setItem(`petcare.role_perms.${selectedRoleId}`, JSON.stringify(assignedCodes));
 
-        const currentUser = useAuthStore.getState().user
+        const currentUser = useAuthStore.getState().user;
         if (currentUser?.roles?.includes(roleDetail.roleName)) {
-          useAuthStore.getState().setPermissions(assignedCodes)
+          useAuthStore.getState().setPermissions(assignedCodes);
         }
       }
 
-      message.success(`Permissions for "${roleDetail?.roleName || 'Role'}" saved successfully!`)
-      const updatedRoles = await roleService.getRoles()
-      setRoles(updatedRoles)
+      message.success(`Permissions for "${roleDetail?.roleName || 'Role'}" saved successfully!`);
+      const updatedRoles = await roleService.getRoles();
+      setRoles(updatedRoles);
     } catch (err) {
-      message.error(getApiErrorMessage(err))
+      message.error(getApiErrorMessage(err));
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const filteredModules = useMemo(() => {
-    const s = searchTerm.trim().toLowerCase()
+    const s = searchTerm.trim().toLowerCase();
+    if (!s) return modules;
     return modules.filter((mod) => {
-      if (filterModule !== 'all' && mod !== filterModule) return false
-      if (!s) return true
-      const perms = groupedPermissions[mod] || []
+      const perms = groupedPermissions[mod] || [];
       return (
         mod.toLowerCase().includes(s) ||
         perms.some(
@@ -178,194 +188,320 @@ export default function RolePermissionPage() {
             p.permissionName.toLowerCase().includes(s) ||
             p.permissionCode.toLowerCase().includes(s)
         )
-      )
-    })
-  }, [modules, groupedPermissions, filterModule, searchTerm])
+      );
+    });
+  }, [modules, groupedPermissions, searchTerm]);
 
-  const selectedRoleObj = roles.find((r) => r.id === selectedRoleId)
+  const selectedRoleObj = roles.find((r) => r.id === selectedRoleId);
 
   return (
     <section className="page wide">
       <div className="page-head">
         <div>
-          <h1>Role & Permission Matrix</h1>
-          <p className="page-subtitle">
-            Configure system authorization, staff access levels, and functional permissions.
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '2.1rem',
+              color: '#3d2d23',
+              fontWeight: 700,
+            }}
+          >
+            Role & Permission Matrix
+          </h1>
+          <p className="page-subtitle" style={{ margin: '6px 0 0', color: '#8c735f', fontSize: '0.9rem' }}>
+            Configure sanctuary authorization levels, staff role boundaries, and operational access rights.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             type="button"
-            className="btn btn-secondary"
             onClick={handleSelectAll}
             disabled={loadingDetail || !roleDetail}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.55rem 1.25rem',
+              borderRadius: 999,
+              backgroundColor: '#ffffff',
+              border: '1.5px solid #eeddc8',
+              color: '#785839',
+              fontWeight: 600,
+              fontSize: '0.875rem',
+              cursor: loadingDetail || !roleDetail ? 'not-allowed' : 'pointer',
+              boxShadow: '0 1px 3px rgba(61,45,35,0.04)',
+              transition: 'all 0.2s ease',
+            }}
           >
-            {roleDetail && selectedPermIds.length === roleDetail.allAvailablePermissions.length
-              ? 'Deselect All'
-              : 'Select All Permissions'}
+            <CheckOutlined style={{ fontSize: 13 }} />
+            <span>
+              {roleDetail && selectedPermIds.length === roleDetail.allAvailablePermissions.length
+                ? 'Deselect All'
+                : 'Select All Permissions'}
+            </span>
           </button>
           <button
             type="button"
             className="btn"
             onClick={handleSave}
             disabled={loadingDetail || saving || !roleDetail}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.55rem 1.4rem',
+              borderRadius: 999,
+              backgroundColor: '#3d2d23',
+              color: '#ffffff',
+              fontWeight: 700,
+              boxShadow: '0 4px 14px rgba(61,45,35,0.18)',
+              cursor: loadingDetail || saving || !roleDetail ? 'not-allowed' : 'pointer',
+              opacity: loadingDetail || saving || !roleDetail ? 0.7 : 1,
+              border: 'none',
+              transition: 'all 0.2s ease',
+            }}
           >
-            {saving ? 'Saving...' : '💾 Save Changes'}
+            <SaveOutlined style={{ fontSize: 14 }} />
+            <span>{saving ? 'Saving changes...' : 'Save Changes'}</span>
           </button>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1.5rem', alignItems: 'start' }}>
-        <div className="table-card" style={{ padding: '1.25rem' }}>
-          <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', color: '#0f172a' }}>
+        <div
+          style={{
+            backgroundColor: '#ffffff',
+            border: '1.5px solid #eeddc8',
+            borderRadius: '16px',
+            padding: '1.4rem',
+            boxShadow: '0 4px 20px rgba(61, 45, 35, 0.04)',
+          }}
+        >
+          <h3
+            style={{
+              margin: '0 0 1rem 0',
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '1.25rem',
+              color: '#3d2d23',
+              fontWeight: 700,
+            }}
+          >
             System Roles
           </h3>
 
           {loadingRoles ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <div style={{ textAlign: 'center', padding: '2.5rem' }}>
               <Spin />
-              <p style={{ marginTop: '0.5rem', color: '#64748b' }}>Loading roles...</p>
+              <p style={{ marginTop: '0.75rem', color: '#8c735f', fontWeight: 600 }}>Loading roles...</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {roles.map((r) => {
-                const isSelected = r.id === selectedRoleId
-                const badgeColor = getRoleBadgeColor(r.roleName)
+                const isSelected = r.id === selectedRoleId;
+                const badgeStyle = getRoleBadgeStyle(r.roleName);
 
                 return (
                   <div
                     key={r.id}
                     onClick={() => setSelectedRoleId(r.id)}
                     style={{
-                      padding: '0.85rem 1rem',
-                      borderRadius: '10px',
+                      padding: '1rem 1.15rem',
+                      borderRadius: '12px',
                       cursor: 'pointer',
-                      border: `1.5px solid ${isSelected ? 'var(--primary)' : '#e2e8f0'}`,
-                      background: isSelected ? '#ecfdf5' : '#ffffff',
-                      boxShadow: isSelected ? '0 2px 8px rgba(5, 150, 105, 0.15)' : 'none',
+                      border: isSelected ? '2px solid #785839' : '1.5px solid #eeddc8',
+                      backgroundColor: isSelected ? '#fcf9f5' : '#ffffff',
+                      boxShadow: isSelected ? '0 4px 14px rgba(120, 88, 57, 0.12)' : 'none',
                       transition: 'all 0.15s ease',
                     }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <strong style={{ fontSize: '0.95rem', color: isSelected ? '#047857' : '#0f172a' }}>
-                        {r.roleName}
-                      </strong>
-                      <Tag color={badgeColor} style={{ margin: 0, fontSize: '0.75rem', fontWeight: 600 }}>
-                        {r.totalPermissions ?? 0} perms
-                      </Tag>
-                    </div>
-                    {r.description && (
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: 1.35 }}>
-                        {r.description}
-                      </p>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div className="admin-toolbar-panel" style={{ marginBottom: '1.25rem' }}>
-            <div className="admin-toolbar-row">
-              <div className="search-wrapper" style={{ maxWidth: '380px' }}>
-                <span className="search-icon-prefix" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                </span>
-                <input
-                  type="text"
-                  placeholder="Filter permissions by keyword or code..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                {searchTerm && (
-                  <button type="button" className="search-clear-btn" onClick={() => setSearchTerm('')}>
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              <div className="filter-dropdowns">
-                <select
-                  value={filterModule}
-                  onChange={(e) => setFilterModule(e.target.value)}
-                  aria-label="Filter by module"
-                >
-                  <option value="all">All Modules ({modules.length})</option>
-                  {modules.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-
-                <div style={{ padding: '0.4rem 0.8rem', background: '#f1f5f9', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
-                  {selectedPermIds.length} / {roleDetail?.allAvailablePermissions?.length || 0} Enabled
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {loadingDetail ? (
-            <div className="table-card" style={{ padding: '4rem', textAlign: 'center' }}>
-              <Spin size="large" />
-              <p style={{ marginTop: '1rem', color: '#64748b' }}>
-                Loading permissions for {selectedRoleObj?.roleName || 'selected role'}...
-              </p>
-            </div>
-          ) : !roleDetail || filteredModules.length === 0 ? (
-            <div className="table-card" style={{ padding: '3rem', textAlign: 'center' }}>
-              <p style={{ color: '#64748b', margin: 0 }}>
-                No permissions matching your search or module filter.
-              </p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {filteredModules.map((moduleName) => {
-                const permsInMod = groupedPermissions[moduleName] || []
-                const s = searchTerm.trim().toLowerCase()
-                const visiblePerms = s
-                  ? permsInMod.filter(
-                      (p) =>
-                        p.permissionName.toLowerCase().includes(s) ||
-                        p.permissionCode.toLowerCase().includes(s)
-                    )
-                  : permsInMod
-
-                if (visiblePerms.length === 0) return null
-
-                const checkedCount = visiblePerms.filter((p) =>
-                  selectedPermIds.includes(p.id)
-                ).length
-                const isAllModuleChecked = checkedCount === visiblePerms.length
-
-                return (
-                  <div
-                    key={moduleName}
-                    className="table-card"
-                    style={{ padding: '1.25rem', overflow: 'hidden' }}
                   >
                     <div
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: '1rem',
-                        paddingBottom: '0.75rem',
-                        borderBottom: '1px solid #e2e8f0',
+                        marginBottom: '6px',
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                        <span style={{ fontSize: '1.2rem' }}>📦</span>
+                      <strong style={{ fontSize: '0.98rem', color: isSelected ? '#3d2d23' : '#554236' }}>
+                        {r.roleName}
+                      </strong>
+                      <span
+                        style={{
+                          padding: '2px 9px',
+                          borderRadius: 999,
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          backgroundColor: badgeStyle.bg,
+                          color: badgeStyle.color,
+                          border: `1px solid ${badgeStyle.border}`,
+                        }}
+                      >
+                        {r.totalPermissions ?? 0} perms
+                      </span>
+                    </div>
+                    {r.description && (
+                      <p style={{ margin: 0, fontSize: '0.82rem', color: '#8c735f', lineHeight: 1.4 }}>
+                        {r.description}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.25rem',
+              flexWrap: 'wrap',
+              gap: 12,
+            }}
+          >
+            <div className="search-wrapper" style={{ maxWidth: '380px', flex: 1 }}>
+              <span className="search-icon-prefix" aria-hidden="true">
+                <SearchOutlined style={{ color: '#8c735f' }} />
+              </span>
+              <input
+                type="text"
+                placeholder="Search permissions by keyword or code..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                aria-label="Filter permissions"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={() => setSearchTerm('')}
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div
+              style={{
+                padding: '0.5rem 1.15rem',
+                backgroundColor: '#faf6f0',
+                border: '1.5px solid #eeddc8',
+                borderRadius: 999,
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                color: '#785839',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <SafetyCertificateOutlined style={{ color: '#785839', fontSize: 15 }} />
+              <span>
+                {selectedPermIds.length} / {roleDetail?.allAvailablePermissions?.length || 0} Permissions Enabled
+              </span>
+            </div>
+          </div>
+
+          {loadingDetail ? (
+            <div
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1.5px solid #eeddc8',
+                borderRadius: '16px',
+                padding: '4rem 2rem',
+                textAlign: 'center',
+              }}
+            >
+              <Spin size="large" />
+              <p style={{ marginTop: '1rem', color: '#8c735f', fontWeight: 600 }}>
+                Loading permissions for {selectedRoleObj?.roleName || 'selected role'}...
+              </p>
+            </div>
+          ) : !roleDetail || filteredModules.length === 0 ? (
+            <div
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1.5px solid #eeddc8',
+                borderRadius: '16px',
+                padding: '3rem 2rem',
+                textAlign: 'center',
+              }}
+            >
+              <p style={{ color: '#8c735f', margin: 0, fontWeight: 600 }}>
+                No permissions matching your search query.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {filteredModules.map((moduleName) => {
+                const permsInMod = groupedPermissions[moduleName] || [];
+                const s = searchTerm.trim().toLowerCase();
+                const visiblePerms = s
+                  ? permsInMod.filter(
+                      (p) =>
+                        p.permissionName.toLowerCase().includes(s) ||
+                        p.permissionCode.toLowerCase().includes(s)
+                    )
+                  : permsInMod;
+
+                if (visiblePerms.length === 0) return null;
+
+                const checkedCount = visiblePerms.filter((p) =>
+                  selectedPermIds.includes(p.id)
+                ).length;
+                const isAllModuleChecked = checkedCount === visiblePerms.length;
+
+                return (
+                  <div
+                    key={moduleName}
+                    style={{
+                      backgroundColor: '#ffffff',
+                      border: '1.5px solid #eeddc8',
+                      borderRadius: '16px',
+                      padding: '1.4rem 1.5rem',
+                      boxShadow: '0 2px 12px rgba(61,45,35,0.03)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '1.1rem',
+                        paddingBottom: '0.85rem',
+                        borderBottom: '1px solid #f1ece5',
+                        flexWrap: 'wrap',
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div
+                          style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: 8,
+                            backgroundColor: '#faf6f0',
+                            border: '1.5px solid #eeddc8',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#785839',
+                            fontSize: '1rem',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <SafetyCertificateOutlined />
+                        </div>
                         <div>
-                          <strong style={{ fontSize: '1.05rem', color: '#0f172a' }}>
+                          <strong style={{ fontSize: '1.05rem', color: '#3d2d23' }}>
                             {moduleName} Module
                           </strong>
-                          <span style={{ fontSize: '0.8rem', color: '#64748b', marginLeft: '0.5rem' }}>
+                          <span style={{ fontSize: '0.82rem', color: '#8c735f', marginLeft: '0.65rem' }}>
                             ({checkedCount}/{visiblePerms.length} assigned)
                           </span>
                         </div>
@@ -375,14 +511,16 @@ export default function RolePermissionPage() {
                         type="button"
                         onClick={() => handleToggleModule(moduleName)}
                         style={{
-                          background: isAllModuleChecked ? '#f1f5f9' : '#ecfdf5',
-                          border: `1px solid ${isAllModuleChecked ? '#cbd5e1' : '#a7f3d0'}`,
-                          color: isAllModuleChecked ? '#475569' : '#047857',
-                          padding: '0.3rem 0.75rem',
-                          borderRadius: '6px',
+                          background: isAllModuleChecked ? '#ffffff' : '#3d2d23',
+                          border: isAllModuleChecked ? '1.5px solid #eeddc8' : 'none',
+                          color: isAllModuleChecked ? '#785839' : '#ffffff',
+                          padding: '0.35rem 0.95rem',
+                          borderRadius: 999,
                           fontSize: '0.78rem',
-                          fontWeight: 600,
+                          fontWeight: 700,
                           cursor: 'pointer',
+                          boxShadow: isAllModuleChecked ? 'none' : '0 2px 8px rgba(61,45,35,0.15)',
+                          transition: 'all 0.15s ease',
                         }}
                       >
                         {isAllModuleChecked ? 'Deselect Module' : 'Select All in Module'}
@@ -393,11 +531,11 @@ export default function RolePermissionPage() {
                       style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                        gap: '0.75rem',
+                        gap: '0.85rem',
                       }}
                     >
                       {visiblePerms.map((perm) => {
-                        const isChecked = selectedPermIds.includes(perm.id)
+                        const isChecked = selectedPermIds.includes(perm.id);
 
                         return (
                           <div
@@ -406,13 +544,14 @@ export default function RolePermissionPage() {
                             style={{
                               display: 'flex',
                               alignItems: 'flex-start',
-                              gap: '0.65rem',
-                              padding: '0.75rem',
-                              borderRadius: '8px',
+                              gap: '0.75rem',
+                              padding: '0.85rem 0.95rem',
+                              borderRadius: '10px',
                               cursor: 'pointer',
-                              border: `1px solid ${isChecked ? '#059669' : '#e2e8f0'}`,
-                              background: isChecked ? '#f0fdf4' : '#ffffff',
-                              transition: 'all 0.12s ease',
+                              border: isChecked ? '1.5px solid #785839' : '1px solid #eeddc8',
+                              backgroundColor: isChecked ? '#fcf9f5' : '#ffffff',
+                              boxShadow: isChecked ? '0 2px 8px rgba(120,88,57,0.08)' : 'none',
+                              transition: 'all 0.15s ease',
                             }}
                           >
                             <input
@@ -421,41 +560,49 @@ export default function RolePermissionPage() {
                               onChange={() => {}}
                               style={{
                                 marginTop: '3px',
-                                accentColor: '#059669',
+                                accentColor: '#3d2d23',
                                 width: '16px',
                                 height: '16px',
                                 cursor: 'pointer',
                               }}
                             />
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontWeight: 600, fontSize: '0.88rem', color: isChecked ? '#047857' : '#0f172a' }}>
+                              <div
+                                style={{
+                                  fontWeight: 700,
+                                  fontSize: '0.88rem',
+                                  color: isChecked ? '#3d2d23' : '#554236',
+                                }}
+                              >
                                 {perm.permissionName}
                               </div>
                               <code
                                 style={{
                                   fontSize: '0.72rem',
-                                  color: '#64748b',
-                                  background: '#f1f5f9',
-                                  padding: '1px 5px',
+                                  color: '#785839',
+                                  backgroundColor: '#faf6f0',
+                                  border: '1px solid #eeddc8',
+                                  padding: '2px 6px',
                                   borderRadius: '4px',
                                   display: 'inline-block',
-                                  marginTop: '2px',
+                                  marginTop: '4px',
+                                  fontFamily: 'monospace',
                                 }}
                               >
                                 {perm.permissionCode}
                               </code>
                             </div>
                           </div>
-                        )
+                        );
                       })}
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           )}
         </div>
       </div>
     </section>
-  )
+  );
 }

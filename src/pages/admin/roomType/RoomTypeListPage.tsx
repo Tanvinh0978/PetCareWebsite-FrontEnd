@@ -1,99 +1,156 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { roomTypeService, type RoomTypeDTO } from '@/services/roomType.service'
-import { getApiErrorMessage } from '@/utils/apiError'
+import React, { useEffect, useState, useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Select, Pagination, message } from 'antd';
+import {
+  PlusOutlined,
+  HomeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  SearchOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
+import { roomTypeService, type RoomTypeDTO } from '@/services/roomType.service';
+import { useAuthStore } from '@/store/useAuthStore';
+import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const AdminRoomTypeListPage: React.FC = () => {
-  const location = useLocation()
-  const baseRoomTypePath = location.pathname.startsWith('/staff') ? '/staff/room-types' : '/admin/room-types'
-  const [data, setData] = useState<RoomTypeDTO[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
-  const [searchTerm, setSearchTerm] = useState('')
-  const [keywordInput, setKeywordInput] = useState('')
+  const location = useLocation();
+  const baseRoomTypePath = location.pathname.startsWith('/staff') ? '/staff/room-types' : '/admin/room-types';
+  const user = useAuthStore((s) => s.user);
+  const canManage = hasPermission(user, PERMISSIONS.ROOM_MANAGE);
+
+  const [data, setData] = useState<RoomTypeDTO[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [keywordInput, setKeywordInput] = useState('');
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const [roomTypeToDelete, setRoomTypeToDelete] = useState<RoomTypeDTO | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchRoomTypes = async (search?: string) => {
     try {
-      setLoading(true)
-      setError(null)
-      const res = await roomTypeService.fetchAll(search)
+      setLoading(true);
+      setError(null);
+      const res = await roomTypeService.fetchAll(search);
       if (res.isSuccess && res.result) {
-        setData(res.result)
+        setData(res.result);
       } else {
-        setError(res.message || 'Failed to fetch room types')
+        setError(res.message || 'Failed to fetch room types');
       }
     } catch (err: any) {
-      setError(getApiErrorMessage(err))
+      setError(getApiErrorMessage(err));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchRoomTypes(searchTerm)
-  }, [searchTerm])
+    fetchRoomTypes(searchTerm);
+  }, [searchTerm]);
 
   const onSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSearchTerm(keywordInput)
-  }
+    e.preventDefault();
+    setPage(1);
+    setSearchTerm(keywordInput.trim());
+  };
 
   const clearSearch = () => {
-    setKeywordInput('')
-    setSearchTerm('')
-  }
+    setKeywordInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete room type "${name}"? This cannot be undone.`)) {
-      return
-    }
-
+  const handleConfirmDelete = async () => {
+    if (!roomTypeToDelete) return;
     try {
-      setLoading(true)
-      const res = await roomTypeService.delete(id)
+      setDeleting(true);
+      const res = await roomTypeService.delete(roomTypeToDelete.id);
       if (res.isSuccess) {
-        fetchRoomTypes(searchTerm)
+        message.success(`Room type "${roomTypeToDelete.name}" deleted successfully.`);
+        setRoomTypeToDelete(null);
+        fetchRoomTypes(searchTerm);
       } else {
-        setError(res.message || 'Failed to delete room type')
-        setLoading(false)
+        setError(res.message || 'Failed to delete room type');
       }
     } catch (err: any) {
-      setError(getApiErrorMessage(err))
-      setLoading(false)
+      setError(getApiErrorMessage(err));
+    } finally {
+      setDeleting(false);
     }
-  }
+  };
 
-  const hasActiveFilters = Boolean(searchTerm)
+  const hasActiveFilters = Boolean(searchTerm);
+
+  const totalCount = data.length;
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endEntry = Math.min(page * pageSize, totalCount);
+
+  const paginatedData = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return data.slice(start, start + pageSize);
+  }, [data, page, pageSize]);
 
   return (
     <section className="page wide">
       <div className="page-head">
         <div>
-          <h1>Room Types Management</h1>
-          <p className="page-subtitle">View, search, and manage room categories in table format.</p>
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '2.1rem',
+              color: '#3d2d23',
+              fontWeight: 700,
+            }}
+          >
+            Room Types Management
+          </h1>
+          <p className="page-subtitle" style={{ margin: '6px 0 0', color: '#8c735f', fontSize: '0.9rem' }}>
+            {canManage
+              ? 'Configure pet hotel suites, accommodations, and room category capacities.'
+              : 'View and explore sanctuary boarding suite types.'}
+          </p>
         </div>
-        <Link to={`${baseRoomTypePath}/new`} className="btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add Room Type
-        </Link>
+        {canManage && (
+          <Link
+            to={`${baseRoomTypePath}/new`}
+            className="btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.55rem 1.4rem',
+              borderRadius: 999,
+              backgroundColor: '#3d2d23',
+              color: '#ffffff',
+              fontWeight: 700,
+              boxShadow: '0 4px 14px rgba(61,45,35,0.18)',
+              textDecoration: 'none',
+            }}
+          >
+            <PlusOutlined style={{ fontSize: 13 }} />
+            <span>Add Room Type</span>
+          </Link>
+        )}
       </div>
 
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
             <span className="search-icon-prefix" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+              <SearchOutlined style={{ color: '#8c735f' }} />
             </span>
             <input
               type="text"
-              placeholder="Search room types by name..."
+              placeholder="Search room types by name or amenities..."
               value={keywordInput}
               onChange={(e) => setKeywordInput(e.target.value)}
               aria-label="Search room types"
@@ -104,9 +161,42 @@ const AdminRoomTypeListPage: React.FC = () => {
               </button>
             )}
           </form>
-          <div className="filter-dropdowns">
-             {hasActiveFilters && (
-              <button type="button" className="chip" onClick={clearSearch} title="Reset all filters">
+
+          <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Select
+              value={pageSize}
+              onChange={(val) => {
+                setPage(1);
+                setPageSize(val);
+              }}
+              style={{ minWidth: 130, height: 40 }}
+              options={[
+                { value: 10, label: '10 per page' },
+                { value: 25, label: '25 per page' },
+                { value: 50, label: '50 per page' },
+              ]}
+            />
+
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className="chip"
+                onClick={clearSearch}
+                title="Reset all filters"
+                style={{
+                  height: 40,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: 10,
+                  border: '1.5px solid #eeddc8',
+                  background: '#ffffff',
+                  color: '#785839',
+                  fontWeight: 600,
+                  padding: '0 14px',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
                 Reset filters
               </button>
             )}
@@ -122,9 +212,9 @@ const AdminRoomTypeListPage: React.FC = () => {
             <thead>
               <tr>
                 <th className="col-idx">#</th>
-                <th style={{ width: 60 }}>PHOTO</th>
+                <th style={{ width: 70 }}>SUITE PHOTO</th>
                 <th className="col-name">ROOM TYPE NAME</th>
-                <th>DESCRIPTION</th>
+                <th>AMENITIES & DESCRIPTION</th>
                 <th style={{ textAlign: 'center' }}>TOTAL ROOMS</th>
                 <th className="col-actions">ACTIONS</th>
               </tr>
@@ -132,11 +222,11 @@ const AdminRoomTypeListPage: React.FC = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                    <p style={{ margin: 0, color: '#557268' }}>Loading room types...</p>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                    <p style={{ margin: 0, color: '#785839', fontWeight: 600 }}>Loading suite categories...</p>
                   </td>
                 </tr>
-              ) : !data || data.length === 0 ? (
+              ) : paginatedData.length === 0 ? (
                 <tr>
                   <td colSpan={6}>
                     <div className="table-empty-box">
@@ -144,101 +234,233 @@ const AdminRoomTypeListPage: React.FC = () => {
                       <p>
                         {hasActiveFilters
                           ? 'Try adjusting your search query to find what you are looking for.'
-                          : 'No room types exist in the system yet.'}
+                          : 'No room types configured in the sanctuary database yet.'}
                       </p>
                       {hasActiveFilters ? (
                         <button type="button" className="btn" onClick={clearSearch}>
                           Clear filters
                         </button>
-                      ) : (
+                      ) : canManage ? (
                         <Link to={`${baseRoomTypePath}/new`} className="btn">
                           + Add first room type
                         </Link>
-                      )}
+                      ) : null}
                     </div>
                   </td>
                 </tr>
               ) : (
-                data.map((c, idx) => (
+                paginatedData.map((c, idx) => {
+                  const rowNumber = (page - 1) * pageSize + idx + 1;
+                  return (
                     <tr key={c.id}>
-                      <td className="col-idx">{idx + 1}</td>
+                      <td className="col-idx">{rowNumber}</td>
                       <td>
                         {c.imageUrl ? (
                           <img
                             src={c.imageUrl}
                             alt={c.name}
                             style={{
-                              width: 44,
-                              height: 36,
-                              borderRadius: '6px',
+                              width: 54,
+                              height: 42,
+                              borderRadius: '8px',
                               objectFit: 'cover',
-                              border: '1px solid #e2e8f0',
+                              border: '1.5px solid #eeddc8',
                               display: 'block',
+                              backgroundColor: '#faf6f0',
                             }}
                           />
                         ) : (
                           <div
                             style={{
-                              width: 44,
-                              height: 36,
-                              borderRadius: '6px',
-                              backgroundColor: '#f1f5f9',
+                              width: 54,
+                              height: 42,
+                              borderRadius: '8px',
+                              backgroundColor: '#faf6f0',
+                              border: '1.5px solid #eeddc8',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              color: '#94a3b8',
-                              fontSize: '0.75rem',
+                              color: '#785839',
+                              fontSize: '1.1rem',
                             }}
                           >
-                            🏨
+                            <HomeOutlined />
                           </div>
                         )}
                       </td>
-                      <td className="col-name">{c.name}</td>
-                      <td>{c.description || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>No description</span>}</td>
+                      <td className="col-name">
+                        <Link
+                          to={`${baseRoomTypePath}/${c.id}`}
+                          style={{
+                            display: 'block',
+                            color: '#3d2d23',
+                            fontWeight: 700,
+                            fontSize: '0.95rem',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          {c.name}
+                        </Link>
+                        <span style={{ fontSize: '0.75rem', color: '#8c735f' }}>
+                          ID: {c.id.slice(0, 8)}...
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ color: '#554236', fontSize: '0.88rem', lineHeight: 1.5 }}>
+                          {c.description ? (
+                            c.description.length > 80 ? c.description.slice(0, 80) + '...' : c.description
+                          ) : (
+                            <span style={{ color: '#998373', fontStyle: 'italic' }}>No description</span>
+                          )}
+                        </span>
+                      </td>
                       <td style={{ textAlign: 'center' }}>
-                         <span className="status-pill active">{c.totalRooms} Rooms</span>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            padding: '3px 12px',
+                            borderRadius: 999,
+                            backgroundColor: '#ecfdf5',
+                            color: '#047857',
+                            border: '1px solid #a7f3d0',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                          }}
+                        >
+                          <HomeOutlined />
+                          <span>{c.totalRooms} Rooms</span>
+                        </span>
                       </td>
                       <td className="col-actions">
                         <div className="action-group">
                           <Link
-                            to={`${baseRoomTypePath}/${c.id}/edit`}
-                            className="btn-action edit"
-                            title="Edit room type"
+                            to={`${baseRoomTypePath}/${c.id}`}
+                            className="btn-action view"
+                            title="View suite details"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              padding: '4px 10px',
+                              borderRadius: 6,
+                              fontSize: '0.82rem',
+                            }}
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M12 20h9"></path>
-                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                            </svg>
-                            Edit
+                            <EyeOutlined style={{ fontSize: 12 }} />
+                            <span>View</span>
                           </Link>
-                          
-                          <button
-                            type="button"
-                            className="btn-action danger"
-                            title="Delete room type"
-                            onClick={() => handleDelete(c.id, c.name)}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="3 6 5 6 21 6"></polyline>
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                              <line x1="10" y1="11" x2="10" y2="17"></line>
-                              <line x1="14" y1="11" x2="14" y2="17"></line>
-                            </svg>
-                            Delete
-                          </button>
+
+                          {canManage && (
+                            <>
+                              <Link
+                                to={`${baseRoomTypePath}/${c.id}/edit`}
+                                className="btn-action edit"
+                                title="Edit suite specifications"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '4px 10px',
+                                  borderRadius: 6,
+                                  fontSize: '0.82rem',
+                                }}
+                              >
+                                <EditOutlined style={{ fontSize: 12 }} />
+                                <span>Edit</span>
+                              </Link>
+
+                              <button
+                                type="button"
+                                className="btn-action danger"
+                                title="Delete suite category"
+                                onClick={() => setRoomTypeToDelete(c)}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '4px 10px',
+                                  borderRadius: 6,
+                                  fontSize: '0.82rem',
+                                }}
+                              >
+                                <DeleteOutlined style={{ fontSize: 12 }} />
+                                <span>Delete</span>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
-                  )
-                )
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
-      </div>
-    </section>
-  )
-}
 
-export default AdminRoomTypeListPage
+        {totalCount > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 24px',
+              backgroundColor: '#ffffff',
+              borderTop: '1px solid #eeddc8',
+              flexWrap: 'wrap',
+              gap: 14,
+            }}
+          >
+            <span style={{ fontSize: '0.88rem', color: '#785839', fontWeight: 600 }}>
+              Showing {startEntry} to {endEntry} of {totalCount} room types
+            </span>
+            <Pagination
+              current={page}
+              pageSize={pageSize}
+              total={totalCount}
+              onChange={(newPage) => setPage(newPage)}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
+      </div>
+
+      {roomTypeToDelete && (
+        <div className="confirm-backdrop">
+          <div className="confirm-dialog" role="dialog" aria-modal="true">
+            <div className="confirm-icon danger">⚠️</div>
+            <h3>Delete Room Type?</h3>
+            <p>
+              Are you sure you want to delete suite category <strong>"{roomTypeToDelete.name}"</strong>?
+              <br />
+              This action cannot be undone and will permanently remove this category.
+            </p>
+            <div className="confirm-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={deleting}
+                onClick={() => setRoomTypeToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-action danger"
+                disabled={deleting}
+                onClick={handleConfirmDelete}
+                style={{ padding: '0.65rem 1.4rem', color: '#fff' }}
+              >
+                {deleting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
+export default AdminRoomTypeListPage;

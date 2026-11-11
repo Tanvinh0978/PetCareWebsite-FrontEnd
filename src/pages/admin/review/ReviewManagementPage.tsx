@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type FormEvent } from 'react'
-import { App } from 'antd'
+import { App, Select } from 'antd'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { reviewService } from '@/services/review.service'
@@ -253,35 +253,40 @@ export default function ReviewManagementPage() {
             )}
           </form>
 
-          <div className="filter-dropdowns">
-            <select
+          <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <Select
               value={selectedServiceId || ''}
-              onChange={(e) => {
+              onChange={(val) => {
                 setPage(1)
-                setSelectedServiceId(e.target.value || undefined)
+                setSelectedServiceId(val || undefined)
               }}
-              aria-label="Filter by service"
-            >
-              <option value="">All Services</option>
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+              style={{ minWidth: 200, height: 40 }}
+              options={[
+                { value: '', label: 'All Services' },
+                ...services.map((s) => ({
+                  value: s.id,
+                  label: s.name,
+                })),
+              ]}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+            />
 
-            <select
+            <Select
               value={pageSize}
-              onChange={(e) => {
+              onChange={(val) => {
                 setPage(1)
-                setPageSize(Number(e.target.value))
+                setPageSize(Number(val))
               }}
-              aria-label="Items per page"
-            >
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-            </select>
+              style={{ minWidth: 130, height: 40 }}
+              options={[
+                { value: 10, label: '10 per page' },
+                { value: 25, label: '25 per page' },
+                { value: 50, label: '50 per page' },
+              ]}
+            />
 
             {hasActiveFilters && (
               <button type="button" className="chip" onClick={resetAllFilters} title="Reset all filters">
@@ -330,7 +335,6 @@ export default function ReviewManagementPage() {
                 <th style={{ minWidth: 200 }}>Customer</th>
                 <th style={{ minWidth: 180 }}>Service</th>
                 <th style={{ width: 140 }}>Rating</th>
-                <th style={{ minWidth: 280 }}>Comment</th>
                 <th style={{ width: 160 }}>Date Submitted</th>
                 <th className="col-actions">Actions</th>
               </tr>
@@ -338,7 +342,7 @@ export default function ReviewManagementPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3.5rem', color: 'var(--slate-500)' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3.5rem', color: 'var(--slate-500)' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem' }}>
                       <span className="spin-inline" style={{ width: 20, height: 20, border: '2px solid var(--slate-300)', borderTopColor: 'var(--primary)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
                       Loading reviews...
@@ -347,7 +351,7 @@ export default function ReviewManagementPage() {
                 </tr>
               ) : filteredReviews.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={6}>
                     <div className="table-empty-box">
                       <h3>No reviews found</h3>
                       <p>
@@ -417,17 +421,6 @@ export default function ReviewManagementPage() {
                             {r.rating} / 5 stars
                           </div>
                         </div>
-                      </td>
-                      <td className="col-desc">
-                        {r.comment ? (
-                          <div className="desc-clamp" style={{ color: 'var(--slate-700)', fontStyle: 'italic' }}>
-                            "{r.comment}"
-                          </div>
-                        ) : (
-                          <span style={{ color: 'var(--slate-400)', fontStyle: 'italic' }}>
-                            (No comment provided)
-                          </span>
-                        )}
                       </td>
                       <td style={{ whiteSpace: 'nowrap' }}>
                         <div style={{ fontSize: '0.88rem', color: 'var(--slate-800)', fontWeight: 500 }}>

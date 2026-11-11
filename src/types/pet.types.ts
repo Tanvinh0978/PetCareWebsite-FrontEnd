@@ -13,8 +13,8 @@ export function getPetSpeciesLabel(species: unknown): 'Dog' | 'Cat' {
   return isCat(species) ? 'Cat' : 'Dog'
 }
 
-export function getPetSpeciesIcon(species: unknown): '🐶' | '🐱' {
-  return isCat(species) ? '🐱' : '🐶'
+export function getPetSpeciesIcon(species: unknown): string {
+  return isCat(species) ? 'Cat' : 'Dog'
 }
 
 export const PetSpeciesText: Record<number | string, string> = {
@@ -27,12 +27,12 @@ export const PetSpeciesText: Record<number | string, string> = {
 }
 
 export const PetSpeciesIcon: Record<number | string, string> = {
-  [PetSpecies.Dog]: '🐶',
-  [PetSpecies.Cat]: '🐱',
-  Dog: '🐶',
-  Cat: '🐱',
-  dog: '🐶',
-  cat: '🐱',
+  [PetSpecies.Dog]: 'Dog',
+  [PetSpecies.Cat]: 'Cat',
+  Dog: 'Dog',
+  Cat: 'Cat',
+  dog: 'Dog',
+  cat: 'Cat',
 }
 
 export interface PetDTO {
@@ -43,6 +43,7 @@ export interface PetDTO {
   species: string | number | PetSpecies
   breed?: string
   weight: number
+  gender?: string
   age?: number
   healthNotes?: string
   imageUrl?: string

@@ -13,7 +13,8 @@ export interface RoomTypeDTO {
 
 export interface RoomSummaryDTO {
   id: string
-  name: string
+  roomName: string
+  name?: string
   status: string
 }
 

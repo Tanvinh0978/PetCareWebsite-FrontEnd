@@ -36,15 +36,18 @@ import RolePermissionPage from "@/pages/admin/role/RolePermissionPage";
 import AdminVoucherListPage from "@/pages/admin/voucher/VoucherListPage";
 import AdminVoucherFormPage from "@/pages/admin/voucher/VoucherFormPage";
 import CreateBookingPage from "@/pages/customer/CreateBookingPage";
+import PromotionsPage from "@/pages/customer/PromotionsPage";
 import MyPetsPage from "@/pages/customer/MyPetsPage";
 import PetFormPage from "@/pages/customer/PetFormPage";
 import MyBookingsPage from "@/pages/customer/MyBookingsPage";
+import CustomerBookingDetailPage from "@/pages/customer/booking/CustomerBookingDetailPage";
 import CustomerProfilePage from "@/pages/customer/CustomerProfilePage";
 import ReviewManagementPage from "@/pages/admin/review/ReviewManagementPage";
 import PaymentResultPage from "@/pages/customer/PaymentResultPage";
 import StaffProfilePage from "@/pages/staff/StaffProfilePage";
 import GroomingTasksPage from "@/pages/staff/grooming/GroomingTasksPage";
 import BookingManagementPage from "@/pages/admin/booking/BookingManagementPage";
+import AdminBookingDetailPage from "@/pages/admin/booking/AdminBookingDetailPage";
 import BoardingTasksPage from "@/pages/staff/boarding/BoardingTasksPage";
 import CounterBookingPage from "@/pages/staff/CounterBookingPage";
 
@@ -83,6 +86,7 @@ export default function AppRoutes() {
         { path: "customers/:id/edit", element: <AdminCustomerFormPage /> },
         { path: "room-types", element: <AdminRoomTypeListPage /> },
         { path: "room-types/new", element: <AdminRoomTypeFormPage /> },
+        { path: "room-types/:id", element: <RoomTypeDetail backTo="/admin/room-types" editTo={(id) => `/admin/room-types/${id}/edit`} /> },
         { path: "room-types/:id/edit", element: <AdminRoomTypeFormPage /> },
         { path: "rooms", element: <AdminRoomListPage /> },
         { path: "rooms/new", element: <AdminRoomFormPage /> },
@@ -103,6 +107,7 @@ export default function AppRoutes() {
         { path: "reviews", element: <ReviewManagementPage /> },
         { path: "bookings", element: <BookingManagementPage /> },
         { path: "bookings/new", element: <CounterBookingPage /> },
+        { path: "bookings/:id", element: <AdminBookingDetailPage backTo="/admin/bookings" /> },
         { path: "grooming-tasks", element: <GroomingTasksPage /> },
         { path: "boarding-tasks", element: <BoardingTasksPage /> },
         { path: "manage-boarding", element: <BoardingTasksPage /> },
@@ -116,6 +121,7 @@ export default function AppRoutes() {
         { index: true, element: <RequirePermission permission={PERMISSIONS.DASHBOARD_VIEW}><StaffDashboardPage /></RequirePermission> },
         { path: "bookings", element: <RequirePermission permission={PERMISSIONS.BOOKING_VIEW}><BookingManagementPage /></RequirePermission> },
         { path: "bookings/new", element: <RequirePermission permission={PERMISSIONS.BOOKING_CREATE}><CounterBookingPage /></RequirePermission> },
+        { path: "bookings/:id", element: <RequirePermission permission={PERMISSIONS.BOOKING_VIEW}><AdminBookingDetailPage backTo="/staff/bookings" /></RequirePermission> },
         { path: "grooming-tasks", element: <RequirePermission permission={PERMISSIONS.GROOMING_TASK_VIEW}><GroomingTasksPage /></RequirePermission> },
         { path: "boarding-tasks", element: <RequirePermission permission={[PERMISSIONS.CARE_RECORD_VIEW, PERMISSIONS.ROOM_VIEW]}><BoardingTasksPage /></RequirePermission> },
         { path: "manage-boarding", element: <RequirePermission permission={[PERMISSIONS.CARE_RECORD_VIEW, PERMISSIONS.ROOM_VIEW]}><BoardingTasksPage /></RequirePermission> },
@@ -129,6 +135,7 @@ export default function AppRoutes() {
         { path: "customers/:id/edit", element: <RequirePermission permission={PERMISSIONS.CUSTOMER_MANAGE}><AdminCustomerFormPage /></RequirePermission> },
         { path: "room-types", element: <RequirePermission permission={PERMISSIONS.ROOM_VIEW}><AdminRoomTypeListPage /></RequirePermission> },
         { path: "room-types/new", element: <RequirePermission permission={PERMISSIONS.ROOM_MANAGE}><AdminRoomTypeFormPage /></RequirePermission> },
+        { path: "room-types/:id", element: <RequirePermission permission={PERMISSIONS.ROOM_VIEW}><RoomTypeDetail backTo="/staff/room-types" editTo={(id) => `/staff/room-types/${id}/edit`} /></RequirePermission> },
         { path: "room-types/:id/edit", element: <RequirePermission permission={PERMISSIONS.ROOM_MANAGE}><AdminRoomTypeFormPage /></RequirePermission> },
         { path: "rooms", element: <RequirePermission permission={PERMISSIONS.ROOM_VIEW}><AdminRoomListPage /></RequirePermission> },
         { path: "rooms/new", element: <RequirePermission permission={PERMISSIONS.ROOM_MANAGE}><AdminRoomFormPage /></RequirePermission> },
@@ -163,7 +170,9 @@ export default function AppRoutes() {
         { path: "pets/:id", element: <PetDetail backTo="/customer/pets" editTo={(id) => `/customer/pets/${id}/edit`} /> },
         { path: "pets/:id/edit", element: <PetFormPage /> },
         { path: "booking", element: <CreateBookingPage /> },
+        { path: "promotions", element: <PromotionsPage /> },
         { path: "bookings", element: <MyBookingsPage /> },
+        { path: "bookings/:id", element: <CustomerBookingDetailPage /> },
         { path: "payment-result", element: <PaymentResultPage /> },
         { path: "profile", element: <CustomerProfilePage /> },
         notFound,
@@ -174,6 +183,7 @@ export default function AppRoutes() {
       element: <GuestOnly><Layout role="guest" /></GuestOnly>,
       children: [
         { index: true, element: <HomePage /> },
+        { path: "promotions", element: <PromotionsPage /> },
         ...publicServiceRoutes("", true),
         ...publicRoomTypeRoutes("", true),
         notFound,

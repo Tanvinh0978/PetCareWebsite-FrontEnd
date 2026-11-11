@@ -1,10 +1,24 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import React, { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Select, Pagination, message } from 'antd';
+import {
+  PlusOutlined,
+  SearchOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
 import { deleteService, searchServices } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
 import { useAuthStore } from '@/store/useAuthStore';
 import { hasPermission, PERMISSIONS } from '@/auth/permissionHelper';
-import { SERVICE_TYPE_LABEL, type PagedResult, type ServiceListItem, type ServiceType } from '@/types/service';
+import {
+  SERVICE_TYPE_LABEL,
+  SERVICE_TYPE_BADGE_CONFIG,
+  type PagedResult,
+  type ServiceListItem,
+  type ServiceType,
+} from '@/types/service';
 
 export default function ServiceListPage() {
   const location = useLocation();
@@ -85,6 +99,7 @@ export default function ServiceListPage() {
     setDeactivating(true);
     try {
       await deleteService(serviceToDeactivate.id);
+      message.success(`Service "${serviceToDeactivate.name}" deactivated.`);
       setServiceToDeactivate(null);
       setReload((n) => n + 1);
     } catch (e) {
@@ -98,46 +113,55 @@ export default function ServiceListPage() {
   const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, totalCount);
 
-  const totalPages = data?.totalPages ?? 1;
-  const getPageNumbers = () => {
-    const pages: number[] = [];
-    const maxButtons = 5;
-    let startPage = Math.max(1, page - Math.floor(maxButtons / 2));
-    let endPage = startPage + maxButtons - 1;
-    if (endPage > totalPages) {
-      endPage = totalPages;
-      startPage = Math.max(1, endPage - maxButtons + 1);
-    }
-    for (let p = startPage; p <= endPage; p++) {
-      pages.push(p);
-    }
-    return pages;
-  };
-
   return (
     <section className="page wide">
       <div className="page-head">
         <div>
-          <h1>Services Management</h1>
-          <p className="page-subtitle">View, search, and manage pet care services in table format.</p>
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '2.1rem',
+              color: '#3d2d23',
+              fontWeight: 700,
+            }}
+          >
+            Services Management
+          </h1>
+          <p className="page-subtitle" style={{ margin: '6px 0 0', color: '#8c735f', fontSize: '0.9rem' }}>
+            {canManage
+              ? 'View, search, filter, and manage pet care services, categories, and tier rates.'
+              : 'Explore sanctuary pet care packages, treatments, and pricing tiers.'}
+          </p>
         </div>
-        {canManage && <Link to={`${baseServicePath}/new`} className="btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add service
-        </Link>}
+        {canManage && (
+          <Link
+            to={`${baseServicePath}/new`}
+            className="btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.55rem 1.4rem',
+              borderRadius: 999,
+              backgroundColor: '#3d2d23',
+              color: '#ffffff',
+              fontWeight: 700,
+              boxShadow: '0 4px 14px rgba(61,45,35,0.18)',
+              textDecoration: 'none',
+            }}
+          >
+            <PlusOutlined style={{ fontSize: 13 }} />
+            <span>Add Service</span>
+          </Link>
+        )}
       </div>
 
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
             <span className="search-icon-prefix" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+              <SearchOutlined style={{ color: '#8c735f' }} />
             </span>
             <input
               type="text"
@@ -147,66 +171,83 @@ export default function ServiceListPage() {
               aria-label="Search services"
             />
             {keywordInput && (
-              <button type="button" className="search-clear-btn" onClick={clearSearch} title="Clear search">
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={clearSearch}
+                title="Clear search"
+              >
                 ✕
               </button>
             )}
           </form>
 
-          <div className="filter-dropdowns">
-            <select
-              value={status}
-              onChange={(e) => {
-                setPage(1);
-                setStatus(e.target.value as typeof status);
-              }}
-              aria-label="Filter by status"
-            >
-              <option value="all">All statuses</option>
-              <option value="active">Active only</option>
-              <option value="inactive">Inactive only</option>
-            </select>
+          <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <Select
+              value={type || ''}
+              onChange={(val) => pickType(val ? (val as ServiceType) : null)}
+              style={{ minWidth: 155, height: 40 }}
+              options={[
+                { value: '', label: 'All Categories' },
+                ...(Object.keys(SERVICE_TYPE_LABEL) as ServiceType[]).map((t) => ({
+                  value: t,
+                  label: SERVICE_TYPE_LABEL[t],
+                })),
+              ]}
+            />
 
-            <select
-              value={pageSize}
-              onChange={(e) => {
+            <Select
+              value={status}
+              onChange={(val) => {
                 setPage(1);
-                setPageSize(Number(e.target.value));
+                setStatus(val);
               }}
-              aria-label="Items per page"
-            >
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-            </select>
+              style={{ minWidth: 140, height: 40 }}
+              options={[
+                { value: 'all', label: 'All statuses' },
+                { value: 'active', label: 'Active only' },
+                { value: 'inactive', label: 'Inactive only' },
+              ]}
+            />
+
+            <Select
+              value={pageSize}
+              onChange={(val) => {
+                setPage(1);
+                setPageSize(val);
+              }}
+              style={{ minWidth: 130, height: 40 }}
+              options={[
+                { value: 10, label: '10 per page' },
+                { value: 25, label: '25 per page' },
+                { value: 50, label: '50 per page' },
+              ]}
+            />
 
             {hasActiveFilters && (
-              <button type="button" className="chip" onClick={resetAllFilters} title="Reset all filters">
+              <button
+                type="button"
+                className="chip"
+                onClick={resetAllFilters}
+                title="Reset all filters"
+                style={{
+                  height: 40,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: 10,
+                  border: '1.5px solid #eeddc8',
+                  background: '#ffffff',
+                  color: '#785839',
+                  fontWeight: 600,
+                  padding: '0 14px',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
                 Reset filters
               </button>
             )}
           </div>
-        </div>
-
-        <div className="type-chips-row">
-          <span className="type-chips-label">Category:</span>
-          <button
-            type="button"
-            className={!type ? 'chip on' : 'chip'}
-            onClick={() => pickType(null)}
-          >
-            All
-          </button>
-          {(Object.keys(SERVICE_TYPE_LABEL) as ServiceType[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={type === t ? 'chip on' : 'chip'}
-              onClick={() => pickType(t)}
-            >
-              {SERVICE_TYPE_LABEL[t]}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -218,46 +259,52 @@ export default function ServiceListPage() {
             <thead>
               <tr>
                 <th className="col-idx">#</th>
-                <th style={{ width: 60 }}>Photo</th>
-                <th className="col-name">Service Name</th>
-                <th className="col-type">Category</th>
-                <th className="col-desc">Description</th>
-                <th className="col-status">Status</th>
-                <th className="col-actions">Actions</th>
+                <th style={{ width: 64 }}>PHOTO</th>
+                <th className="col-name">SERVICE NAME</th>
+                <th className="col-type">CATEGORY</th>
+                <th className="col-status">STATUS</th>
+                <th className="col-actions">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                    <p style={{ margin: 0, color: '#557268' }}>Loading services...</p>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                    <p style={{ margin: 0, color: '#785839', fontWeight: 600 }}>Loading sanctuary services...</p>
                   </td>
                 </tr>
               ) : !data || data.items.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={6}>
                     <div className="table-empty-box">
                       <h3>No matching services found</h3>
                       <p>
                         {hasActiveFilters
                           ? 'Try adjusting your search query or filters to find what you are looking for.'
-                          : 'No services exist in the system yet.'}
+                          : 'No pet services configured in the system yet.'}
                       </p>
                       {hasActiveFilters ? (
                         <button type="button" className="btn" onClick={resetAllFilters}>
                           Clear filters
                         </button>
-                      ) : (
+                      ) : canManage ? (
                         <Link to={`${baseServicePath}/new`} className="btn">
                           + Add first service
                         </Link>
-                      )}
+                      ) : null}
                     </div>
                   </td>
                 </tr>
               ) : (
                 data.items.map((s, idx) => {
                   const rowNumber = (page - 1) * pageSize + idx + 1;
+                  const badgeConfig = SERVICE_TYPE_BADGE_CONFIG[s.serviceType] || {
+                    label: SERVICE_TYPE_LABEL[s.serviceType] || s.serviceType,
+                    bg: '#faf6f0',
+                    color: '#785839',
+                    border: '#eeddc8',
+                  };
+
                   return (
                     <tr key={s.id} className={s.isActive ? '' : 'row-inactive'}>
                       <td className="col-idx">{rowNumber}</td>
@@ -267,26 +314,27 @@ export default function ServiceListPage() {
                             src={s.imageUrl}
                             alt={s.name}
                             style={{
-                              width: 44,
-                              height: 36,
-                              borderRadius: '6px',
+                              width: 48,
+                              height: 38,
+                              borderRadius: '8px',
                               objectFit: 'cover',
-                              border: '1px solid #e2e8f0',
+                              border: '1.5px solid #eeddc8',
                               display: 'block',
+                              backgroundColor: '#faf6f0',
                             }}
                           />
                         ) : (
                           <div
                             style={{
-                              width: 44,
-                              height: 36,
-                              borderRadius: '6px',
-                              backgroundColor: '#f1f5f9',
+                              width: 48,
+                              height: 38,
+                              borderRadius: '8px',
+                              backgroundColor: '#faf6f0',
+                              border: '1.5px solid #eeddc8',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              color: '#94a3b8',
-                              fontSize: '0.85rem',
+                              fontSize: '1rem',
                             }}
                           >
                             🐾
@@ -294,25 +342,74 @@ export default function ServiceListPage() {
                         )}
                       </td>
                       <td className="col-name">
-                        <Link to={`${baseServicePath}/${s.id}`} title="View details">
+                        <Link
+                          to={`${baseServicePath}/${s.id}`}
+                          title="View service details"
+                          style={{
+                            color: '#3d2d23',
+                            fontWeight: 700,
+                            textDecoration: 'none',
+                            fontSize: '0.94rem',
+                          }}
+                        >
                           {s.name}
                         </Link>
                       </td>
                       <td className="col-type">
-                        <span className={`type-badge type-${s.serviceType}`}>
-                          {SERVICE_TYPE_LABEL[s.serviceType]}
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '3px 10px',
+                            borderRadius: '12px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            background: badgeConfig.bg,
+                            color: badgeConfig.color,
+                            border: `1px solid ${badgeConfig.border}`,
+                          }}
+                        >
+                          {badgeConfig.label}
                         </span>
-                      </td>
-                      <td className="col-desc" title={s.description || 'No description'}>
-                        <div className="desc-clamp">
-                          {s.description || <span style={{ color: '#9fb5ac' }}>—</span>}
-                        </div>
                       </td>
                       <td className="col-status">
-                        <span className={`status-pill ${s.isActive ? 'active' : 'inactive'}`}>
-                          <span className="status-dot"></span>
-                          {s.isActive ? 'Active' : 'Inactive'}
-                        </span>
+                        {s.isActive ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '3px 12px',
+                              borderRadius: 999,
+                              backgroundColor: '#ecfdf5',
+                              color: '#047857',
+                              border: '1px solid #a7f3d0',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#10b981' }} />
+                            Active
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '3px 12px',
+                              borderRadius: 999,
+                              backgroundColor: '#fef2f2',
+                              color: '#dc2626',
+                              border: '1px solid #fecaca',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+                            Inactive
+                          </span>
+                        )}
                       </td>
                       <td className="col-actions">
                         <div className="action-group">
@@ -320,37 +417,56 @@ export default function ServiceListPage() {
                             to={`${baseServicePath}/${s.id}`}
                             className="btn-action view"
                             title="View service details"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              padding: '4px 10px',
+                              borderRadius: 6,
+                              fontSize: '0.82rem',
+                            }}
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                              <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            View
+                            <EyeOutlined style={{ fontSize: 12 }} />
+                            <span>View</span>
                           </Link>
-                          <Link
-                            to={`${baseServicePath}/${s.id}/edit`}
-                            className="btn-action edit"
-                            title="Edit service & pricing"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                            Edit
-                          </Link>
-                          {canManage && s.isActive && (
-                            <button
-                              type="button"
-                              className="btn-action danger"
-                              onClick={() => setServiceToDeactivate(s)}
-                              title="Deactivate service"
-                            >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-                              </svg>
-                              Delete
-                            </button>
+                          {canManage && (
+                            <>
+                              <Link
+                                to={`${baseServicePath}/${s.id}/edit`}
+                                className="btn-action edit"
+                                title="Edit service & pricing"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '4px 10px',
+                                  borderRadius: 6,
+                                  fontSize: '0.82rem',
+                                }}
+                              >
+                                <EditOutlined style={{ fontSize: 12 }} />
+                                <span>Edit</span>
+                              </Link>
+                              {s.isActive && (
+                                <button
+                                  type="button"
+                                  className="btn-action danger"
+                                  onClick={() => setServiceToDeactivate(s)}
+                                  title="Deactivate service"
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 5,
+                                    padding: '4px 10px',
+                                    borderRadius: 6,
+                                    fontSize: '0.82rem',
+                                  }}
+                                >
+                                  <DeleteOutlined style={{ fontSize: 12 }} />
+                                  <span>Deactivate</span>
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>
@@ -363,83 +479,57 @@ export default function ServiceListPage() {
         </div>
 
         {data && totalCount > 0 && (
-          <div className="table-footer">
-            <div>
-              Showing <strong>{startEntry}</strong> to <strong>{endEntry}</strong> of <strong>{totalCount}</strong> services
-            </div>
-            {totalPages > 1 && (
-              <div className="table-pagination-nav">
-                <button
-                  type="button"
-                  className="page-btn"
-                  disabled={!data.hasPreviousPage}
-                  onClick={() => setPage(page - 1)}
-                  title="Previous page"
-                >
-                  ‹
-                </button>
-                {getPageNumbers().map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    className={`page-btn ${p === page ? 'active' : ''}`}
-                    onClick={() => setPage(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className="page-btn"
-                  disabled={!data.hasNextPage}
-                  onClick={() => setPage(page + 1)}
-                  title="Next page"
-                >
-                  ›
-                </button>
-              </div>
-            )}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 24px',
+              backgroundColor: '#ffffff',
+              borderTop: '1px solid #eeddc8',
+              flexWrap: 'wrap',
+              gap: 14,
+            }}
+          >
+            <span style={{ fontSize: '0.88rem', color: '#785839', fontWeight: 600 }}>
+              Showing {startEntry} to {endEntry} of {totalCount} services
+            </span>
+            <Pagination
+              current={page}
+              pageSize={pageSize}
+              total={totalCount}
+              onChange={(newPage) => setPage(newPage)}
+              showSizeChanger={false}
+            />
           </div>
         )}
       </div>
 
       {serviceToDeactivate && (
-        <div className="modal-overlay" onClick={() => !deactivating && setServiceToDeactivate(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <div className="modal-header">
-              <h2>Deactivate Service</h2>
+        <div className="confirm-backdrop">
+          <div className="confirm-dialog" role="dialog" aria-modal="true">
+            <div className="confirm-icon danger">⚠️</div>
+            <h3>Deactivate Service?</h3>
+            <p>
+              Are you sure you want to deactivate <strong>"{serviceToDeactivate.name}"</strong>?
+              <br />
+              This service will be marked as inactive and hidden from customer booking. You can reactivate it anytime by editing the service.
+            </p>
+            <div className="confirm-actions">
               <button
                 type="button"
-                className="modal-close-btn"
-                onClick={() => setServiceToDeactivate(null)}
+                className="btn btn-secondary"
                 disabled={deactivating}
-              >
-                ✕
-              </button>
-            </div>
-            <div className="modal-body">
-              <p>
-                Are you sure you want to deactivate <strong>"{serviceToDeactivate.name}"</strong>?
-              </p>
-              <p style={{ margin: 0, color: '#688279', fontSize: '0.9rem' }}>
-                This service will be marked as inactive and hidden from customer booking. You can reactivate it anytime by editing the service.
-              </p>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="chip"
                 onClick={() => setServiceToDeactivate(null)}
-                disabled={deactivating}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="btn-action danger"
-                style={{ padding: '0.6rem 1.2rem', fontSize: '0.95rem' }}
-                onClick={handleConfirmDeactivate}
+                className="btn btn-action danger"
                 disabled={deactivating}
+                onClick={handleConfirmDeactivate}
+                style={{ padding: '0.65rem 1.4rem', color: '#fff' }}
               >
                 {deactivating ? 'Deactivating...' : 'Confirm Deactivate'}
               </button>

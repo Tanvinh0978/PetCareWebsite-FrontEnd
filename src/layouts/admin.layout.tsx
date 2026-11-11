@@ -47,6 +47,7 @@ const AdminLayout: React.FC = () => {
         size: 'small',
         render: (_props, dom) => (
           <Dropdown
+            trigger={['click']}
             menu={{ items: [
               { key: 'site', label: 'View website', onClick: () => navigate('/') },
               { key: 'logout', icon: <LogoutOutlined />, label: 'Sign out', onClick: handleLogout },
