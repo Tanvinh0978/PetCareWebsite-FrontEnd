@@ -1,4 +1,3 @@
-// DiscountType khớp với backend enum (JsonStringEnumConverter đang bật)
 export enum DiscountType {
   Percentage = 'Percentage',
   Fixed_Amount = 'Fixed_Amount',
@@ -18,14 +17,13 @@ export function isDiscountTypeValid(val: unknown): val is DiscountType {
   return val === DiscountType.Percentage || val === DiscountType.Fixed_Amount
 }
 
-// DTO từ GET /api/Vouchers (list) & GET /api/Vouchers/{id}
 export interface VoucherDTO {
   id: string
   code: string
   discountType: DiscountType | string
   discountValue: number
-  startDate: string   // ISO 8601
-  endDate: string     // ISO 8601
+  startDate: string
+  endDate: string
   maxUsage: number | null
   currentUsage: number
   isValid: boolean
@@ -33,7 +31,6 @@ export interface VoucherDTO {
   updatedAt?: string | null
 }
 
-// Payload để POST /api/Vouchers
 export interface CreateVoucherDTO {
   code: string
   discountType: DiscountType | string
@@ -43,7 +40,6 @@ export interface CreateVoucherDTO {
   maxUsage?: number | null
 }
 
-// Payload để PUT /api/Vouchers/{id}
 export interface UpdateVoucherDTO {
   code: string
   discountType: DiscountType | string

@@ -7,7 +7,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { ROLE_BASE } from "@/auth/roles";
 import { getErrorMessage } from "@/api/client";
 import { useAuthStore } from "@/store/useAuthStore";
-import "./auth.css"; // Keep their original CSS for AntD overrides
+import "./auth.css";
 
 const { Title, Text } = Typography;
 type AuthState = 'login' | 'register' | 'otp' | 'forgot' | 'reset';
@@ -29,7 +29,6 @@ export default function PawstayAuthPage() {
     const [loginType, setLoginType] = useState<'customer' | 'staff'>('customer');
     const [loading, setLoading] = useState(false);
     
-    // OTP states
     const emailFromUrl = new URLSearchParams(location.search).get("email") || "";
     const [savedEmail, setSavedEmail] = useState(emailFromUrl);
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -74,7 +73,6 @@ export default function PawstayAuthPage() {
         if (newView === 'reset') navigate(`/reset-password?email=${encodeURIComponent(savedEmail)}`);
     };
 
-    // Form Submits
     const onLoginFinish = async (values: any) => {
         setLoading(true);
         try {
@@ -91,7 +89,6 @@ export default function PawstayAuthPage() {
                 }
                 signIn("customer");
                 
-                // Save to Zustand for API token & customer ID
                 useAuthStore.getState().setAuth(token, {
                     id: String(customerId || ''),
                     login: email,
@@ -130,7 +127,6 @@ export default function PawstayAuthPage() {
 
                 signIn(role);
                 
-                // Save to Zustand with permissions
                 useAuthStore.getState().setAuth(token, {
                     id: String(staffId || ''),
                     login: email,
@@ -150,7 +146,6 @@ export default function PawstayAuthPage() {
                     });
                 }
                 
-                // Sync permissions asynchronously if needed
                 import('@/auth/permissionHelper').then(({ syncUserPermissions }) => {
                     syncUserPermissions();
                 });
@@ -186,7 +181,6 @@ export default function PawstayAuthPage() {
         }
     };
 
-    // OTP Handlers
     const handleOtpChange = (index: number, val: string) => {
         if (!/^\d*$/.test(val)) return;
         const newOtp = [...otp];
@@ -310,15 +304,14 @@ export default function PawstayAuthPage() {
 
     const isOtpComplete = otp.every(d => d !== "");
 
-    // Colors & Styles harmonized with Home page luxury theme
     const colors = {
-        bg: "#fdf9f3", // luxury linen/paper background matching HomePage
-        accent: "#3d2d23", // rich warm espresso
-        accentHover: "#26180f", // deep espresso
-        gold: "#c69f7b", // warm caramel / amber gold
-        secondary: "#785839", // warm earth brown
-        textMuted: "#6b5a4e", // warm slate-600
-        border: "#e8ded6", // slate-200
+        bg: "#fdf9f3",
+        accent: "#3d2d23",
+        accentHover: "#26180f",
+        gold: "#c69f7b",
+        secondary: "#785839",
+        textMuted: "#6b5a4e",
+        border: "#e8ded6",
         formBg: "#ffffff",
         white: "#ffffff"
     };

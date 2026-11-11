@@ -50,7 +50,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
         const petData: PetDTO = res?.result ?? res;
         setPet(petData);
 
-        // Try resolving owner details if customerId is present (for Staff / Admin view)
         if (petData?.customerId) {
           try {
             const custRes = await customerService.fetchById(petData.customerId);
@@ -118,7 +117,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
   const speciesLabel = getPetSpeciesLabel(pet.species);
   const customerBase = isStaff ? '/staff/customers' : '/admin/customers';
 
-  // Life stage deduction
   const getLifeStage = (ageVal?: number) => {
     if (ageVal === undefined || ageVal === null) return 'Companion';
     if (ageVal < 1) return isPetCat ? 'Kitten' : 'Puppy';
@@ -126,7 +124,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
     return 'Senior Member';
   };
 
-  // Weight tier deduction
   const getWeightTier = (w?: number) => {
     if (!w) return 'Standard';
     if (w < 5) return 'Toy / Small (< 5kg)';

@@ -1,4 +1,3 @@
-// ====== Enums: phải khớp đúng giá trị enum của backend ======
 export const ServiceType = {
   Grooming: 'Grooming',
   Boarding: 'Boarding',
@@ -27,7 +26,6 @@ export const PRICING_UNIT_LABELS: Record<string, string> = {
   Item: 'item',
 }
 
-// ====== DTOs ======
 export interface ServiceDTO {
   id: string
   name: string

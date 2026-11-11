@@ -44,14 +44,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate type
     const isImage = file.type.startsWith('image/')
     if (!isImage) {
       message.error('You can only upload image files (JPG, PNG, WEBP, etc.)!')
       return
     }
 
-    // Validate size (5MB)
     const isLt5M = file.size / 1024 / 1024 < 5
     if (!isLt5M) {
       message.error('Image must be smaller than 5MB!')
@@ -73,7 +71,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       message.error(errorMsg)
     } finally {
       setUploading(false)
-      // Reset input value so user can upload the same file again if needed
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }

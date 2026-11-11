@@ -7,7 +7,6 @@ interface ProtectedRouteProps {
   allowedRoles?: string[]
 }
 
-// Chưa đăng nhập -> /login. Đã đăng nhập nhưng sai vai trò -> /403.
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole, allowedRoles }) => {
   const { isAuthenticated, role } = useAuthStore()
 

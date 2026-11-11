@@ -22,7 +22,6 @@ const CustomerPetListPage: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      // Sử dụng endpoint /api/Pets/my-pets — backend đọc customerId từ JWT token
       const myPets = await petService.fetchMyPets(true)
       setPets(myPets.filter((p: any) => p.isActive !== false && !p.isDeleted))
     } catch (err) {

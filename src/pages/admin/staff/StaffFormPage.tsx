@@ -44,7 +44,7 @@ const AdminStaffFormPage: React.FC = () => {
   const [password, setPassword] = useState('')
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])
   const [yearsOfExperience, setYearsOfExperience] = useState<number | string>(1)
-  const [status, setStatus] = useState<number>(0) // 0: Active, 1: Inactive
+  const [status, setStatus] = useState<number>(0)
 
   const [roles, setRoles] = useState<RoleDTO[]>([])
   const [loadingRoles, setLoadingRoles] = useState(true)
@@ -99,7 +99,6 @@ const AdminStaffFormPage: React.FC = () => {
       .finally(() => setLoading(false))
   }, [id])
 
-  // Sync roleIds when roles finish loading if editing and roleIds wasn't available directly
   useEffect(() => {
     if (editing && roles.length > 0 && selectedRoleIds.length === 0 && id) {
       staffService

@@ -54,7 +54,6 @@ export const groomingTaskService = {
         pageSize: result?.pageSize ?? 10,
       }
     } catch (err: any) {
-      // Fallback: nếu /api/bookings/my-grooming-tasks trả 404 (do backend cũ chưa reload route), gọi qua staffId
       if (err?.response?.status === 404) {
         const staffId = getStaffId()
         if (staffId) {
@@ -105,7 +104,6 @@ export const groomingTaskService = {
       body.resultImageUrl = payload.resultImageUrl
     }
 
-    // Backend validator: ResultNote is required when status is Completed (4)
     if (payload.status === 4) {
       body.resultNote = payload.resultNote?.trim() || 'Service completed successfully.'
     } else if (payload.resultNote) {

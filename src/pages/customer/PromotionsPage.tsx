@@ -37,7 +37,6 @@ const PromotionsPage: React.FC = () => {
       });
       const data = res?.result ?? res?.data ?? res;
       const items: VoucherDTO[] = data?.items ?? (Array.isArray(data) ? data : []);
-      // Client-side filter to only keep active ones
       const now = new Date();
       const active = items.filter((v) => {
         const start = parseUtcDate(v.startDate);

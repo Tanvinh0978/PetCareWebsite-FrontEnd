@@ -1,5 +1,4 @@
 
-// Khớp với enum/DTO của backend (JsonStringEnumConverter => enum là chuỗi).
 export type ServiceType = 'Grooming' | 'Boarding' | 'Diet' | 'Care';
 export type PricingUnit = 'Per_Turn' | 'Per_Day' | 'Item';
 
@@ -16,7 +15,6 @@ export const PRICING_UNIT_LABEL: Record<PricingUnit, string> = {
   Item: 'item',
 };
 
-// Bao bọc mọi response của API (ApiResponse<T> ở backend, JSON camelCase).
 export interface ApiResponse<T> {
   isSuccess: boolean;
   statusCode: number;

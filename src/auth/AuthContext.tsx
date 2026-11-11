@@ -12,7 +12,6 @@ function loadRole(): Role {
   } catch { return "guest"; }
 }
 
-// TODO: thay bằng đăng nhập thật khi backend có API (lưu token, đọc role từ token).
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Role>(loadRole);
   const save = (r: Role) => {

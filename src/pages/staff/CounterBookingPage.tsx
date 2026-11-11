@@ -67,29 +67,23 @@ export default function CounterBookingPage() {
   const [petsLoading, setPetsLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  // Selection states
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([])
   const [activePetTab, setActivePetTab] = useState<string>('')
   const [category, setCategory] = useState<BookingCategory>('Grooming')
 
-  // Per-pet service configurations: { [petId]: { groomingIds, boardingId, dietId } }
   const [petServices, setPetServices] = useState<Record<string, PetServiceConfig>>({})
 
-  // Schedule states
   const [appointmentAt, setAppointmentAt] = useState<Dayjs | null>(null)
   const [boardingDates, setBoardingDates] = useState<[Dayjs, Dayjs] | null>(null)
 
-  // Voucher states
   const [voucherInput, setVoucherInput] = useState<string>('')
   const [appliedVoucher, setAppliedVoucher] = useState<VoucherDTO | null>(null)
   const [checkingVoucher, setCheckingVoucher] = useState(false)
   const [voucherError, setVoucherError] = useState<string | null>(null)
 
-  // Staff note
   const [note, setNote] = useState<string>('')
 
-  // Load Customers and Services with details
   useEffect(() => {
     let active = true
     setLoading(true)
@@ -101,7 +95,6 @@ export default function CounterBookingPage() {
         if (!active) return
         setCustomers(customerResponse.result?.items ?? [])
 
-        // Fetch detailed prices and room links for all active services
         const servicesWithDetails = await Promise.all(
           activeServices.map(async (srv) => {
             try {
@@ -130,7 +123,6 @@ export default function CounterBookingPage() {
     }
   }, [])
 
-  // Load pets whenever customer selection changes
   useEffect(() => {
     if (!selectedCustomerId) {
       setPets([])
@@ -147,7 +139,6 @@ export default function CounterBookingPage() {
         if (active) {
           const activePets = customerPets.filter((pet) => pet.isActive)
           setPets(activePets)
-          // Default select all pets if customer only has 1 pet
           if (activePets.length === 1) {
             setSelectedPetIds([activePets[0].id])
             setActivePetTab(activePets[0].id)
@@ -172,7 +163,6 @@ export default function CounterBookingPage() {
     }
   }, [selectedCustomerId])
 
-  // Sync activePetTab when selectedPetIds change
   useEffect(() => {
     if (selectedPetIds.length > 0) {
       if (!selectedPetIds.includes(activePetTab)) {
@@ -183,7 +173,6 @@ export default function CounterBookingPage() {
     }
   }, [selectedPetIds, activePetTab])
 
-  // Lookups
   const selectedCustomer = useMemo(
     () => customers.find((c) => c.id === selectedCustomerId) || null,
     [customers, selectedCustomerId]
@@ -194,12 +183,10 @@ export default function CounterBookingPage() {
     [pets, activePetTab]
   )
 
-  // Toggle pet selection
   const togglePetSelection = (petId: string) => {
     setSelectedPetIds((prev) => {
       if (prev.includes(petId)) {
         const next = prev.filter((id) => id !== petId)
-        // clean up config
         setPetServices((currentConfig) => {
           const copy = { ...currentConfig }
           delete copy[petId]
@@ -212,21 +199,18 @@ export default function CounterBookingPage() {
     })
   }
 
-  // Select all pets
   const selectAllPets = () => {
     const allIds = pets.map((p) => p.id)
     setSelectedPetIds(allIds)
     if (allIds.length > 0) setActivePetTab(allIds[0])
   }
 
-  // Clear pet selection
   const clearPetSelection = () => {
     setSelectedPetIds([])
     setActivePetTab('')
     setPetServices({})
   }
 
-  // Weight-based pricing helper
   const getPriceForPet = (service: ServiceDTO, petWeight: number) => {
     if (!service.prices || service.prices.length === 0) return 0
     const priceObj = service.prices.find(
@@ -237,7 +221,6 @@ export default function CounterBookingPage() {
     return priceObj ? priceObj.price : 0
   }
 
-  // Filter Grooming services for current active pet
   const groomingServicesForActivePet = useMemo(() => {
     return services.filter((s) => {
       const type = String(s.serviceType || '').toLowerCase()
@@ -248,7 +231,6 @@ export default function CounterBookingPage() {
     })
   }, [services, activePet])
 
-  // Filter Boarding suite services for current active pet
   const boardingServicesForActivePet = useMemo(() => {
     return services.filter((s) => {
       const type = String(s.serviceType || '').toLowerCase()
@@ -259,7 +241,6 @@ export default function CounterBookingPage() {
     })
   }, [services, activePet])
 
-  // Filter Diet options
   const dietServices = useMemo(() => {
     return services.filter((s) => {
       const type = String(s.serviceType || '').toLowerCase()
@@ -267,7 +248,6 @@ export default function CounterBookingPage() {
     })
   }, [services])
 
-  // Boarding duration calculation
   const stayDays = useMemo(() => {
     if (!boardingDates || boardingDates.length < 2 || !boardingDates[0] || !boardingDates[1]) {
       return 1
@@ -275,7 +255,6 @@ export default function CounterBookingPage() {
     return Math.max(1, boardingDates[1].startOf('day').diff(boardingDates[0].startOf('day'), 'day'))
   }, [boardingDates])
 
-  // Toggle grooming service for active pet
   const toggleGroomingForActivePet = (srvId: string) => {
     if (!activePet) return
     const petId = activePet.id
@@ -294,7 +273,6 @@ export default function CounterBookingPage() {
     })
   }
 
-  // Set boarding suite for active pet
   const setBoardingSuiteForActivePet = (suiteId: string) => {
     if (!activePet) return
     const petId = activePet.id
@@ -307,7 +285,6 @@ export default function CounterBookingPage() {
     }))
   }
 
-  // Set diet add-on for active pet
   const setDietForActivePet = (dietId?: string) => {
     if (!activePet) return
     const petId = activePet.id
@@ -320,7 +297,6 @@ export default function CounterBookingPage() {
     }))
   }
 
-  // Financial calculation across all selected pets
   const { lineItemsByPet, totalEstimatedCost } = useMemo(() => {
     let sum = 0
     const grouped: Record<
@@ -400,7 +376,6 @@ export default function CounterBookingPage() {
     return { lineItemsByPet: grouped, totalEstimatedCost: sum }
   }, [selectedPetIds, pets, petServices, category, services, stayDays])
 
-  // Voucher discount calculation
   const voucherDiscount = useMemo(() => {
     if (!appliedVoucher || totalEstimatedCost <= 0) return 0
     const isPercent =
@@ -415,7 +390,6 @@ export default function CounterBookingPage() {
 
   const finalTotalCost = Math.max(0, totalEstimatedCost - voucherDiscount)
 
-  // Handle Voucher verification and application
   const handleApplyVoucher = async () => {
     const code = voucherInput.trim().toUpperCase()
     if (!code) {
@@ -457,14 +431,12 @@ export default function CounterBookingPage() {
     message.info('Voucher removed.')
   }
 
-  // Quick appointment time presets
   const handleQuickTime = (hours: number, minutes: number) => {
     const baseDate = appointmentAt || dayjs()
     const target = baseDate.hour(hours).minute(minutes).second(0)
     setAppointmentAt(target)
   }
 
-  // Submission handler
   const handleCreateBooking = async () => {
     if (!canCreate) {
       return message.error('You do not have permission to create bookings (BOOKING_CREATE).')
@@ -491,7 +463,6 @@ export default function CounterBookingPage() {
 
     const bookingItems: BookingItemPayload[] = []
 
-    // Validate each selected pet has required services
     for (const petId of selectedPetIds) {
       const pet = pets.find((p) => p.id === petId)
       const petName = pet ? `"${pet.name}"` : 'one of the pets'

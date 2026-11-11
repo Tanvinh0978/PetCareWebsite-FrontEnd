@@ -83,7 +83,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
     try {
       const currentStatus = normalizeStatus(task.status);
 
-      // Ensure backend status transitions are respected (1 -> 2 -> 3 -> 4)
       if (currentStatus === 1 || currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 2,
@@ -101,7 +100,7 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
       }
 
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
-        status: 4, // Completed
+        status: 4,
         resultNote: values.resultNote?.trim() || 'Service completed successfully.',
         beforeImageUrl: beforeImage || null,
         resultImageUrl: resultImage || null,

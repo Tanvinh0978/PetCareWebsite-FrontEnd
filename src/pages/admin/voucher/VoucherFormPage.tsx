@@ -26,7 +26,6 @@ const AdminVoucherFormPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Form fields
   const [code, setCode] = useState('');
   const [discountType, setDiscountType] = useState<DiscountType>(DiscountType.Percentage);
   const [discountValue, setDiscountValue] = useState<number | string>('');
@@ -35,7 +34,6 @@ const AdminVoucherFormPage: React.FC = () => {
   const [maxUsage, setMaxUsage] = useState<number | string>('');
   const [hasMaxUsage, setHasMaxUsage] = useState(false);
 
-  // Load existing voucher when editing
   useEffect(() => {
     if (!id) return;
     setLoading(true);

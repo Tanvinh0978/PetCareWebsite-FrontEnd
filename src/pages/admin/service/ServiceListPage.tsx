@@ -35,7 +35,6 @@ export default function ServiceListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Confirmation modal state for deactivating a service
   const [serviceToDeactivate, setServiceToDeactivate] = useState<ServiceListItem | null>(null);
   const [deactivating, setDeactivating] = useState(false);
   const user = useAuthStore((s) => s.user);
@@ -110,7 +109,6 @@ export default function ServiceListPage() {
     }
   }
 
-  // Calculate pagination boundaries
   const totalCount = data?.totalCount ?? 0;
   const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, totalCount);

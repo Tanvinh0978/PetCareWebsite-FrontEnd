@@ -24,7 +24,6 @@ export const customerService = {
     axiosClient.patch<IBackendRes<string>, IBackendRes<string>>(`/api/customers/${id}/toggle-status`),
 
   getProfile: async () => {
-    // 1. Try /api/Customers/profile and /api/customers/profile
     try {
       const res: any = await axiosClient.get('/api/Customers/profile');
       const data = res?.result ?? res?.data ?? res;
@@ -43,7 +42,6 @@ export const customerService = {
       }
     }
 
-    // 2. Fallback: try by stored customer ID
     const customerId = localStorage.getItem('petcare.customerId') || useAuthStore.getState().user?.id;
     if (customerId) {
       try {
@@ -59,7 +57,6 @@ export const customerService = {
       }
     }
 
-    // 3. Fallback: current logged in user from auth store
     const user = useAuthStore.getState().user;
     if (user) {
       return {

@@ -20,14 +20,13 @@ interface FormValues {
 
 interface Props {
   open: boolean
-  service: ServiceDetailDTO | null // null = thêm mới, có giá trị = sửa
+  service: ServiceDetailDTO | null
   onClose: () => void
   onSuccess: () => void
 }
 
 const toOptions = (labels: Record<string, string>) => Object.entries(labels).map(([value, label]) => ({ value, label }))
 
-// Một modal dùng cho cả thêm và sửa (khác dự án mẫu, vì hai form giống nhau).
 const ServiceFormModal: React.FC<Props> = ({ open, service, onClose, onSuccess }) => {
   const { message } = App.useApp()
   const editing = Boolean(service)

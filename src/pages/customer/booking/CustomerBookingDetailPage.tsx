@@ -110,15 +110,12 @@ export default function CustomerBookingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Payment state
   const [paying, setPaying] = useState(false);
 
-  // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('Change of plans');
   const [cancelling, setCancelling] = useState(false);
 
-  // Review states
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewingItem, setReviewingItem] = useState<{
     id: string;
@@ -154,10 +151,8 @@ export default function CustomerBookingDetailPage() {
 
   const [deletingReview, setDeletingReview] = useState(false);
 
-  // Boarding Care History Modal
   const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
 
-  // Comparison Photos Modal
   const [beforeAfterItem, setBeforeAfterItem] = useState<BookingDetailItem | null>(null);
 
   const fetchDetail = async () => {
@@ -166,7 +161,6 @@ export default function CustomerBookingDetailPage() {
     setError('');
     try {
       const detail = await bookingService.fetchById(id);
-      // Ensure payment choice detection
       const hasBoardingItem = detail?.bookingItems?.some((item) =>
         String(item.serviceType).trim().toLowerCase() === 'boarding' || String(item.serviceType) === '1'
       );
@@ -185,7 +179,6 @@ export default function CustomerBookingDetailPage() {
     fetchDetail();
   }, [id]);
 
-  // Group services by pet
   const petGroups = useMemo<PetGroup[]>(() => {
     if (!booking || !booking.bookingItems) return [];
     const map = new Map<string, PetGroup>();
@@ -207,7 +200,6 @@ export default function CustomerBookingDetailPage() {
     return Array.from(map.values());
   }, [booking]);
 
-  // Extract the unified schedule from the booking items (rendered ONCE at top)
   const unifiedSchedule = useMemo(() => {
     if (!booking?.bookingItems?.length) return null;
     const firstItem = booking.bookingItems[0];

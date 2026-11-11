@@ -6,7 +6,6 @@ import type {
 const get = <T>(url: string, params?: object) =>
   axiosClient.get<IBackendRes<T>, IBackendRes<T>>(url, { params })
 
-// Lấy mọi trang của một endpoint danh sách (backend giới hạn 100 mục mỗi trang).
 const fetchAllPages = async (url: string): Promise<ServiceDTO[]> => {
   const all: ServiceDTO[] = []
   for (let page = 1; page <= 50; page++) {

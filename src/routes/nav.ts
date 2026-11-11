@@ -1,8 +1,7 @@
 import type { Role } from "@/auth/roles";
 
-export interface NavItem { label: string; to: string } // "to" tính từ gốc khu vực, ví dụ "services"
+export interface NavItem { label: string; to: string }
 
-// Mục menu bên trái cho từng vai trò.
 export const NAV: Record<Role, NavItem[]> = {
   guest: [
     { label: "Services", to: "services" },
@@ -14,7 +13,6 @@ export const NAV: Record<Role, NavItem[]> = {
     { label: "Room Types", to: "room-types" },
     { label: "Promotions", to: "promotions" },
     { label: "Book Now", to: "booking" },
-    // [new-page:nav-customer]
   ],
   staff: [
     { label: "Bookings", to: "bookings" },
@@ -22,7 +20,6 @@ export const NAV: Record<Role, NavItem[]> = {
     { label: "Boarding Tasks", to: "manage-boarding" },
     { label: "Pets", to: "pets" },
     { label: "Reviews", to: "reviews" },
-    // [new-page:nav-staff]
   ],
   admin: [
     { label: "Bookings", to: "bookings" },
@@ -37,6 +34,5 @@ export const NAV: Record<Role, NavItem[]> = {
     { label: "Room Types", to: "room-types" },
     { label: "Rooms", to: "rooms" },
     { label: "Vouchers", to: "vouchers" },
-    // [new-page:nav-admin]
   ],
 };

@@ -18,7 +18,6 @@ export const mediaService = {
       },
     })
 
-    // Handle different possible backend response formats
     if (typeof res === 'string') return res
     if (res?.result) {
       if (typeof res.result === 'string') return res.result

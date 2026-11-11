@@ -96,7 +96,6 @@ export default function Layout({ role }: { role: Role }) {
     },
   ];
 
-  // Admin & Staff: Left Sidebar navigation layout
   if (isAdminOrStaff) {
     return (
       <div className="shell">
@@ -262,7 +261,6 @@ export default function Layout({ role }: { role: Role }) {
     );
   }
 
-  // Customer & Guest: Top Header navigation bar layout with Footer
   return (
     <div className="customer-shell">
       {/* Top Luxury Announcement Bar */}

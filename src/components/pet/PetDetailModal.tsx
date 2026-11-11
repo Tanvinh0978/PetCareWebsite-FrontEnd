@@ -14,7 +14,6 @@ export const PetDetailModal: React.FC<PetDetailModalProps> = ({ pet, open, onClo
 
   const isPetCat = isCat(pet.species)
   const speciesLabel = getPetSpeciesLabel(pet.species)
-  // speciesIcon removed
 
   return (
     <div

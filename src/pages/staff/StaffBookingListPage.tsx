@@ -249,8 +249,6 @@ export default function StaffBookingListPage() {
     try {
       await bookingService.checkout(checkoutSummary.bookingId, {
         paymentMethod,
-        // The API rejects an explicit zero. Null means "collect remaining";
-        // when nothing remains, it lets the already-paid booking complete.
         amount: (checkoutSummary.remainingAmount ?? 0) > 0 ? amount : null,
         note: note.trim() || undefined,
       });

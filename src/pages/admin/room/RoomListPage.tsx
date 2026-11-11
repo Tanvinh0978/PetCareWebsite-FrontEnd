@@ -40,7 +40,6 @@ const AdminRoomListPage: React.FC = () => {
   const [roomToToggle, setRoomToToggle] = useState<RoomDTO | null>(null);
   const [toggling, setToggling] = useState(false);
 
-  // Load room types for toolbar filter
   useEffect(() => {
     roomTypeService
       .fetchAll()
@@ -77,7 +76,6 @@ const AdminRoomListPage: React.FC = () => {
 
   useEffect(() => {
     fetchRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, searchTerm, status, roomTypeIdFilter]);
 
   const onSearch = (e: React.FormEvent) => {

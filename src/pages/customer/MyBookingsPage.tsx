@@ -109,20 +109,14 @@ const MyBookingsPage: React.FC = () => {
   const [serviceType, setServiceType] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
-  // Detail Modal state
-  // detailModalOpen removed
-  // selectedBooking removed
-  // detailLoading removed
   const [careHistoryItem, setCareHistoryItem] = useState<{ id: string; petName: string } | null>(null);
   const [beforeAfterItem, setBeforeAfterItem] = useState<BookingDetailItem | null>(null);
 
-  // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelLoading, setCancelLoading] = useState(false);
 
-  // Review Modal state
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewingItem, setReviewingItem] = useState<{
     id: string;
@@ -130,7 +124,6 @@ const MyBookingsPage: React.FC = () => {
     petName: string;
   } | null>(null);
 
-  // Track which booking items have already been reviewed
   const [reviewedItemIds, setReviewedItemIds] = useState<Set<string>>(() => {
     try {
       const cached = localStorage.getItem('petcare_reviewed_items');
@@ -185,7 +178,6 @@ const MyBookingsPage: React.FC = () => {
         } catch {}
       }
     } catch {
-      // ignore
     }
   }, []);
 
@@ -194,7 +186,6 @@ const MyBookingsPage: React.FC = () => {
   }, [syncReviewedItems]);
 
   const handleOpenReview = (item: BookingDetailItem) => {
-    // Handled in BookingDetailPage
 
     if ((item as any).isReviewed || reviewedItemIds.has(item.id)) {
       message.info('This service has already been reviewed.');
@@ -252,7 +243,6 @@ const MyBookingsPage: React.FC = () => {
     });
   };
 
-  // VNPay payment state
   const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
 
   const navigate = useNavigate();
@@ -287,9 +277,6 @@ const MyBookingsPage: React.FC = () => {
         serviceDate: serviceDate || undefined,
         serviceType: serviceType !== undefined ? serviceType : undefined,
       });
-      // The current booking list/detail DTOs omit paymentChoice. Boarding bookings
-      // created by customers must use VNPay, so inspect pending items to restore
-      // the retry action for older bookings as well as locally remembered choices.
       const pendingDetails = await Promise.all(data.items
         .filter((booking) => isPending(booking.status))
         .map(async (booking) => {

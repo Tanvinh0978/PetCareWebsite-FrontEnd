@@ -36,7 +36,6 @@ interface PriceRow {
 const emptyRow = (): PriceRow => ({ minWeight: '', maxWeight: '', price: '', pricingUnit: 'Per_Turn' });
 const num = (v: string) => (v.trim() === '' ? null : Number(v));
 
-// Match validation with CreateServiceCommandValidator in backend
 function validate(name: string, rows: PriceRow[]): string {
   if (!name.trim()) return 'Enter a service name.';
   if (name.length > 150) return 'Service name must be at most 150 characters.';

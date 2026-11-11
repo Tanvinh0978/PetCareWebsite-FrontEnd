@@ -45,12 +45,10 @@ export default function BookingManagementPage() {
   const [pageNumber, setPageNumber] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
-  // Filters
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined)
   const [serviceDate, setServiceDate] = useState<string | undefined>(dayjs().format('YYYY-MM-DD'))
 
-  // Modals
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const currentUser = useAuthStore((s) => s.user)
@@ -58,7 +56,6 @@ export default function BookingManagementPage() {
   const canCheckInPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CHECKIN)
   const canCancelPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CANCEL)
 
-  // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null)
   const [cancellationReason, setCancellationReason] = useState('')
@@ -91,7 +88,7 @@ export default function BookingManagementPage() {
   const handleConfirmBooking = async (bookingId: string) => {
     setActionLoadingId(bookingId)
     try {
-      await bookingService.updateBookingStatus(bookingId, { status: 1 }) // 1: Confirmed
+      await bookingService.updateBookingStatus(bookingId, { status: 1 })
       message.success('Booking confirmed successfully!')
       fetchBookings()
     } catch (err: any) {

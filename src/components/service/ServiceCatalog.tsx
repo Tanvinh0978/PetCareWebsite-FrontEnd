@@ -12,7 +12,6 @@ import {
   type ServiceType,
 } from '@/types/service';
 
-// Danh sách dịch vụ đang hoạt động, dùng chung cho guest và customer.
 export default function ServiceCatalog({
   detailBase,
   showSignInHint,

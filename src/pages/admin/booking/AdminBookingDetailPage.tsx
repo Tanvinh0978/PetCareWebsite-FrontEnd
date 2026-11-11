@@ -69,11 +69,9 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
   const [detail, setDetail] = useState<BookingDetail | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Staff and Room options for assignment
   const [staffList, setStaffList] = useState<StaffDTO[]>([])
   const [roomList, setRoomList] = useState<RoomDTO[]>([])
 
-  // Local assignment state per item: itemId -> { staffId?: string; roomId?: string }
   const [assignments, setAssignments] = useState<Record<string, { staffId?: string; roomId?: string }>>({})
   const [savingItemId, setSavingItemId] = useState<string | null>(null)
   const [checkInLoading, setCheckInLoading] = useState(false)
@@ -90,7 +88,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
   const canCancelPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CANCEL)
   const canAssignPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_ASSIGN_STAFF)
 
-  // Load booking details & staff/room options
   const loadData = useCallback(async (bookingId: string) => {
     setLoading(true)
     setErrorMsg(null)
@@ -103,7 +100,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
 
       setDetail(bookingData)
 
-      // Initialize assignments from existing booking items
       const initialMap: Record<string, { staffId?: string; roomId?: string }> = {}
       if (bookingData?.bookingItems) {
         for (const item of bookingData.bookingItems) {
@@ -115,11 +111,9 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
       }
       setAssignments(initialMap)
 
-      // Unpack staff list
       const staffs = staffRes?.items || []
       setStaffList(staffs)
 
-      // Unpack room list
       const rawRoom: any = roomRes
       const rooms: RoomDTO[] = rawRoom?.result?.items || rawRoom?.data?.items || rawRoom?.items || []
       setRoomList(rooms)
@@ -234,7 +228,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
     }
   }
 
-  // Filter staff: Exclude Admin, must match service department (Boarding vs Grooming)
   const getFilteredStaffOptions = (item: BookingDetailItem) => {
     const isBoarding =
       item.serviceType === 1 ||
@@ -282,7 +275,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
   const isPending = detail?.status === 0 || String(detail?.status).toLowerCase() === 'pending'
   const isReadOnly = Boolean(isCompleted || isCancelled || isNoShow)
 
-  // Check if all active items are completed
   const allItemsCompleted =
     Boolean(detail?.bookingItems &&
     detail.bookingItems.length > 0 &&
@@ -291,7 +283,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
       return s === '4' || s === 'completed' || s === '5' || s === 'cancelled' || s === '6' || s === 'no_show'
     }))
 
-  // Check if all items are fully assigned
   const isFullyAssigned = Boolean(
     detail?.bookingItems &&
     detail.bookingItems.length > 0 &&
@@ -310,7 +301,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
     })
   )
 
-  // Check if there are items eligible to check in
   const hasEligibleCheckInItems = Boolean(
     detail?.bookingItems?.some((bi) => {
       const s = String(bi.status).toLowerCase()
@@ -318,7 +308,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
     })
   )
 
-  // Check-in requires Confirmed status AND full assignment
   const canCheckIn = isConfirmed && isFullyAssigned && hasEligibleCheckInItems
 
   const getItemStatusTag = (status: number | string) => {

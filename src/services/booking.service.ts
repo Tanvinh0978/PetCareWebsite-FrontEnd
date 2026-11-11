@@ -18,7 +18,6 @@ export const rememberVnpayBooking = (bookingId: string) => {
     ids.add(bookingId);
     localStorage.setItem(VNPAY_BOOKING_IDS_KEY, JSON.stringify([...ids]));
   } catch {
-    // Keep booking creation working even if browser storage is unavailable.
   }
 };
 
@@ -34,7 +33,6 @@ export const forgetVnpayBooking = (bookingId?: string) => {
     }
     localStorage.setItem(VNPAY_BOOKING_IDS_KEY, JSON.stringify(readPendingVnpayBookingIds().filter((id) => id !== bookingId)));
   } catch {
-    // Best effort cleanup only.
   }
 };
 
@@ -60,7 +58,7 @@ export interface BookingListItem {
   customerPhone?: string;
   itemsCount: number;
   totalPrice: number;
-  status: number | string; // 0: Pending, 1: Partially_Completed, 2: Completed, 3: Cancelled
+  status: number | string;
   paymentChoice?: string;
   createdAt: string;
   bookingType?: 'Grooming' | 'Boarding' | string;

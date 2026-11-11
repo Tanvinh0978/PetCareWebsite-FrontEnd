@@ -48,7 +48,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
   const [summary, setSummary] = useState<CheckoutSummaryDTO | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Form states
   const [paymentMethod, setPaymentMethod] = useState<string>('CASH')
   const [amountToPay, setAmountToPay] = useState<number>(0)
   const [transactionCode, setTransactionCode] = useState<string>('')

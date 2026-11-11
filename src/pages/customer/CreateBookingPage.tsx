@@ -34,7 +34,6 @@ const CreateBookingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   
-  // New state to separate flows
   const [bookingType, setBookingType] = useState<'Grooming' | 'Boarding' | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [activePetTab, setActivePetTab] = useState<string>('');
@@ -48,7 +47,6 @@ const CreateBookingPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const queryVoucher = searchParams.get('voucher');
 
-  // Privilege Voucher states
   const [appliedVoucher, setAppliedVoucher] = useState<VoucherDTO | null>(null);
   const [voucherInput, setVoucherInput] = useState<string>('');
   const [checkingVoucher, setCheckingVoucher] = useState<boolean>(false);
@@ -345,8 +343,8 @@ const CreateBookingPage: React.FC = () => {
   
   const prev = () => {
     if (currentStep === 0) {
-      setBookingType(null); // Go back to flow selection
-      setPetServices({}); // Reset services
+      setBookingType(null);
+      setPetServices({});
       setAppliedVoucher(null);
       setVoucherInput('');
       setVoucherError(null);
@@ -399,7 +397,6 @@ const CreateBookingPage: React.FC = () => {
   const totalAmount = calculateTotal();
   const subtotalAmount = totalAmount;
 
-  // Voucher discount calculation
   const voucherDiscount = useMemo(() => {
     if (!appliedVoucher || subtotalAmount <= 0) return 0;
     const isPercent =
@@ -414,7 +411,6 @@ const CreateBookingPage: React.FC = () => {
 
   const finalTotalAmount = Math.max(0, subtotalAmount - voucherDiscount);
 
-  // Handle Voucher verification and application
   const handleApplyVoucher = async (codeToApply?: string | unknown) => {
     const raw = typeof codeToApply === 'string' ? codeToApply : voucherInput;
     const code = raw.trim().toUpperCase();
@@ -643,7 +639,6 @@ const CreateBookingPage: React.FC = () => {
 
   if (loading) return <div style={{ textAlign: 'center', padding: '100px' }}><Spin size="large" /></div>;
 
-  // Flow Selection Screen
   if (bookingType === null) {
     return (
       <div className="booking-page-wrap">
@@ -720,7 +715,6 @@ const CreateBookingPage: React.FC = () => {
   const dietOptions = services.filter(s => String(s.serviceType || '').toLowerCase() === 'diet');
 
 
-  // Sanctuary Spa operating hours: 08:00 - 20:00 (8 AM to 8 PM)
   const disabledGroomingTime = (selectedDate: Dayjs | null) => {
     const now = dayjs();
     const OPEN_HOUR = 8;
@@ -740,7 +734,6 @@ const CreateBookingPage: React.FC = () => {
       };
     }
 
-    // Today: only future hours & minutes
     const currentHour = now.hour();
     const currentMinute = now.minute();
     const disabledHoursList = new Set(offHours);
@@ -748,7 +741,6 @@ const CreateBookingPage: React.FC = () => {
     for (let h = 0; h < currentHour; h++) {
       disabledHoursList.add(h);
     }
-    // If we are past 45 minutes of current hour, disable current hour
     if (currentMinute > 45) {
       disabledHoursList.add(currentHour);
     }

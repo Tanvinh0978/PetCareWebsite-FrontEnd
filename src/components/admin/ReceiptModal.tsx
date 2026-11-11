@@ -49,7 +49,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
       return;
     }
 
-    // Create a dedicated hidden iframe for clean, instant, single-page printing
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.right = '0';

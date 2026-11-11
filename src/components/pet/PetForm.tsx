@@ -11,8 +11,8 @@ import { PetSpecies, isCat } from '@/types/pet.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 interface PetFormProps {
-  backPath: string // e.g. '/admin/pets' or '/staff/pets' or '/customer/pets'
-  fixedCustomerId?: string // If provided (e.g. for customer), don't ask to choose customer
+  backPath: string
+  fixedCustomerId?: string
 }
 
 export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) => {
@@ -24,7 +24,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  // Form states
   const [customerId, setCustomerId] = useState(fixedCustomerId || '')
   const [name, setName] = useState('')
   const [imageUrl, setImageUrl] = useState('')
@@ -36,7 +35,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
   const [healthNotes, setHealthNotes] = useState('')
   const [ownerName, setOwnerName] = useState('')
 
-  // Customer options for Admin & Staff
   const [customers, setCustomers] = useState<CustomerDTO[]>([])
   const [loadingCustomers, setLoadingCustomers] = useState(false)
   const [customerSearch, setCustomerSearch] = useState('')
@@ -46,7 +44,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
 
   const isCurrentCat = isCat(species)
 
-  // Dynamic popular breed list based on chosen species
   const breedList = useMemo(() => {
     return isCurrentCat ? POPULAR_CAT_BREEDS : POPULAR_DOG_BREEDS
   }, [isCurrentCat])

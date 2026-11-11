@@ -25,7 +25,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEY, mode);
     } catch {
-      // Theme remains available for the current page session.
     }
   }, [mode]);
 

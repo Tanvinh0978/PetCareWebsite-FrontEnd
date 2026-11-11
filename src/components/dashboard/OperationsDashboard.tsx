@@ -45,7 +45,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Modals
   const [detailBookingId, setDetailBookingId] = useState<string | null>(null)
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
 
@@ -67,7 +66,6 @@ export const OperationsDashboard: React.FC<OperationsDashboardProps> = ({ role, 
     fetchStats()
   }, [])
 
-  // Calculate highest revenue for chart scaling
   const maxRevenue = Math.max(
     ...(stats?.revenueTrend?.map((item) => Number(item.revenue)) || [1]),
     1000000

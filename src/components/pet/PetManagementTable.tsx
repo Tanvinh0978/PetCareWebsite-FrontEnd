@@ -15,7 +15,7 @@ import { PetSpecies, isCat } from '@/types/pet.types';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 interface PetManagementTableProps {
-  basePath: string; // e.g. '/admin/pets' or '/staff/pets'
+  basePath: string;
   title?: string;
   subtitle?: string;
 }

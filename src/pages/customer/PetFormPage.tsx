@@ -82,7 +82,6 @@ const PetFormPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Form states
   const [name, setName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [species, setSpecies] = useState<'Dog' | 'Cat'>('Dog');
@@ -93,7 +92,6 @@ const PetFormPage: React.FC = () => {
   const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Dynamic breed options based on species
   const breedOptions = useMemo(() => {
     const list = species === 'Cat' ? POPULAR_CAT_BREEDS : POPULAR_DOG_BREEDS;
     return list.map((b) => ({ value: b, label: b }));
@@ -183,7 +181,6 @@ const PetFormPage: React.FC = () => {
       imageUrl: imageUrl.trim() || undefined,
     };
 
-    // Get customerId from localStorage (set by auth on login)
     const customerId = localStorage.getItem('petcare.customerId');
     if (!editing && customerId) {
       payload.customerId = customerId;

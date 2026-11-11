@@ -38,17 +38,14 @@ export function isServiceCompatibleWithPet(service: ServiceDTO, petSpecies: numb
   const matchesCat = catKeywords.some((kw) => combinedText.includes(kw));
   const matchesDog = dogKeywords.some((kw) => combinedText.includes(kw));
 
-  // If service specifically mentions cats and not dogs
   if (matchesCat && !matchesDog) {
     return isCat;
   }
 
-  // If service specifically mentions dogs and not cats
   if (matchesDog && !matchesCat) {
     return isDog;
   }
 
-  // Universal / neutral service
   return true;
 }
 

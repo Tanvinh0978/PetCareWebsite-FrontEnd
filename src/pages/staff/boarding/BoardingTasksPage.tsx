@@ -112,7 +112,6 @@ export default function BoardingTasksPage() {
     void loadTasks()
   }, [loadTasks])
 
-  // Quick date switches
   const handlePrevDay = () => {
     setDate((prev) => prev.subtract(1, 'day'))
     setPageNumber(1)

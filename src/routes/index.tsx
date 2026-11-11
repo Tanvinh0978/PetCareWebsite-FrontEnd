@@ -53,7 +53,6 @@ import CounterBookingPage from "@/pages/staff/CounterBookingPage";
 
 const notFound: RouteObject = { path: "*", element: <NotFoundPage /> };
 
-// Danh sách màn hình dùng chung cho guest (gốc "/") và customer ("/customer").
 const publicServiceRoutes = (base: string, guest = false): RouteObject[] => [
   { path: "services", element: <ServiceCatalog detailBase={base + "/services"} showSignInHint={guest} /> },
   { path: "services/:id", element: <ServiceDetail backTo={base + "/services"} /> },

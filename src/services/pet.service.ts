@@ -15,14 +15,10 @@ export const petService = {
     if (params?.pageSize) queryParams.pageSize = params.pageSize
     if (params?.isActive !== undefined) queryParams.isActive = params.isActive
 
-    // Use /api/Pets (not /search) when no keyword/species filter — both work identically
     const hasSearchParams = params?.keyword || params?.species !== undefined
     const endpoint = hasSearchParams ? '/api/Pets/search' : '/api/Pets'
     const res: any = await axiosClient.get(endpoint, { params: queryParams })
 
-    // Backend returns PagedResult<T> directly via Ok() — no IBackendRes wrapper
-    // JSON fields are camelCased by .NET default serializer:
-    //   { items, totalCount, pageNumber, pageSize, totalPages, hasPreviousPage, hasNextPage }
     if (res && Array.isArray(res.items)) {
       return {
         items: res.items as PetDTO[],
@@ -35,7 +31,6 @@ export const petService = {
       }
     }
 
-    // Fallback: wrapped in IBackendRes
     if (res?.result && Array.isArray(res.result.items)) {
       const r = res.result
       return {
@@ -77,7 +72,6 @@ export const petService = {
       const pets = res?.result ?? res
       if (Array.isArray(pets)) return pets as PetDTO[]
     } catch {
-      // Fallback: try fetching current user's pets from /my-pets (avoids 403 on /api/Pets which requires Staff/Admin)
       try {
         const myPets = await petService.fetchMyPets()
         if (myPets.length > 0) {

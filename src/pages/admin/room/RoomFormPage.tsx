@@ -31,7 +31,6 @@ const AdminRoomFormPage: React.FC = () => {
   const [loadingRoomTypes, setLoadingRoomTypes] = useState(false);
 
   useEffect(() => {
-    // Load room types for the dropdown
     setLoadingRoomTypes(true);
     roomTypeService
       .fetchAll()
@@ -48,7 +47,6 @@ const AdminRoomFormPage: React.FC = () => {
 
     if (!id) return;
 
-    // Load room details if editing
     roomService
       .fetchById(id)
       .then((res) => {

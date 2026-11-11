@@ -32,7 +32,6 @@ const VoucherListPage: React.FC = () => {
   const location = useLocation();
   const baseVoucherPath = location.pathname.startsWith('/staff') ? '/staff/vouchers' : '/admin/vouchers';
 
-  // Filter / pagination state
   const [keywordInput, setKeywordInput] = useState('');
   const [keyword, setKeyword] = useState('');
   const [validFilter, setValidFilter] = useState<'all' | 'valid' | 'invalid'>('all');
@@ -45,7 +44,6 @@ const VoucherListPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Delete confirmation modal
   const [voucherToDelete, setVoucherToDelete] = useState<VoucherDTO | null>(null);
   const [deleting, setDeleting] = useState(false);
   const user = useAuthStore((s) => s.user);
@@ -71,7 +69,6 @@ const VoucherListPage: React.FC = () => {
       .then((res: any) => {
         if (!cancelled) {
           const pagedResult: IPagedResult<VoucherDTO> = res?.result ?? res;
-          // Client-side filter by discountType if needed
           if (discountTypeFilter !== 'all' && pagedResult?.items) {
             const filtered = pagedResult.items.filter(
               (v) => v.discountType === discountTypeFilter

@@ -41,12 +41,10 @@ export const GroomingTasksPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('all');
 
-  // Action states
   const [actionLoadingItemId, setActionLoadingItemId] = useState<string | null>(null);
   const [completingTask, setCompletingTask] = useState<GroomingTaskResponseDTO | null>(null);
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
 
-  // Fetch tasks
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
@@ -71,12 +69,10 @@ export const GroomingTasksPage: React.FC = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // Quick date switches
   const handlePrevDay = () => setSelectedDate((prev) => prev.subtract(1, 'day'));
   const handleToday = () => setSelectedDate(dayjs());
   const handleNextDay = () => setSelectedDate((prev) => prev.add(1, 'day'));
 
-  // Filter tasks by active tab
   const filteredTasks = useMemo(() => {
     if (activeTab === 'all') return tasks;
     const tabNum = Number(activeTab);
@@ -89,7 +85,6 @@ export const GroomingTasksPage: React.FC = () => {
     return tasks.filter((t) => normalizeStatus(t.status) === tabNum);
   }, [tasks, activeTab]);
 
-  // Count by status
   const counts = useMemo(() => {
     let confirmed = 0;
     let checkedIn = 0;
@@ -107,7 +102,6 @@ export const GroomingTasksPage: React.FC = () => {
     return { total: tasks.length, confirmed, checkedIn, inProgress, completed };
   }, [tasks]);
 
-  // Check-In task handler (status -> 2)
   const handleCheckInTask = async (task: GroomingTaskResponseDTO) => {
     try {
       setActionLoadingItemId(task.itemId);
@@ -119,7 +113,7 @@ export const GroomingTasksPage: React.FC = () => {
         });
       }
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
-        status: 2, // Checked_In
+        status: 2,
         roomId: task.roomId || undefined,
       });
       message.success(`Checked in ${task.petName} successfully!`);
@@ -135,12 +129,10 @@ export const GroomingTasksPage: React.FC = () => {
     }
   };
 
-  // Start task handler (status -> 3)
   const handleStartTask = async (task: GroomingTaskResponseDTO) => {
     try {
       setActionLoadingItemId(task.itemId);
       const currentStatus = normalizeStatus(task.status);
-      // Advance to Checked_In first if needed
       if (currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 1,
@@ -149,12 +141,12 @@ export const GroomingTasksPage: React.FC = () => {
       }
       if (currentStatus === 1 || currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
-          status: 2, // Checked_In
+          status: 2,
           roomId: task.roomId || undefined,
         });
       }
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
-        status: 3, // In_Progress
+        status: 3,
         roomId: task.roomId || undefined,
       });
       message.success(`Started grooming session for ${task.petName}!`);
@@ -170,7 +162,6 @@ export const GroomingTasksPage: React.FC = () => {
     }
   };
 
-  // Open complete modal
   const handleOpenCompleteModal = (task: GroomingTaskResponseDTO) => {
     setCompletingTask(task);
     setCompleteModalOpen(true);

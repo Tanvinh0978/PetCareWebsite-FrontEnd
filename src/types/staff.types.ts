@@ -30,7 +30,7 @@ export interface UpdateStaffDTO {
   address?: string
   avatarUrl?: string
   yearsOfExperience: number
-  status: number // 0: Active, 1: Inactive
+  status: number
   roleIds: string[]
 }
 

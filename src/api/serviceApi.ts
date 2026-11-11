@@ -12,7 +12,6 @@ export interface ServiceFilter {
   pageSize: number;
 }
 
-// Lấy mọi trang của một endpoint danh sách (backend giới hạn 100 mục mỗi trang).
 async function fetchAll(path: string): Promise<ServiceListItem[]> {
   const items: ServiceListItem[] = [];
   for (let page = 1; ; page++) {
@@ -24,12 +23,8 @@ async function fetchAll(path: string): Promise<ServiceListItem[]> {
   return items;
 }
 
-// Khách: GET /api/services (chỉ dịch vụ đang hoạt động).
 export const listActiveServices = () => fetchAll('/services');
 
-// Admin: GET /api/services/admin rồi lọc và phân trang ngay trên trình duyệt.
-// Lý do: endpoint /admin/search ở backend hiện trả 500 khi để trống bộ lọc, và frontend không sửa được backend.
-// Khi backend sửa xong, đổi hàm này về gọi GET /services/admin/search với params: filter.
 export async function searchServices(filter: ServiceFilter): Promise<PagedResult<ServiceListItem>> {
   const all = await fetchAll('/services/admin');
   const kw = filter.keyword?.trim().toLowerCase();
@@ -60,12 +55,10 @@ export async function createService(payload: CreateServicePayload): Promise<stri
   return res.data.result ?? '';
 }
 
-// PUT thay toàn bộ bảng giá bằng danh sách gửi lên.
 export async function updateService(id: string, payload: UpdateServicePayload): Promise<void> {
   await http.put<ApiResponse<string>>('/services/' + id, payload);
 }
 
-// DELETE là xóa mềm: backend đặt isActive = false.
 export async function deleteService(id: string): Promise<void> {
   await http.delete<ApiResponse<string>>('/services/' + id);
 }

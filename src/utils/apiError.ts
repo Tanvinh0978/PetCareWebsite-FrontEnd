@@ -20,11 +20,9 @@ export const getApiErrorMessage = (error: unknown, fallback = 'Something went wr
   
   if (e.response?.data) {
     const data = e.response.data
-    // Check for standard or capitalized message from ApiResponse
     if (data.message) return data.message
     if (data.Message) return data.Message
 
-    // Check for ASP.NET Core ValidationProblemDetails
     if (data.errors && typeof data.errors === 'object') {
       const errorMessages = Object.values(data.errors).flat()
       if (errorMessages.length > 0) {
@@ -40,7 +38,6 @@ export const getApiErrorMessage = (error: unknown, fallback = 'Something went wr
     return `Request failed (${e.response.status}): ${(e.config?.method ?? '').toUpperCase()} ${e.config?.url ?? ''}`
   }
   
-  // Also check if it's a direct Error object (like client side validation)
   if (error instanceof Error) {
     return error.message;
   }

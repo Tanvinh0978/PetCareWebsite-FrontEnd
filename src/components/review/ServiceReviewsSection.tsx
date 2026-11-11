@@ -63,13 +63,11 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
   const [pageSize, setPageSize] = useState(5)
   const [selectedRating, setSelectedRating] = useState<number | undefined>(undefined)
 
-  // Write new review state
   const [checkingBooking, setCheckingBooking] = useState(false)
   const [writeModalOpen, setWriteModalOpen] = useState(false)
   const [eligibleBookingItem, setEligibleBookingItem] = useState<{ id: string; petName: string } | null>(null)
   const [notEligibleModalOpen, setNotEligibleModalOpen] = useState(false)
 
-  // Edit review state
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editingReview, setEditingReview] = useState<ReviewListItem | null>(null)
 
@@ -104,7 +102,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
             break
           }
         } catch {
-          // ignore error for single booking detail
         }
       }
 
@@ -121,7 +118,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
     }
   }
 
-  // Fetch reviews for this service
   const fetchReviews = useCallback(async () => {
     if (!serviceId) return
     setLoading(true)
@@ -147,7 +143,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
     fetchReviews()
   }, [fetchReviews])
 
-  // Delete review
   const handleDelete = async (id: string) => {
     try {
       const res = await reviewService.delete(id)
@@ -162,7 +157,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
     }
   }
 
-  // Calculate stats from available reviews (or baseline)
   const avgScore =
     reviews.length > 0
       ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
