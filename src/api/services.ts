@@ -17,7 +17,6 @@ const mockServices: Service[] = [
     prices: [{ minWeight: null, maxWeight: null, price: 90000, pricingUnit: 'Per_Day' }] },
 ];
 
-// Dịch vụ tạo mới trong phiên làm việc (chỉ hiển thị khi USE_MOCK, để thấy ngay trong danh sách).
 const createdThisSession: Service[] = [];
 
 export async function getServices(): Promise<Service[]> {
@@ -26,7 +25,6 @@ export async function getServices(): Promise<Service[]> {
   return res.data.result ?? [];
 }
 
-// Endpoint thật: POST /api/services -> ApiResponse<Guid>
 export async function createService(payload: CreateServicePayload): Promise<string> {
   const res = await http.post<ApiResponse<string>>('/services', payload);
   const id = res.data.result ?? '';

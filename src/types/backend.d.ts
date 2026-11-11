@@ -1,6 +1,5 @@
 export {}
 declare global {
-  // Mọi response của backend PetCare đều bọc theo dạng này.
   interface IBackendRes<T> {
     isSuccess: boolean
     statusCode: number

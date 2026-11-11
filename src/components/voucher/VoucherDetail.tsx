@@ -124,7 +124,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
         </div>
       </div>
 
-      {/* Main Voucher Card */}
       <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '1.75rem', marginBottom: '1.75rem', boxShadow: 'var(--shadow-sm)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', paddingBottom: '1.25rem', borderBottom: '1px solid #f1f5f9', marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -146,7 +145,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
           </span>
         </div>
 
-        {/* Details Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
           <div>
             <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Discount Value</div>

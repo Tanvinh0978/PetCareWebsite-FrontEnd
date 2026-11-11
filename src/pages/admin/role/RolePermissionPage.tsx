@@ -28,7 +28,6 @@ export default function RolePermissionPage() {
   const [filterModule, setFilterModule] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  // 1. Fetch Role List
   useEffect(() => {
     let cancelled = false
     setLoadingRoles(true)
@@ -64,7 +63,6 @@ export default function RolePermissionPage() {
     }
   }, [])
 
-  // 2. Fetch Selected Role Permissions
   useEffect(() => {
     if (!selectedRoleId) return
     let cancelled = false
@@ -92,7 +90,6 @@ export default function RolePermissionPage() {
     }
   }, [selectedRoleId])
 
-  // Group all available permissions by module
   const { modules, groupedPermissions } = useMemo(() => {
     if (!roleDetail?.allAvailablePermissions) {
       return { modules: [], groupedPermissions: {} as Record<string, PermissionDTO[]> }
@@ -109,29 +106,24 @@ export default function RolePermissionPage() {
     return { modules: mods, groupedPermissions: groups }
   }, [roleDetail])
 
-  // Toggle single permission
   const handleTogglePerm = (permId: string) => {
     setSelectedPermIds((prev) =>
       prev.includes(permId) ? prev.filter((id) => id !== permId) : [...prev, permId]
     )
   }
 
-  // Toggle whole module
   const handleToggleModule = (moduleName: string) => {
     const permsInMod = groupedPermissions[moduleName] || []
     const permIdsInMod = permsInMod.map((p) => p.id)
     const allChecked = permIdsInMod.every((id) => selectedPermIds.includes(id))
 
     if (allChecked) {
-      // Uncheck all in module
       setSelectedPermIds((prev) => prev.filter((id) => !permIdsInMod.includes(id)))
     } else {
-      // Check all in module
       setSelectedPermIds((prev) => Array.from(new Set([...prev, ...permIdsInMod])))
     }
   }
 
-  // Select all or deselect all
   const handleSelectAll = () => {
     if (!roleDetail) return
     if (selectedPermIds.length === roleDetail.allAvailablePermissions.length) {
@@ -141,7 +133,6 @@ export default function RolePermissionPage() {
     }
   }
 
-  // Save changes
   const handleSave = async () => {
     if (!selectedRoleId) return
     setSaving(true)
@@ -165,7 +156,6 @@ export default function RolePermissionPage() {
       }
 
       message.success(`Permissions for "${roleDetail?.roleName || 'Role'}" saved successfully!`)
-      // Refresh role list summary
       const updatedRoles = await roleService.getRoles()
       setRoles(updatedRoles)
     } catch (err) {
@@ -175,7 +165,6 @@ export default function RolePermissionPage() {
     }
   }
 
-  // Filter grouped permissions by search term & module filter
   const filteredModules = useMemo(() => {
     const s = searchTerm.trim().toLowerCase()
     return modules.filter((mod) => {
@@ -227,7 +216,6 @@ export default function RolePermissionPage() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1.5rem', alignItems: 'start' }}>
-        {/* LEFT COLUMN: Role Tabs / Selector */}
         <div className="table-card" style={{ padding: '1.25rem' }}>
           <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', color: '#0f172a' }}>
             System Roles
@@ -278,9 +266,7 @@ export default function RolePermissionPage() {
           )}
         </div>
 
-        {/* RIGHT COLUMN: Permission Assignment Matrix */}
         <div>
-          {/* Top Filter Bar */}
           <div className="admin-toolbar-panel" style={{ marginBottom: '1.25rem' }}>
             <div className="admin-toolbar-row">
               <div className="search-wrapper" style={{ maxWidth: '380px' }}>
@@ -324,7 +310,6 @@ export default function RolePermissionPage() {
             </div>
           </div>
 
-          {/* Permissions Matrix */}
           {loadingDetail ? (
             <div className="table-card" style={{ padding: '4rem', textAlign: 'center' }}>
               <Spin size="large" />
@@ -364,7 +349,6 @@ export default function RolePermissionPage() {
                     className="table-card"
                     style={{ padding: '1.25rem', overflow: 'hidden' }}
                   >
-                    {/* Module Header */}
                     <div
                       style={{
                         display: 'flex',
@@ -405,7 +389,6 @@ export default function RolePermissionPage() {
                       </button>
                     </div>
 
-                    {/* Permissions Grid */}
                     <div
                       style={{
                         display: 'grid',
@@ -435,7 +418,7 @@ export default function RolePermissionPage() {
                             <input
                               type="checkbox"
                               checked={isChecked}
-                              onChange={() => {}} // handled by parent div onClick
+                              onChange={() => {}}
                               style={{
                                 marginTop: '3px',
                                 accentColor: '#059669',

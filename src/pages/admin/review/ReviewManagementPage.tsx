@@ -13,14 +13,12 @@ dayjs.extend(relativeTime)
 export default function ReviewManagementPage() {
   const { message } = App.useApp()
 
-  // State
   const [reviews, setReviews] = useState<ReviewListItem[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [services, setServices] = useState<ServiceDTO[]>([])
 
-  // Filters & Pagination
   const [keywordInput, setKeywordInput] = useState('')
   const [keyword, setKeyword] = useState('')
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>(undefined)
@@ -29,13 +27,11 @@ export default function ReviewManagementPage() {
   const [pageSize, setPageSize] = useState(10)
   const [reload, setReload] = useState(0)
 
-  // Modals state
   const [reviewToView, setReviewToView] = useState<ReviewDetail | null>(null)
   const [viewLoading, setViewLoading] = useState(false)
   const [reviewToDelete, setReviewToDelete] = useState<ReviewListItem | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  // Fetch Services for dropdown
   useEffect(() => {
     serviceService
       .fetchAllForAdmin()
@@ -43,7 +39,6 @@ export default function ReviewManagementPage() {
       .catch((err) => console.error('Failed to load services:', err))
   }, [])
 
-  // Fetch Reviews
   useEffect(() => {
     let cancelled = false
     setLoading(true)
@@ -78,7 +73,6 @@ export default function ReviewManagementPage() {
     }
   }, [selectedServiceId, selectedRating, page, pageSize, reload])
 
-  // Search actions
   const onSearch = (e: FormEvent) => {
     e.preventDefault()
     setPage(1)
@@ -101,7 +95,6 @@ export default function ReviewManagementPage() {
 
   const hasActiveFilters = Boolean(keyword || selectedServiceId || selectedRating !== undefined)
 
-  // Open Detail Modal
   const handleOpenDetail = async (id: string) => {
     setViewLoading(true)
     try {
@@ -118,7 +111,6 @@ export default function ReviewManagementPage() {
     }
   }
 
-  // Confirm Delete Review
   const handleConfirmDelete = async () => {
     if (!reviewToDelete) return
     setDeleting(true)
@@ -142,7 +134,6 @@ export default function ReviewManagementPage() {
     }
   }
 
-  // Filter client-side by keyword if search input has text
   const filteredReviews = reviews.filter((r) => {
     if (!keyword.trim()) return true
     const kw = keyword.toLowerCase()
@@ -153,7 +144,6 @@ export default function ReviewManagementPage() {
     )
   })
 
-  // Metrics
   const averageRating =
     reviews.length > 0
       ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
@@ -163,7 +153,6 @@ export default function ReviewManagementPage() {
     reviews.length > 0 ? Math.round((positiveCount / reviews.length) * 100) : 100
   const lowRateCount = reviews.filter((r) => r.rating <= 2).length
 
-  // Pagination bounds
   const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
   const endEntry = Math.min(page * pageSize, totalCount)
   const totalPages = Math.ceil(totalCount / pageSize) || 1
@@ -193,7 +182,6 @@ export default function ReviewManagementPage() {
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1>Reviews Management</h1>
@@ -217,7 +205,6 @@ export default function ReviewManagementPage() {
         </button>
       </div>
 
-      {/* KPI Stats Grid */}
       <div className="stats-grid">
         <div className="stat-card accent-types">
           <div className="stat-val">{totalCount}</div>
@@ -243,7 +230,6 @@ export default function ReviewManagementPage() {
         </div>
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -305,7 +291,6 @@ export default function ReviewManagementPage() {
           </div>
         </div>
 
-        {/* Rating Category Chips */}
         <div className="type-chips-row">
           <span className="type-chips-label">Rating:</span>
           <button
@@ -336,7 +321,6 @@ export default function ReviewManagementPage() {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Admin Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -489,7 +473,6 @@ export default function ReviewManagementPage() {
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {totalCount > 0 && (
           <div className="table-footer">
             <div>
@@ -531,7 +514,6 @@ export default function ReviewManagementPage() {
         )}
       </div>
 
-      {/* View Detail Modal */}
       {(reviewToView || viewLoading) && (
         <div className="modal-overlay" onClick={() => !viewLoading && setReviewToView(null)}>
           <div className="modal-card" style={{ maxWidth: 540 }} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
@@ -619,7 +601,6 @@ export default function ReviewManagementPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {reviewToDelete && (
         <div className="modal-overlay" onClick={() => !deleting && setReviewToDelete(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">

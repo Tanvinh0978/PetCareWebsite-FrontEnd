@@ -1,6 +1,3 @@
-// Tạo khung một nhóm màn hình mới cho một vai trò và tự đăng ký route + menu.
-// Dùng: npm run new:page -- <vai-tro> <ten-thu-muc> <TenEntity>
-// Ví dụ: npm run new:page -- admin pets Pet
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -139,7 +136,6 @@ export default function ${page}() {
 
 write(path.join('src', 'pages', role, name, page + '.tsx'), pageContent);
 
-// Đăng ký route.
 const routesFile = path.join('src', 'routes', 'index.tsx');
 let r = fs.readFileSync(routesFile, 'utf8');
 const comp = cap + page;
@@ -149,7 +145,6 @@ if (!r.includes('<' + comp + ' />')) {
   fs.writeFileSync(routesFile, r);
 }
 
-// Đăng ký menu.
 const navFile = path.join('src', 'routes', 'nav.ts');
 let n = fs.readFileSync(navFile, 'utf8');
 if (!n.includes(`to: '${name}'`) && !n.includes(`to: "${name}"`)) {

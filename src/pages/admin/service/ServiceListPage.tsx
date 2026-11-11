@@ -21,7 +21,6 @@ export default function ServiceListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Confirmation modal state for deactivating a service
   const [serviceToDeactivate, setServiceToDeactivate] = useState<ServiceListItem | null>(null);
   const [deactivating, setDeactivating] = useState(false);
   const user = useAuthStore((s) => s.user);
@@ -95,12 +94,10 @@ export default function ServiceListPage() {
     }
   }
 
-  // Calculate pagination boundaries
   const totalCount = data?.totalCount ?? 0;
   const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, totalCount);
 
-  // Generate visible page numbers
   const totalPages = data?.totalPages ?? 1;
   const getPageNumbers = () => {
     const pages: number[] = [];
@@ -133,7 +130,6 @@ export default function ServiceListPage() {
         </Link>}
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -192,7 +188,6 @@ export default function ServiceListPage() {
           </div>
         </div>
 
-        {/* Type Category Chips */}
         <div className="type-chips-row">
           <span className="type-chips-label">Category:</span>
           <button
@@ -217,7 +212,6 @@ export default function ServiceListPage() {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -368,7 +362,6 @@ export default function ServiceListPage() {
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {data && totalCount > 0 && (
           <div className="table-footer">
             <div>
@@ -410,7 +403,6 @@ export default function ServiceListPage() {
         )}
       </div>
 
-      {/* Confirmation Modal for Deactivating */}
       {serviceToDeactivate && (
         <div className="modal-overlay" onClick={() => !deactivating && setServiceToDeactivate(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">

@@ -24,19 +24,19 @@ export interface GroomingTaskResponseDTO {
   customerPhone: string
   petId: string
   petName: string
-  petSpecies: number // 0: Dog, 1: Cat
+  petSpecies: number
   petBreed?: string | null
   petWeight: number
   petHealthNotes?: string | null
   serviceId: string
   serviceName: string
-  serviceType: number // 0: Grooming
+  serviceType: number
   roomId?: string | null
   roomName?: string | null
   scheduledStartAt: string
   scheduledEndAt?: string | null
   durationMinutes: number
-  status: number | string // Can be number (2, 3, 4) or string ('Checked_In', 'In_Progress', 'Completed')
+  status: number | string
   resultNote?: string | null
   beforeImageUrl?: string | null
   resultImageUrl?: string | null
@@ -58,7 +58,7 @@ export const normalizeStatus = (status: any): number => {
 }
 
 export interface GetGroomingTasksParams {
-  date?: string // YYYY-MM-DD
+  date?: string
   status?: number
   pageNumber?: number
   pageSize?: number

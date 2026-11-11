@@ -30,7 +30,6 @@ const CreateBookingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   
-  // New state to separate flows
   const [bookingType, setBookingType] = useState<'Grooming' | 'Boarding' | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [activePetTab, setActivePetTab] = useState<string>('');
@@ -316,8 +315,8 @@ const CreateBookingPage: React.FC = () => {
   
   const prev = () => {
     if (currentStep === 0) {
-      setBookingType(null); // Go back to flow selection
-      setPetServices({}); // Reset services
+      setBookingType(null);
+      setPetServices({});
       form.resetFields();
     } else {
       setCurrentStep(currentStep - 1);
@@ -502,7 +501,6 @@ const CreateBookingPage: React.FC = () => {
 
   if (loading) return <div style={{ textAlign: 'center', padding: '100px' }}><Spin size="large" /></div>;
 
-  // Flow Selection Screen
   if (bookingType === null) {
     return (
       <div className="booking-page-wrap">
@@ -840,7 +838,6 @@ const CreateBookingPage: React.FC = () => {
                           <span>🏨</span> Sanctuary Suites &amp; Rooms
                         </Title>
 
-                        {/* Species header banner */}
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -934,7 +931,6 @@ const CreateBookingPage: React.FC = () => {
                                         }}
                                       >
                                         <div>
-                                          {/* Top Badge + Radio */}
                                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                             <span style={{
                                               display: 'inline-flex',
@@ -953,7 +949,6 @@ const CreateBookingPage: React.FC = () => {
                                             <Radio value={srv.id} checked={isItemChecked} style={{ pointerEvents: 'none' }} />
                                           </div>
 
-                                          {/* Media + Title */}
                                           <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
                                             {srv.imageUrl ? (
                                               <img
@@ -989,7 +984,6 @@ const CreateBookingPage: React.FC = () => {
                                             </div>
                                           </div>
 
-                                          {/* Description */}
                                           {srv.description && (
                                             <p style={{
                                               fontSize: '13px',
@@ -1005,7 +999,6 @@ const CreateBookingPage: React.FC = () => {
                                             </p>
                                           )}
 
-                                          {/* Feature Highlights */}
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '14px' }}>
                                             {tier.features.slice(0, 2).map((feat, fIdx) => (
                                               <span key={fIdx} style={{
@@ -1021,7 +1014,6 @@ const CreateBookingPage: React.FC = () => {
                                           </div>
                                         </div>
 
-                                        {/* Price Footer */}
                                         <div style={{
                                           display: 'flex',
                                           justifyContent: 'space-between',
@@ -1461,7 +1453,6 @@ const CreateBookingPage: React.FC = () => {
 
   return (
     <div className="booking-page-wrap">
-      {/* Top Bar Switch & Brand */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <button
           type="button"

@@ -62,11 +62,9 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [detail, setDetail] = useState<BookingDetail | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Staff and Room options for assignment
   const [staffList, setStaffList] = useState<StaffDTO[]>([])
   const [roomList, setRoomList] = useState<RoomDTO[]>([])
 
-  // Local assignment state per item: itemId -> { staffId?: string; roomId?: string }
   const [assignments, setAssignments] = useState<
     Record<string, { staffId?: string; roomId?: string }>
   >({})
@@ -83,7 +81,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const canCancelPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CANCEL)
   const canAssignPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_ASSIGN_STAFF)
 
-  // Load booking details & staff/room options
   const loadData = async (id: string) => {
     setLoading(true)
     setErrorMsg(null)
@@ -96,7 +93,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
       setDetail(bookingData)
 
-      // Initialize assignments from existing booking items
       const initialMap: Record<string, { staffId?: string; roomId?: string }> = {}
       if (bookingData?.bookingItems) {
         for (const item of bookingData.bookingItems) {
@@ -108,11 +104,9 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       }
       setAssignments(initialMap)
 
-      // Unpack staff list
       const staffs = staffRes?.items || []
       setStaffList(staffs)
 
-      // Unpack room list
       const rawRoom: any = roomRes
       const rooms: RoomDTO[] = rawRoom?.result?.items || rawRoom?.data?.items || rawRoom?.items || []
       setRoomList(rooms)
@@ -235,7 +229,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   }
 
-  // Filter staff: Exclude Admin, must match service department (Boarding vs Grooming)
   const getFilteredStaffOptions = (item: BookingDetailItem) => {
     const isBoarding =
       item.serviceType === 1 ||
@@ -283,7 +276,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const isPending = detail?.status === 0 || String(detail?.status).toLowerCase() === 'pending'
   const isReadOnly = Boolean(isCompleted || isCancelled || isNoShow)
 
-  // Check if all active items are completed
   const allItemsCompleted =
     Boolean(detail?.bookingItems &&
     detail.bookingItems.length > 0 &&
@@ -292,7 +284,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       return s === '4' || s === 'completed' || s === '5' || s === 'cancelled' || s === '6' || s === 'no_show'
     }))
 
-  // Check if all items are fully assigned
   const isFullyAssigned = Boolean(
     detail?.bookingItems &&
     detail.bookingItems.length > 0 &&
@@ -311,7 +302,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     })
   )
 
-  // Check if there are items eligible to check in
   const hasEligibleCheckInItems = Boolean(
     detail?.bookingItems?.some((bi) => {
       const s = String(bi.status).toLowerCase()
@@ -319,7 +309,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     })
   )
 
-  // Check-in requires Confirmed status AND full assignment
   const canCheckIn = isConfirmed && isFullyAssigned && hasEligibleCheckInItems
 
   const getItemStatusTag = (status: number | string) => {
@@ -740,7 +729,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </Descriptions.Item>
             </Descriptions>
 
-            {/* Pending Alert */}
             {isPending && (
               <Alert
                 type="warning"
@@ -751,7 +739,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               />
             )}
 
-            {/* Read-only Alert when completed or cancelled */}
             {isCompleted && (
               <Alert
                 type="success"
@@ -772,7 +759,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               />
             )}
 
-            {/* Assignment warning before Check-in */}
             {isConfirmed && !isFullyAssigned && hasEligibleCheckInItems && (
               <Alert
                 type="warning"
@@ -860,7 +846,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       onClose={() => setReceiptOpen(false)}
     />
 
-    {/* Cancel Booking Reason Modal */}
     <Modal
       title="Hủy đơn đặt lịch"
       open={cancelModalOpen}

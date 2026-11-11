@@ -26,7 +26,6 @@ const CustomerPetFormPage: React.FC = () => {
   const [age, setAge] = useState<number | string>('')
   const [healthNotes, setHealthNotes] = useState('')
 
-  // Resolve customer ID from JWT user (stored in authStore)
   useEffect(() => {
     if (editing) return
     const user = useAuthStore.getState().user
@@ -35,7 +34,6 @@ const CustomerPetFormPage: React.FC = () => {
     }
   }, [editing])
 
-  // Load existing pet data when editing
   useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -166,7 +164,6 @@ const CustomerPetFormPage: React.FC = () => {
             </p>
           )}
 
-          {/* Pet Photo / Avatar */}
           <div>
             <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: '#0f172a' }}>
               Pet Photo
@@ -184,7 +181,6 @@ const CustomerPetFormPage: React.FC = () => {
             />
           </div>
 
-          {/* Pet Name */}
           <label>
             Pet Name <span style={{ color: 'var(--danger)' }}>*</span>
             <input
@@ -196,7 +192,6 @@ const CustomerPetFormPage: React.FC = () => {
             />
           </label>
 
-          {/* Species Selection */}
           <label>
             Species <span style={{ color: 'var(--danger)' }}>*</span>
             <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.4rem' }}>
@@ -250,7 +245,6 @@ const CustomerPetFormPage: React.FC = () => {
             </div>
           </label>
 
-          {/* Breed & Age */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <label>
               Breed
@@ -276,7 +270,6 @@ const CustomerPetFormPage: React.FC = () => {
             </label>
           </div>
 
-          {/* Weight */}
           <label>
             Weight (kg) <span style={{ color: 'var(--danger)' }}>*</span>
             <input
@@ -291,7 +284,6 @@ const CustomerPetFormPage: React.FC = () => {
             />
           </label>
 
-          {/* Health & Special Care Notes */}
           <label>
             Health & Dietary Instructions
             <textarea

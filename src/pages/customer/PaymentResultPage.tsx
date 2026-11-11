@@ -25,7 +25,6 @@ interface PaymentVerifyResult {
 
 const formatPayDate = (dateStr?: string): string => {
   if (!dateStr) return 'N/A';
-  // VNPay compact format: YYYYMMDDHHmmss
   if (dateStr.length === 14 && /^\d+$/.test(dateStr)) {
     const formatted = `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}T${dateStr.substring(8, 10)}:${dateStr.substring(10, 12)}:${dateStr.substring(12, 14)}`;
     const parsed = dayjs(formatted);
@@ -48,7 +47,6 @@ const PaymentResultPage: React.FC = () => {
   const hasCalledApi = useRef(false);
 
   useEffect(() => {
-    // Only call once in React 18 strict mode
     if (hasCalledApi.current) return;
     hasCalledApi.current = true;
 
@@ -64,8 +62,6 @@ const PaymentResultPage: React.FC = () => {
         setLoading(true);
         const res: any = await bookingService.verifyVnpayPayment(queryString);
         
-        // Backend format:
-        // { isSuccess: true, statusCode: 200, message: "...", result: { isSuccess: true, bookingId: "...", amount: 500000, ... } }
         const result: PaymentVerifyResult = res?.result || res?.data || {};
         const searchParams = new URLSearchParams(queryString);
 
@@ -114,7 +110,6 @@ const PaymentResultPage: React.FC = () => {
     verifyPayment();
   }, [location.search]);
 
-  // Handler retry payment for failed transactions
   const handleRetryPayment = async () => {
     const bookingId = paymentData?.bookingId;
     if (!bookingId) {
@@ -155,7 +150,6 @@ const PaymentResultPage: React.FC = () => {
         fontFamily: 'var(--font-sans)',
       }}
     >
-      {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
           <div style={{ fontSize: '30px', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--slate-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>

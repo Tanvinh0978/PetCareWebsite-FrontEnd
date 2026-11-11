@@ -116,7 +116,6 @@ const CustomerProfilePage: React.FC = () => {
       };
       setProfileData(updated);
 
-      // Update local auth store so user name and avatar change immediately across headers
       if (accessToken && user) {
         setAuth(accessToken, {
           ...user,

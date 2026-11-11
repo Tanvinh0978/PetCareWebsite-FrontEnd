@@ -14,7 +14,6 @@ function weightLabel(min: number | null, max: number | null) {
   return min + ' to ' + max + ' kg';
 }
 
-// Dùng chung cho mọi vai trò. Chỉ truyền editTo cho vai trò được sửa (admin).
 export default function ServiceDetail({ backTo, editTo }: { backTo: string; editTo?: (id: string) => string }) {
   const { id = '' } = useParams();
   const [service, setService] = useState<Detail | null>(null);
@@ -66,7 +65,6 @@ export default function ServiceDetail({ backTo, editTo }: { backTo: string; edit
         </div>
       )}
 
-      {/* Customer Reviews Section */}
       <ServiceReviewsSection serviceId={service.id} serviceName={service.name} />
 
       <div style={{ marginTop: '2rem' }}>

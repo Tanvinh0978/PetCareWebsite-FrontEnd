@@ -4,7 +4,6 @@ import { listActiveServices } from '@/api/serviceApi';
 import { getErrorMessage } from '@/api/client';
 import { SERVICE_TYPE_LABEL, type ServiceListItem, type ServiceType } from '@/types/service';
 
-// Danh sách dịch vụ đang hoạt động, dùng chung cho guest và customer.
 export default function ServiceCatalog({ detailBase, showSignInHint }: { detailBase: string; showSignInHint?: boolean }) {
   const [params, setParams] = useSearchParams();
   const type = params.get('type') as ServiceType | null;

@@ -85,9 +85,6 @@ function getFallbackRoleDetail(roleId: string): RolePermissionDetailDTO {
 }
 
 export const roleService = {
-  /**
-   * GET /api/Roles
-   */
   getRoles: async (): Promise<RoleDTO[]> => {
     try {
       const res: any = await axiosClient.get('/api/Roles')
@@ -99,9 +96,6 @@ export const roleService = {
     return FALLBACK_ROLES
   },
 
-  /**
-   * GET /api/Roles/{roleId}/permissions
-   */
   getRolePermissions: async (roleId: string): Promise<RolePermissionDetailDTO> => {
     try {
       const res: any = await axiosClient.get(`/api/Roles/${roleId}/permissions`)
@@ -115,9 +109,6 @@ export const roleService = {
     return getFallbackRoleDetail(roleId)
   },
 
-  /**
-   * PUT /api/Roles/{roleId}/permissions
-   */
   updateRolePermissions: async (payload: UpdateRolePermissionsPayload): Promise<boolean> => {
     try {
       const res: any = await axiosClient.put(`/api/Roles/${payload.roleId}/permissions`, {

@@ -2,11 +2,6 @@ import axiosClient from './axiosClient'
 import type { PetDTO, CreatePetDTO, UpdatePetDTO, PetQueryParams } from '@/types/pet.types'
 
 export const petService = {
-  /**
-   * GET /api/Pets/search — [Admin/Staff]
-   * Backend: SearchPetsQuery → trả PagedResult<PetListResponseDTO> trực tiếp (Ok(response))
-   * JSON: { items, totalCount, pageNumber, pageSize, totalPages, hasPreviousPage, hasNextPage }
-   */
   fetchWithPagination: async (params?: PetQueryParams): Promise<IPagedResult<PetDTO>> => {
     const queryParams: Record<string, any> = {}
     if (params?.keyword) queryParams.keyword = params.keyword.trim()
@@ -15,14 +10,10 @@ export const petService = {
     if (params?.pageSize) queryParams.pageSize = params.pageSize
     if (params?.isActive !== undefined) queryParams.isActive = params.isActive
 
-    // Use /api/Pets (not /search) when no keyword/species filter — both work identically
     const hasSearchParams = params?.keyword || params?.species !== undefined
     const endpoint = hasSearchParams ? '/api/Pets/search' : '/api/Pets'
     const res: any = await axiosClient.get(endpoint, { params: queryParams })
 
-    // Backend returns PagedResult<T> directly via Ok() — no IBackendRes wrapper
-    // JSON fields are camelCased by .NET default serializer:
-    //   { items, totalCount, pageNumber, pageSize, totalPages, hasPreviousPage, hasNextPage }
     if (res && Array.isArray(res.items)) {
       return {
         items: res.items as PetDTO[],
@@ -35,7 +26,6 @@ export const petService = {
       }
     }
 
-    // Fallback: wrapped in IBackendRes
     if (res?.result && Array.isArray(res.result.items)) {
       const r = res.result
       return {
@@ -60,24 +50,17 @@ export const petService = {
     }
   },
 
-
   fetchById: async (id: string): Promise<PetDTO> => {
     const res: any = await axiosClient.get(`/api/Pets/${id}`)
     return res?.result ?? res
   },
 
-  /**
-   * GET /api/Pets/customer/{customerId} — [Authorize]
-   * Backend: ApiResponse<List<PetResponseDTO>>
-   * Customer chỉ xem được pet của chính mình (kiểm tra qua JWT claims)
-   */
   fetchByCustomerId: async (customerId: string): Promise<PetDTO[]> => {
     try {
       const res: any = await axiosClient.get(`/api/Pets/customer/${customerId}`)
       const pets = res?.result ?? res
       if (Array.isArray(pets)) return pets as PetDTO[]
     } catch {
-      // Fallback: try fetching current user's pets from /my-pets (avoids 403 on /api/Pets which requires Staff/Admin)
       try {
         const myPets = await petService.fetchMyPets()
         if (myPets.length > 0) {
@@ -90,10 +73,6 @@ export const petService = {
     return []
   },
 
-  /**
-   * GET /api/Pets/my-pets — [Authorize]
-   * Backend: ApiResponse<List<PetResponseDTO>> — pets của customer đang đăng nhập (từ JWT)
-   */
   fetchMyPets: async (isActive?: boolean): Promise<PetDTO[]> => {
     const params: Record<string, any> = {}
     if (isActive !== undefined) params.isActive = isActive
@@ -107,25 +86,16 @@ export const petService = {
     return petService.fetchMyPets()
   },
 
-  /**
-   * POST /api/Pets — [Authorize]
-   */
   create: async (payload: CreatePetDTO): Promise<string> => {
     const res: any = await axiosClient.post('/api/Pets', payload)
     return res?.result ?? res
   },
 
-  /**
-   * PUT /api/Pets/{id} — [Authorize]
-   */
   update: async (id: string, payload: UpdatePetDTO): Promise<string> => {
     const res: any = await axiosClient.put(`/api/Pets/${id}`, payload)
     return res?.result ?? res
   },
 
-  /**
-   * DELETE /api/Pets/{id} — [Authorize] — Soft delete (isActive = false)
-   */
   delete: async (id: string): Promise<boolean> => {
     const res: any = await axiosClient.delete(`/api/Pets/${id}`)
     return res?.result ?? res?.isSuccess ?? true

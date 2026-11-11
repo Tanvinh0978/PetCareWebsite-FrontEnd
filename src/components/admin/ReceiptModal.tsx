@@ -116,7 +116,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
                 color: '#1e293b',
               }}
             >
-              {/* Header: Store Branding */}
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <Title level={3} style={{ margin: 0, color: '#0f172a', textTransform: 'uppercase', letterSpacing: 1 }}>
                   {receipt.store?.storeName || 'PET CARE & BOARDING SPA'}
@@ -142,7 +141,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
 
               <Divider style={{ margin: '12px 0', borderColor: '#cbd5e1' }} />
 
-              {/* Title & Metadata */}
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
                 <Title level={4} style={{ margin: 0, color: '#059669', textTransform: 'uppercase' }}>
                   PHIẾU THANH TOÁN / CHECK-OUT RECEIPT
@@ -152,7 +150,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
                 </Text>
               </div>
 
-              {/* Meta details grid */}
               <div
                 style={{
                   display: 'grid',
@@ -194,7 +191,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
                 </div>
               </div>
 
-              {/* Pets info */}
               {receipt.pets?.length > 0 && (
                 <div style={{ marginBottom: 14 }}>
                   <Text strong style={{ fontSize: 13, color: '#475569' }}>
@@ -208,7 +204,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
                 </div>
               )}
 
-              {/* Line items table */}
               <div style={{ marginBottom: 16 }}>
                 <Text strong style={{ fontSize: 13, color: '#0f172a', display: 'block', marginBottom: 6 }}>
                   Chi tiết dịch vụ sử dụng:
@@ -260,7 +255,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
                 </table>
               </div>
 
-              {/* Financial Calculation */}
               <div
                 style={{
                   display: 'flex',
@@ -311,7 +305,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
                 </div>
               </div>
 
-              {/* Payment transactions history */}
               {receipt.paymentHistory?.length > 0 && (
                 <div style={{ marginBottom: 16, fontSize: 12 }}>
                   <Text strong style={{ color: '#475569', display: 'block', marginBottom: 4 }}>
@@ -342,7 +335,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ bookingId, open, onC
 
               <Divider style={{ margin: '14px 0', borderColor: '#cbd5e1' }} />
 
-              {/* Signatures & Footer Note */}
               <div
                 style={{
                   display: 'grid',

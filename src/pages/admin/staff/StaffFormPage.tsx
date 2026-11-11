@@ -23,7 +23,7 @@ const AdminStaffFormPage: React.FC = () => {
   const [password, setPassword] = useState('')
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])
   const [yearsOfExperience, setYearsOfExperience] = useState<number | string>(1)
-  const [status, setStatus] = useState<number>(0) // 0: Active, 1: Inactive
+  const [status, setStatus] = useState<number>(0)
 
   const [roles, setRoles] = useState<RoleDTO[]>([])
   const [loadingRoles, setLoadingRoles] = useState(true)
@@ -78,7 +78,6 @@ const AdminStaffFormPage: React.FC = () => {
       .finally(() => setLoading(false))
   }, [id])
 
-  // Sync roleIds when roles finish loading if editing and roleIds wasn't available directly
   useEffect(() => {
     if (editing && roles.length > 0 && selectedRoleIds.length === 0 && id) {
       staffService.fetchById(id).then((st) => {
@@ -195,7 +194,6 @@ const AdminStaffFormPage: React.FC = () => {
           </p>
         )}
 
-        {/* Full Name */}
         <label>
           Full Name <span style={{ color: 'var(--danger)' }}>*</span>
           <input
@@ -207,7 +205,6 @@ const AdminStaffFormPage: React.FC = () => {
           />
         </label>
 
-        {/* Email & Phone */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <label>
             Email Address <span style={{ color: 'var(--danger)' }}>*</span>
@@ -234,7 +231,6 @@ const AdminStaffFormPage: React.FC = () => {
           </label>
         </div>
 
-        {/* Address */}
         <label>
           Address (Optional)
           <input
@@ -245,7 +241,6 @@ const AdminStaffFormPage: React.FC = () => {
           />
         </label>
 
-        {/* Password (for new staff) */}
         {!editing && (
           <label>
             Initial Password <span style={{ color: 'var(--danger)' }}>*</span>
@@ -259,7 +254,6 @@ const AdminStaffFormPage: React.FC = () => {
           </label>
         )}
 
-        {/* Roles Assignment */}
         <div style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
           <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.4rem', color: '#0f172a' }}>
             Assigned Roles <span style={{ color: 'var(--danger)' }}>*</span>
@@ -315,7 +309,6 @@ const AdminStaffFormPage: React.FC = () => {
           </span>
         </div>
 
-        {/* Experience & Status */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <label>
             Years of Experience <span style={{ color: 'var(--danger)' }}>*</span>

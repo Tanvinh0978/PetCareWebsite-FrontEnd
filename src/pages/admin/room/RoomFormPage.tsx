@@ -20,7 +20,6 @@ const AdminRoomFormPage: React.FC = () => {
   const [roomTypes, setRoomTypes] = useState<RoomTypeDTO[]>([]);
 
   useEffect(() => {
-    // Load room types for the dropdown
     roomTypeService.fetchAll()
       .then(res => {
         if (res.isSuccess && res.result) {
@@ -34,7 +33,6 @@ const AdminRoomFormPage: React.FC = () => {
       
     if (!id) return;
     
-    // Load room details if editing
     roomService.fetchById(id)
       .then((res) => {
         if (res.isSuccess && res.result) {

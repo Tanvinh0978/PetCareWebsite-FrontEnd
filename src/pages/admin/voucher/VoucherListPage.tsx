@@ -8,7 +8,6 @@ import type { VoucherDTO } from '@/types/voucher.types'
 import { DiscountType, DISCOUNT_TYPE_LABEL, DISCOUNT_TYPE_SHORT } from '@/types/voucher.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
-/* ── helpers ── */
 const formatDate = (iso: string) => {
   try {
     return new Date(iso).toLocaleDateString('vi-VN', {
@@ -26,14 +25,12 @@ const formatValue = (v: VoucherDTO) => {
   return `${v.discountValue.toLocaleString('vi-VN')} ₫`
 }
 
-/* ── component ── */
 const VoucherListPage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const baseVoucherPath = location.pathname.startsWith('/staff') ? '/staff/vouchers' : '/admin/vouchers'
   const { message } = App.useApp()
 
-  // Filter / pagination state
   const [keywordInput, setKeywordInput] = useState('')
   const [keyword, setKeyword] = useState('')
   const [validFilter, setValidFilter] = useState<'all' | 'valid' | 'invalid'>('all')
@@ -46,13 +43,11 @@ const VoucherListPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Delete confirmation modal
   const [voucherToDelete, setVoucherToDelete] = useState<VoucherDTO | null>(null)
   const [deleting, setDeleting] = useState(false)
   const user = useAuthStore((s) => s.user)
   const canManage = hasPermission(user, PERMISSIONS.VOUCHER_MANAGE)
 
-  /* ── data fetching ── */
   useEffect(() => {
     let cancelled = false
     setLoading(true)
@@ -71,9 +66,7 @@ const VoucherListPage: React.FC = () => {
     fetchFn
       .then((res: any) => {
         if (!cancelled) {
-          // GET /api/Vouchers returns PagedResult directly, search wraps in IBackendRes
           const pagedResult: IPagedResult<VoucherDTO> = res?.result ?? res
-          // Client-side filter by discountType if needed
           if (discountTypeFilter !== 'all' && pagedResult?.items) {
             const filtered = pagedResult.items.filter(
               (v) => v.discountType === discountTypeFilter
@@ -95,7 +88,6 @@ const VoucherListPage: React.FC = () => {
     return () => { cancelled = true }
   }, [page, pageSize, keyword, validFilter, discountTypeFilter, reload])
 
-  /* ── event handlers ── */
   const onSearch = (e: FormEvent) => {
     e.preventDefault()
     setPage(1)
@@ -133,7 +125,6 @@ const VoucherListPage: React.FC = () => {
     }
   }
 
-  /* ── pagination ── */
   const totalCount = data?.totalCount ?? 0
   const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
   const endEntry = Math.min(page * pageSize, totalCount)
@@ -152,7 +143,6 @@ const VoucherListPage: React.FC = () => {
     return pages
   }
 
-  /* ── validity badge ── */
   const getValidityBadge = (v: VoucherDTO) => {
     const now = new Date()
     const end = new Date(v.endDate)
@@ -174,7 +164,6 @@ const VoucherListPage: React.FC = () => {
     return { bg: '#f3e8ff', color: '#7e22ce', label: 'Fixed Amount' }
   }
 
-  /* ── render ── */
   return (
     <section className="page wide">
       <div className="page-head">
@@ -191,7 +180,6 @@ const VoucherListPage: React.FC = () => {
         </button>)}
       </div>
 
-      {/* Toolbar */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -242,7 +230,6 @@ const VoucherListPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Discount type chips */}
         <div className="type-chips-row">
           <span className="type-chips-label">Type:</span>
           {(['all', DiscountType.Percentage, DiscountType.Fixed_Amount] as const).map((t) => (
@@ -260,7 +247,6 @@ const VoucherListPage: React.FC = () => {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -399,7 +385,6 @@ const VoucherListPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination footer */}
         {data && totalCount > 0 && (
           <div className="table-footer">
             <div>
@@ -418,7 +403,6 @@ const VoucherListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Delete confirmation modal */}
       {voucherToDelete && (
         <div className="modal-overlay" onClick={() => !deleting && setVoucherToDelete(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">

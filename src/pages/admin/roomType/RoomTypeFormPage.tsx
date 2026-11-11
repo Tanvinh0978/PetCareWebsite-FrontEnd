@@ -85,7 +85,6 @@ const AdminRoomTypeFormPage: React.FC = () => {
       {loading && <p>Loading room type details...</p>}
 
       <form onSubmit={onSubmit} className="form" hidden={loading} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {/* Compact row: Image + Name */}
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
           <ImageUpload
             value={imageUrl}

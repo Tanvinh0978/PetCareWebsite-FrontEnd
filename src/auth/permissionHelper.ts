@@ -4,31 +4,22 @@ import { getMyPermissions } from '@/api/authApi'
 import { useAuthStore } from '@/store/useAuthStore'
 
 export const PERMISSIONS = {
-  // Dashboard
   DASHBOARD_VIEW: 'DASHBOARD_VIEW',
-  // Service
   SERVICE_VIEW: 'SERVICE_VIEW',
   SERVICE_MANAGE: 'SERVICE_MANAGE',
-  // Room
   ROOM_VIEW: 'ROOM_VIEW',
   ROOM_MANAGE: 'ROOM_MANAGE',
   ROOM_CHECK_AVAILABILITY: 'ROOM_CHECK_AVAILABILITY',
-  // Staff
   STAFF_VIEW: 'STAFF_VIEW',
   STAFF_MANAGE: 'STAFF_MANAGE',
-  // Voucher
   VOUCHER_VIEW: 'VOUCHER_VIEW',
   VOUCHER_MANAGE: 'VOUCHER_MANAGE',
-  // Customer
   CUSTOMER_VIEW: 'CUSTOMER_VIEW',
   CUSTOMER_MANAGE: 'CUSTOMER_MANAGE',
-  // Pet
   PET_VIEW: 'PET_VIEW',
   PET_MANAGE: 'PET_MANAGE',
-  // Role
   ROLE_VIEW: 'ROLE_VIEW',
   ROLE_MANAGE: 'ROLE_MANAGE',
-  // Booking
   BOOKING_VIEW: 'BOOKING_VIEW',
   BOOKING_MANAGE: 'BOOKING_MANAGE',
   BOOKING_CREATE: 'BOOKING_CREATE',
@@ -36,10 +27,8 @@ export const PERMISSIONS = {
   BOOKING_CANCEL: 'BOOKING_CANCEL',
   BOOKING_UPDATE_STATUS: 'BOOKING_UPDATE_STATUS',
   BOOKING_ASSIGN_STAFF: 'BOOKING_ASSIGN_STAFF',
-  // Grooming
   GROOMING_TASK_VIEW: 'GROOMING_TASK_VIEW',
   GROOMING_TASK_UPDATE: 'GROOMING_TASK_UPDATE',
-  // Care Record
   CARE_RECORD_VIEW: 'CARE_RECORD_VIEW',
   CARE_RECORD_CREATE: 'CARE_RECORD_CREATE',
   CARE_RECORD_MANAGE: 'CARE_RECORD_MANAGE',
@@ -88,9 +77,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   ],
 }
 
-/**
- * Parses JWT token payload claims (role, roles, permissions)
- */
 export function parseJwtClaims(token: string): any {
   try {
     const base64Url = token.split('.')[1]
@@ -108,9 +94,6 @@ export function parseJwtClaims(token: string): any {
   }
 }
 
-/**
- * Returns effective permission codes for the given user.
- */
 export function getUserEffectivePermissions(user: IUser | null): string[] {
   if (!user) return []
 
@@ -126,7 +109,6 @@ export function getUserEffectivePermissions(user: IUser | null): string[] {
       ? user.roles
       : [guessRoleFromUser(user)]
 
-  // 1. Prioritize real-time / custom permissions cached per role in localStorage
   let hasRolePermInCache = false
   const aggregated = new Set<string>()
 
@@ -147,12 +129,10 @@ export function getUserEffectivePermissions(user: IUser | null): string[] {
     return Array.from(aggregated)
   }
 
-  // 2. Direct permissions on user if already loaded (e.g. from token)
   if (user.permissions && user.permissions.length > 0) {
     return user.permissions
   }
 
-  // 3. Fallback to default role permissions
   for (const roleName of userRoles) {
     const defaults = DEFAULT_ROLE_PERMISSIONS[roleName]
     if (defaults) {
@@ -163,9 +143,6 @@ export function getUserEffectivePermissions(user: IUser | null): string[] {
   return Array.from(aggregated)
 }
 
-/**
- * Guess role name if not explicitly set (e.g. from email or login)
- */
 export function guessRoleFromUser(user: IUser | null): string {
   if (!user) return 'Staff'
   const email = (user.email || user.login || '').toLowerCase()
@@ -182,9 +159,6 @@ export function guessRoleFromUser(user: IUser | null): string {
   return 'Receptionist'
 }
 
-/**
- * Checks whether user has permission code(s).
- */
 export function hasPermission(
   user: IUser | null,
   requiredPerm: string | string[]
@@ -204,9 +178,6 @@ export function hasPermission(
   return effective.includes(requiredPerm)
 }
 
-/**
- * Build dynamic navigation menu for staff based on permissions.
- */
 export function getStaffNavItems(user: IUser | null): NavItem[] {
   const items: NavItem[] = []
   const effective = getUserEffectivePermissions(user)
@@ -220,18 +191,14 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
   const can = (codes: string[]) =>
     user?.role === 'admin' || codes.some((c) => effective.includes(c))
 
-  // Services
   if (can([PERMISSIONS.SERVICE_VIEW, PERMISSIONS.SERVICE_MANAGE])) {
     items.push({ label: 'Services', to: 'services' })
   }
 
-  // Customers
   if (can([PERMISSIONS.CUSTOMER_VIEW, PERMISSIONS.CUSTOMER_MANAGE])) {
     items.push({ label: 'Customers', to: 'customers' })
   }
 
-  // Receptionists and admins manage room inventory. Boarding staff work from
-  // assigned room cards and should not see inventory pages they cannot access.
   if (
     (isAdmin || isReceptionist) &&
     can([
@@ -244,51 +211,39 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
     items.push({ label: 'Rooms', to: 'rooms' })
   }
 
-  // Pets
   if (can([PERMISSIONS.PET_VIEW, PERMISSIONS.PET_MANAGE]) || items.length === 0) {
     items.push({ label: 'Pets', to: 'pets' })
   }
 
-  // Staff
   if (can([PERMISSIONS.STAFF_VIEW, PERMISSIONS.STAFF_MANAGE])) {
     items.push({ label: 'Staff', to: 'staff' })
   }
 
-  // Roles & Permissions (only if granted)
   if (can([PERMISSIONS.ROLE_VIEW, PERMISSIONS.ROLE_MANAGE])) {
     items.push({ label: 'Roles & Permissions', to: 'roles' })
   }
 
-  // Vouchers
   if (can([PERMISSIONS.VOUCHER_VIEW, PERMISSIONS.VOUCHER_MANAGE])) {
     items.push({ label: 'Vouchers', to: 'vouchers' })
   }
 
-  // Keep role-specific task views out of other staff workspaces.
   if (isAdmin || isReceptionist || isGroomingStaff) {
     items.push({ label: 'Grooming Tasks', to: 'grooming-tasks' })
   }
 
-  // Boarding Tasks
   if (isAdmin || isReceptionist || isBoardingStaff) {
     items.push({ label: 'Boarding Tasks', to: 'manage-boarding' })
   }
 
-  // Bookings
   if (can([PERMISSIONS.BOOKING_VIEW, PERMISSIONS.BOOKING_MANAGE])) {
     items.push({ label: 'Bookings', to: 'bookings' })
   }
 
-  // Reviews
   items.push({ label: 'Reviews', to: 'reviews' })
 
-  // Deduplicate items by route path
   return items.filter((item, index, self) => index === self.findIndex((t) => t.to === item.to))
 }
 
-/**
- * Async sync user permissions from backend /api/auth/my-permissions or /api/Roles
- */
 export async function syncUserPermissions(): Promise<string[]> {
   const user = useAuthStore.getState().user
   if (!user || user.role === 'customer' || user.role === 'guest') return []
@@ -304,7 +259,6 @@ export async function syncUserPermissions(): Promise<string[]> {
 
   const roleName = user.roles?.[0] || guessRoleFromUser(user)
 
-  // 1. Try fetching real-time permissions directly from backend for authenticated user
   try {
     const res = await getMyPermissions()
     if (res?.isSuccess && Array.isArray(res.result)) {
@@ -317,10 +271,8 @@ export async function syncUserPermissions(): Promise<string[]> {
       return codes
     }
   } catch (err) {
-    // If endpoint fails, continue fallback
   }
 
-  // 2. Fallback to /api/Roles if Admin or allowed
   try {
     const roles = await roleService.getRoles()
     const matched = roles.find(
@@ -340,10 +292,8 @@ export async function syncUserPermissions(): Promise<string[]> {
       }
     }
   } catch (err) {
-    // Ignore 401/403
   }
 
-  // 3. Fallback to local / cached
   const effective = getUserEffectivePermissions(user)
   useAuthStore.getState().setPermissions(effective)
   if (!user.roles || user.roles.length === 0) {

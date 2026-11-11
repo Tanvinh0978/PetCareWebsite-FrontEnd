@@ -1,4 +1,3 @@
-// Khớp với enum/DTO của backend (JsonStringEnumConverter => enum là chuỗi).
 export type ServiceType = 'Grooming' | 'Boarding' | 'Diet' | 'Care';
 export type PricingUnit = 'Per_Turn' | 'Per_Day' | 'Item';
 
@@ -25,7 +24,6 @@ export interface PagedResult<T> {
   hasNextPage: boolean;
 }
 
-// Dòng trong danh sách (backend không trả bảng giá ở danh sách).
 export interface ServiceListItem {
   id: string;
   name: string;

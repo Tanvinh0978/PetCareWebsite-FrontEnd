@@ -37,7 +37,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
         const petData: PetDTO = res?.result ?? res
         setPet(petData)
 
-        // Try resolving owner details if customerId is present
         if (petData?.customerId) {
           try {
             const custRes = await customerService.fetchById(petData.customerId)
@@ -128,7 +127,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
         </div>
       </div>
 
-      {/* Hero / Overview Card */}
       <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '1.75rem', marginBottom: '1.75rem', boxShadow: 'var(--shadow-sm)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', paddingBottom: '1.25rem', borderBottom: '1px solid #f1f5f9', marginBottom: '1.25rem' }}>
           {pet.imageUrl ? (
@@ -176,7 +174,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
           </div>
         </div>
 
-        {/* Info Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
           <div>
             <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Species</div>
@@ -203,7 +200,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
             </div>
           </div>
 
-          {/* Owner details */}
           {ownerInfo && (
             <div style={{ gridColumn: '1 / -1', background: '#f8fafc', padding: '1rem', borderRadius: '10px', border: '1px solid #e2e8f0', marginTop: '0.5rem' }}>
               <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.35rem' }}>
@@ -226,7 +222,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
         </div>
       </div>
 
-      {/* Health Notes Card */}
       <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '1.75rem', marginBottom: '2rem', boxShadow: 'var(--shadow-sm)' }}>
         <h3 style={{ margin: '0 0 0.75rem', fontSize: '1.15rem' }}>🩺 Health Notes & Special Care Instructions</h3>
         {pet.healthNotes ? (

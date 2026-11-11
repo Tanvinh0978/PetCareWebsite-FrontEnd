@@ -51,12 +51,10 @@ export default function BookingManagementPage() {
   const [pageNumber, setPageNumber] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
-  // Filters
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined)
   const [serviceDate, setServiceDate] = useState<string | undefined>(dayjs().format('YYYY-MM-DD'))
 
-  // Modals
   const [detailBookingId, setDetailBookingId] = useState<string | null>(null)
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
@@ -65,7 +63,6 @@ export default function BookingManagementPage() {
   const canCheckInPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CHECKIN)
   const canCancelPerm = hasPermission(currentUser, PERMISSIONS.BOOKING_CANCEL)
 
-  // Cancel Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null)
   const [cancellationReason, setCancellationReason] = useState('')
@@ -98,7 +95,7 @@ export default function BookingManagementPage() {
   const handleConfirmBooking = async (bookingId: string) => {
     setActionLoadingId(bookingId)
     try {
-      await bookingService.updateBookingStatus(bookingId, { status: 1 }) // 1: Confirmed
+      await bookingService.updateBookingStatus(bookingId, { status: 1 })
       message.success('Booking confirmed successfully!')
       fetchBookings()
     } catch (err: any) {
@@ -291,7 +288,6 @@ export default function BookingManagementPage() {
 
         return (
           <Space size={6} wrap>
-            {/* Pending actions: Confirm or Cancel */}
             {isPending && (
               <>
                 <Popconfirm
@@ -332,7 +328,6 @@ export default function BookingManagementPage() {
               </>
             )}
 
-            {/* Confirmed actions: Check-in, Check-out, Cancel, or No-Show */}
             {isConfirmed && (
               <>
                 {record.canCheckIn && canCheckInPerm && (
@@ -420,7 +415,6 @@ export default function BookingManagementPage() {
               </>
             )}
 
-            {/* Detail modal button */}
             <Button
               size="small"
               icon={<EyeOutlined />}
@@ -477,7 +471,6 @@ export default function BookingManagementPage() {
         </Space>
       </div>
 
-      {/* Filter Bar */}
       <Card
         style={{
           marginBottom: 18,
@@ -488,7 +481,6 @@ export default function BookingManagementPage() {
         styles={{ body: { padding: '16px' } }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Top row: Search input + Service Date Picker + Quick date buttons */}
           <div
             style={{
               display: 'flex',
@@ -530,7 +522,6 @@ export default function BookingManagementPage() {
                 />
               </div>
 
-              {/* Quick Date Switchers */}
               <Space size={6}>
                 <Button
                   size="small"
@@ -604,7 +595,6 @@ export default function BookingManagementPage() {
             </Button>
           </div>
 
-          {/* Bottom row: Status filters */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
               Status:
@@ -635,7 +625,6 @@ export default function BookingManagementPage() {
         </div>
       </Card>
 
-      {/* Bookings Table */}
       <Card
         style={{
           borderRadius: 12,
@@ -665,7 +654,6 @@ export default function BookingManagementPage() {
         />
       </Card>
 
-      {/* Booking Details Modal */}
       <BookingDetailModal
         open={Boolean(detailBookingId)}
         bookingId={detailBookingId}
@@ -674,7 +662,6 @@ export default function BookingManagementPage() {
         onUpdated={fetchBookings}
       />
 
-      {/* Front Desk Check-out Modal */}
       <CheckoutBookingModal
         open={Boolean(checkoutBookingId)}
         bookingId={checkoutBookingId}
@@ -684,7 +671,6 @@ export default function BookingManagementPage() {
         }}
       />
 
-      {/* Cancel Booking Reason Modal */}
       <Modal
         title="Hủy đơn đặt lịch"
         open={cancelModalOpen}

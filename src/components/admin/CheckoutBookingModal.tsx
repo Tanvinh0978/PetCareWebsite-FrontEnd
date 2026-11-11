@@ -50,7 +50,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
   const [summary, setSummary] = useState<CheckoutSummaryDTO | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Form states
   const [paymentMethod, setPaymentMethod] = useState<string>('CASH')
   const [amountToPay, setAmountToPay] = useState<number>(0)
   const [transactionCode, setTransactionCode] = useState<string>('')
@@ -194,7 +193,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
 
         {summary && (
           <div style={{ padding: '8px 0' }}>
-            {/* Customer Overview */}
             <div
               style={{
                 background: '#f8fafc',
@@ -241,7 +239,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               </div>
             </div>
 
-            {/* Items Table */}
             <div style={{ marginBottom: 16 }}>
               <Text strong style={{ fontSize: 13, color: '#475569', display: 'block', marginBottom: 6 }}>
                 Items & Services in Booking ({summary.items.length})
@@ -256,7 +253,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               />
             </div>
 
-            {/* Financial Summary Card */}
             <div
               style={{
                 background: '#ffffff',
@@ -311,7 +307,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               </div>
             </div>
 
-            {/* Condition Banner */}
             {isFullyPaid ? (
               <Alert
                 type="success"
@@ -397,7 +392,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
               />
             )}
 
-            {/* Actions */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
               <Button onClick={onClose} disabled={submitting} style={{ borderRadius: 8 }}>
                 Cancel

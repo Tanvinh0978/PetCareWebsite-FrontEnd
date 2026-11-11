@@ -113,7 +113,6 @@ const StaffProfilePage: React.FC = () => {
 
       message.success('Staff profile updated successfully! 🎉');
 
-      // Update local state and auth store
       setStaffData((prev) =>
         prev
           ? {
@@ -199,7 +198,6 @@ const StaffProfilePage: React.FC = () => {
                 </div>
               ) : (
                 <div style={{ paddingTop: 12 }}>
-                  {/* Top user summary bar */}
                   <div
                     style={{
                       display: 'flex',

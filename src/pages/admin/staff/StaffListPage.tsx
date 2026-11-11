@@ -133,7 +133,6 @@ const AdminStaffListPage: React.FC = () => {
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1>Staff Management</h1>
@@ -162,7 +161,6 @@ const AdminStaffListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -238,7 +236,6 @@ const AdminStaffListPage: React.FC = () => {
         </p>
       )}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -424,7 +421,6 @@ const AdminStaffListPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination Bar */}
         {totalCount > 0 && (
           <div className="table-pagination">
             <span className="table-pagination-info">
@@ -463,7 +459,6 @@ const AdminStaffListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Deactivate Staff Confirmation Dialog */}
       {staffToDeactivate && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">

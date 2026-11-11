@@ -44,7 +44,6 @@ const AdminRoomListPage: React.FC = () => {
 
   useEffect(() => {
     fetchRooms()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, searchTerm, status])
 
   const onSearch = (e: React.FormEvent) => {
@@ -68,7 +67,7 @@ const AdminRoomListPage: React.FC = () => {
       setLoading(true)
       const res = await roomService.delete(id)
       if (res.isSuccess) {
-        fetchRooms() // Refresh list
+        fetchRooms()
       } else {
         setError(res.message || 'Failed to delete room')
         setLoading(false)
@@ -133,7 +132,6 @@ const AdminRoomListPage: React.FC = () => {
         </Link>}
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -196,7 +194,6 @@ const AdminRoomListPage: React.FC = () => {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -300,7 +297,6 @@ const AdminRoomListPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {data && totalCount > 0 && (
           <div className="table-footer">
             <div>

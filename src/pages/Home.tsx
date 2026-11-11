@@ -10,7 +10,6 @@ const blurbs: Record<ServiceType, string> = {
   Care: 'Daily monitoring with reports for you.',
 };
 
-// Trang chủ dùng chung cho guest và customer; liên kết tự đổi theo khu vực.
 export default function Home() {
   const base = ROLE_BASE[useAuth().role];
   return (

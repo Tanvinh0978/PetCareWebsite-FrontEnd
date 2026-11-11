@@ -13,7 +13,6 @@ const PetFormPage: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  // Form states
   const [name, setName] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [species, setSpecies] = useState('Dog')
@@ -70,7 +69,6 @@ const PetFormPage: React.FC = () => {
       return
     }
 
-    // PetSpecies: Dog = 0, Cat = 1
     const speciesEnum = species === 'Cat' ? 1 : 0
 
     const payload: any = {
@@ -83,7 +81,6 @@ const PetFormPage: React.FC = () => {
       imageUrl: imageUrl.trim() || undefined,
     }
 
-    // Get customerId from localStorage (set by auth on login)
     const customerId = localStorage.getItem('petcare.customerId')
     if (!editing && customerId) {
       payload.customerId = customerId
@@ -154,7 +151,6 @@ const PetFormPage: React.FC = () => {
       >
         <form onSubmit={onSubmit} className="form" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-          {/* Row 1: Pet Photo + Name + Species */}
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             <ImageUpload
               value={imageUrl}
@@ -190,7 +186,6 @@ const PetFormPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Row 2: Breed, Gender, Age, Weight */}
           <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr', gap: '1rem' }}>
             <label style={labelStyle}>
               <span>Breed</span>
@@ -235,7 +230,6 @@ const PetFormPage: React.FC = () => {
             </label>
           </div>
 
-          {/* Row 3: Special Notes */}
           <label style={labelStyle}>
             <span>Special Notes (Optional)</span>
             <textarea

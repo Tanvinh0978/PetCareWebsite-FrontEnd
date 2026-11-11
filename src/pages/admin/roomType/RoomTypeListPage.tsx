@@ -53,7 +53,7 @@ const AdminRoomTypeListPage: React.FC = () => {
       setLoading(true)
       const res = await roomTypeService.delete(id)
       if (res.isSuccess) {
-        fetchRoomTypes(searchTerm) // Refresh list
+        fetchRoomTypes(searchTerm)
       } else {
         setError(res.message || 'Failed to delete room type')
         setLoading(false)
@@ -82,7 +82,6 @@ const AdminRoomTypeListPage: React.FC = () => {
         </Link>
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -117,7 +116,6 @@ const AdminRoomTypeListPage: React.FC = () => {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">

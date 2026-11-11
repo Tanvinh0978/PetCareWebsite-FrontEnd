@@ -101,7 +101,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
         </div>
       </div>
 
-      {/* Main Staff Profile Card */}
       <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '1.75rem', marginBottom: '1.75rem', boxShadow: 'var(--shadow-sm)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', paddingBottom: '1.25rem', borderBottom: '1px solid #f1f5f9', marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -119,7 +118,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
           </span>
         </div>
 
-        {/* Roles Badges */}
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.5rem' }}>
             Assigned Roles
@@ -151,7 +149,6 @@ export default function StaffDetail({ backTo, editTo }: StaffDetailProps) {
           </div>
         </div>
 
-        {/* Details Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
           <div>
             <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Email Address</div>

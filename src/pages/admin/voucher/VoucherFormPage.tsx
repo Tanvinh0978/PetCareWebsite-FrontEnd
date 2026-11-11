@@ -5,18 +5,15 @@ import { voucherService } from '@/services/voucher.service'
 import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
-// Convert a local datetime-local string to ISO 8601 UTC string
 const localToISO = (local: string): string => {
   if (!local) return ''
   return new Date(local).toISOString()
 }
 
-// Convert ISO 8601 UTC string → datetime-local input value (YYYY-MM-DDTHH:mm)
 const isoToLocal = (iso: string): string => {
   if (!iso) return ''
   try {
     const d = new Date(iso)
-    // Format: YYYY-MM-DDTHH:mm
     const pad = (n: number) => String(n).padStart(2, '0')
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
   } catch {
@@ -36,16 +33,14 @@ const AdminVoucherFormPage: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  // Form fields
   const [code, setCode] = useState('')
   const [discountType, setDiscountType] = useState<DiscountType>(DiscountType.Percentage)
   const [discountValue, setDiscountValue] = useState<number | string>('')
-  const [startDate, setStartDate] = useState('')  // datetime-local string
-  const [endDate, setEndDate] = useState('')      // datetime-local string
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [maxUsage, setMaxUsage] = useState<number | string>('')
   const [hasMaxUsage, setHasMaxUsage] = useState(false)
 
-  // Load existing voucher when editing
   useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -147,7 +142,6 @@ const AdminVoucherFormPage: React.FC = () => {
           <p className="msg error" role="alert" style={{ margin: '0 0 1rem 0' }}>{error}</p>
         )}
 
-        {/* Voucher Code */}
         <label>
           Voucher Code <span style={{ color: 'var(--danger)' }}>*</span>
           <input
@@ -162,7 +156,6 @@ const AdminVoucherFormPage: React.FC = () => {
         </label>
 
         
-{/* Discount Type */}
 <label>
   Discount Type <span style={{ color: 'var(--danger)' }}>*</span>
 
@@ -212,7 +205,6 @@ const AdminVoucherFormPage: React.FC = () => {
   </div>
 </label>
 
-{/* Discount Value */}
 <label style={{
   display: 'block',
   marginTop: '1rem'
@@ -293,8 +285,6 @@ const AdminVoucherFormPage: React.FC = () => {
   </small>
 </label>
 
-
-        {/* Start & End Date */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <label>
             Start Date <span style={{ color: 'var(--danger)' }}>*</span>
@@ -315,7 +305,6 @@ const AdminVoucherFormPage: React.FC = () => {
           </label>
         </div>
 
-        {/* Max Usage */}
         
         <div style={{
   display: 'flex',
@@ -373,7 +362,6 @@ const AdminVoucherFormPage: React.FC = () => {
   )}
 </div>
 
-        {/* Actions */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
           <button type="submit" className="btn" disabled={saving}>
             {saving ? (editing ? 'Saving...' : 'Creating...') : (editing ? 'Save Changes' : 'Create Voucher')}

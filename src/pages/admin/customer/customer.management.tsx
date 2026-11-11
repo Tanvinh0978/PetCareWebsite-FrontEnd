@@ -129,7 +129,6 @@ const CustomerManagement: React.FC = () => {
         </Link>}
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -191,7 +190,6 @@ const CustomerManagement: React.FC = () => {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -312,7 +310,6 @@ const CustomerManagement: React.FC = () => {
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {data && totalCount > 0 && (
           <div className="table-footer">
             <div>
@@ -354,7 +351,6 @@ const CustomerManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Confirmation Modal for Toggling Status */}
       {customerToToggle && (
         <div className="modal-overlay" onClick={() => !toggling && setCustomerToToggle(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">

@@ -116,7 +116,6 @@ export default function RoomTypeDetail({ backTo, guest }: RoomTypeDetailProps) {
         </div>
       </div>
 
-      {/* CTA Box */}
       <div
         style={{
           background: 'linear-gradient(135deg, var(--accent-light) 0%, var(--primary-light) 100%)',

@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '@/store/useAuthStore'
 
-// Để trống = gọi qua proxy của Vite. Khi deploy đặt VITE_API_URL.
 export const baseURL: string = import.meta.env.VITE_API_URL ?? ''
 
 const axiosClient = axios.create({
@@ -22,7 +21,6 @@ axiosClient.interceptors.request.use((config) => {
   return config
 })
 
-// Trả thẳng body (IBackendRes<T>) thay vì AxiosResponse.
 axiosClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
@@ -31,10 +29,8 @@ axiosClient.interceptors.response.use(
       const url = String(error?.config?.url || '');
       const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/staff/login') || url.includes('/auth/register');
       
-      // If a protected API call got 401, check if user session expired
       if (!isAuthEndpoint && typeof window !== 'undefined') {
         const token = useAuthStore.getState().accessToken;
-        // If there was a token but server rejected with 401, session has expired
         if (token && !window.location.pathname.includes('/login')) {
           console.warn('[axiosClient] Session expired. Redirecting to login.');
           useAuthStore.getState().logout();

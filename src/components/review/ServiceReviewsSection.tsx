@@ -63,13 +63,11 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
   const [pageSize, setPageSize] = useState(5)
   const [selectedRating, setSelectedRating] = useState<number | undefined>(undefined)
 
-  // Write new review state
   const [checkingBooking, setCheckingBooking] = useState(false)
   const [writeModalOpen, setWriteModalOpen] = useState(false)
   const [eligibleBookingItem, setEligibleBookingItem] = useState<{ id: string; petName: string } | null>(null)
   const [notEligibleModalOpen, setNotEligibleModalOpen] = useState(false)
 
-  // Edit review state
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editingReview, setEditingReview] = useState<ReviewListItem | null>(null)
 
@@ -104,7 +102,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
             break
           }
         } catch {
-          // ignore error for single booking detail
         }
       }
 
@@ -121,7 +118,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
     }
   }
 
-  // Fetch reviews for this service
   const fetchReviews = useCallback(async () => {
     if (!serviceId) return
     setLoading(true)
@@ -147,7 +143,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
     fetchReviews()
   }, [fetchReviews])
 
-  // Delete review
   const handleDelete = async (id: string) => {
     try {
       const res = await reviewService.delete(id)
@@ -162,7 +157,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
     }
   }
 
-  // Calculate stats from available reviews (or baseline)
   const avgScore =
     reviews.length > 0
       ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
@@ -183,7 +177,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
       }}
       bodyStyle={{ padding: '28px 24px' }}
     >
-      {/* Title */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0, color: '#0f172a' }}>
@@ -222,7 +215,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
         )}
       </div>
 
-      {/* Rating Overview Summary */}
       <div
         style={{
           background: '#f8fafc',
@@ -233,7 +225,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
         }}
       >
         <Row gutter={[32, 24]} align="middle">
-          {/* Average Rating Block */}
           <Col xs={24} md={8} style={{ textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
             <div style={{ fontSize: 52, fontWeight: 800, color: '#0f172a', lineHeight: 1 }}>
               {avgScore}
@@ -247,7 +238,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
             </Text>
           </Col>
 
-          {/* Star Breakdown Bars */}
           <Col xs={24} md={16}>
             <div style={{ maxWidth: 450, margin: '0 auto' }}>
               {[5, 4, 3, 2, 1].map((star) => {
@@ -289,7 +279,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
         </Row>
       </div>
 
-      {/* Filter Tabs by Star Rating */}
       <div style={{ marginBottom: 24, overflowX: 'auto', paddingBottom: 4 }}>
         <Segmented
           value={selectedRating === undefined ? 'all' : String(selectedRating)}
@@ -309,7 +298,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
         />
       </div>
 
-      {/* Reviews List */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
           <Spin size="large" />
@@ -446,7 +434,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
         </div>
       )}
 
-      {/* Edit Review Modal */}
       {editingReview && (
         <CreateReviewModal
           open={editModalOpen}
@@ -467,7 +454,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
         />
       )}
 
-      {/* Write New Review Modal */}
       {eligibleBookingItem && (
         <CreateReviewModal
           open={writeModalOpen}
@@ -484,7 +470,6 @@ export const ServiceReviewsSection: React.FC<ServiceReviewsSectionProps> = ({
         />
       )}
 
-      {/* Guidance modal if user hasn't completed this service yet */}
       <Modal
         open={notEligibleModalOpen}
         onCancel={() => setNotEligibleModalOpen(false)}

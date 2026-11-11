@@ -8,8 +8,8 @@ import { PetSpecies, isCat } from '@/types/pet.types'
 import { getApiErrorMessage } from '@/utils/apiError'
 
 interface PetFormProps {
-  backPath: string // e.g. '/admin/pets' or '/staff/pets' or '/customer/pets'
-  fixedCustomerId?: string // If provided (e.g. for customer), don't ask to choose customer
+  backPath: string
+  fixedCustomerId?: string
 }
 
 export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) => {
@@ -21,7 +21,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  // Form states
   const [customerId, setCustomerId] = useState(fixedCustomerId || '')
   const [name, setName] = useState('')
   const [imageUrl, setImageUrl] = useState('')
@@ -32,7 +31,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
   const [healthNotes, setHealthNotes] = useState('')
   const [ownerName, setOwnerName] = useState('')
 
-  // Customer options for Admin & Staff
   const [customers, setCustomers] = useState<CustomerDTO[]>([])
   const [loadingCustomers, setLoadingCustomers] = useState(false)
   const [customerSearch, setCustomerSearch] = useState('')
@@ -51,7 +49,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
       .then((res: any) => {
         const items = res?.result?.items ?? res?.items ?? []
         setCustomers(items)
-        // Pre-select first customer only on initial load if none selected
         if (!editing && !customerId && items.length > 0 && !searchQuery) {
           setCustomerId(items[0].id)
           setCustomerSearch(items[0].fullName)
@@ -61,14 +58,12 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
       .finally(() => setLoadingCustomers(false))
   }
 
-  // Initial fetch for customers
   useEffect(() => {
     if (!fixedCustomerId) {
       fetchCustomerOptions()
     }
   }, [fixedCustomerId])
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -95,7 +90,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
     setShowDropdown(false)
   }
 
-  // Load existing pet when editing
   useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -202,7 +196,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
           </p>
         )}
 
-        {/* Customer / Owner Selection */}
         {!fixedCustomerId && (
           <div>
             <div
@@ -300,7 +293,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
           </div>
         )}
 
-        {/* Compact row: Avatar + Name + Species */}
         <div className="pet-basic-info" style={{ display: 'flex', gap: '1rem', alignItems: 'center', padding: '10px 14px', borderRadius: '8px' }}>
           <ImageUpload
             value={imageUrl}
@@ -351,7 +343,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
           </div>
         </div>
 
-        {/* Breed, Age, Weight in 1 Row */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', gap: '0.75rem' }}>
           <label>
             Breed
@@ -391,7 +382,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
           </label>
         </div>
 
-        {/* Health Notes */}
         <label>
           Health &amp; Special Care Notes
           <textarea

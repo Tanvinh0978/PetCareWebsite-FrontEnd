@@ -9,7 +9,7 @@ import {
 import { getApiErrorMessage } from '@/utils/apiError'
 
 interface PetManagementTableProps {
-  basePath: string // e.g. '/admin/pets' or '/staff/pets'
+  basePath: string
   title?: string
   subtitle?: string
 }
@@ -136,7 +136,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
 
   return (
     <section className="page wide">
-      {/* Toast */}
       {toast && (
         <div
           role="status"
@@ -158,7 +157,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
         </div>
       )}
 
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1>{title}</h1>
@@ -177,7 +175,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
         </button>
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -246,7 +243,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
           </div>
         </div>
 
-        {/* Species Filter Chips */}
         <div className="type-chips-row">
           <span className="type-chips-label">Species:</span>
           <button
@@ -279,7 +275,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
         </p>
       )}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -452,7 +447,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
           </table>
         </div>
 
-        {/* Pagination Bar */}
         {totalCount > 0 && (
           <div className="table-pagination">
             <span className="table-pagination-info">
@@ -491,7 +485,6 @@ export const PetManagementTable: React.FC<PetManagementTableProps> = ({
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       {petToDelete && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">

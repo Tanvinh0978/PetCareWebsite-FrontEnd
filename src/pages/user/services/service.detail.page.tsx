@@ -32,7 +32,6 @@ const ServiceDetailPage: React.FC = () => {
           <Typography.Title level={4}>Pricing</Typography.Title>
           <ServicePriceTable prices={service.prices} />
 
-          {/* Customer Reviews Section */}
           <ServiceReviewsSection serviceId={service.id} serviceName={service.name} />
         </>
       )}

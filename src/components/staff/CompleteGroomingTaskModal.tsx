@@ -85,7 +85,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
     try {
       const currentStatus = normalizeStatus(task.status)
 
-      // Ensure backend status transitions are respected (1 -> 2 -> 3 -> 4)
       if (currentStatus === 1 || currentStatus === 0) {
         await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
           status: 2,
@@ -103,7 +102,7 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
       }
 
       await groomingTaskService.updateTaskStatus(task.bookingId, task.itemId, {
-        status: 4, // Completed
+        status: 4,
         resultNote: values.resultNote?.trim() || 'Service completed successfully.',
         beforeImageUrl: beforeImage || null,
         resultImageUrl: resultImage || null,
@@ -163,7 +162,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
       }
     >
       <div style={{ padding: '12px 0' }}>
-        {/* Task Summary Banner */}
         <div
           style={{
             background: '#f8fafc',
@@ -227,7 +225,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
             )}
           </div>
 
-          {/* Health Alert Note if present */}
           {task.petHealthNotes && (
             <div
               style={{
@@ -263,7 +260,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
         )}
 
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          {/* Images Section */}
           <div style={{ marginBottom: 20 }}>
             <Text strong style={{ fontSize: 14, color: '#1e293b', display: 'block', marginBottom: 8 }}>
               📸 Pet Photos (Before & After Service)
@@ -331,7 +327,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
             </Row>
           </div>
 
-          {/* Quick Tags Suggestions */}
           <div style={{ marginBottom: 16 }}>
             <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
               Quick note suggestions (Click to append):
@@ -356,7 +351,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
             </div>
           </div>
 
-          {/* Result Note */}
           <Form.Item
             name="resultNote"
             label={<Text strong>Care Notes & Result Feedback</Text>}
@@ -376,7 +370,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
 
           <Divider style={{ margin: '16px 0' }} />
 
-          {/* Actions */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
             <Button onClick={onClose} disabled={submitting} style={{ borderRadius: 8 }}>
               Cancel

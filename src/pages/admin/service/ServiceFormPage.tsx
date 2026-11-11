@@ -19,7 +19,6 @@ interface PriceRow {
 const emptyRow = (): PriceRow => ({ minWeight: '', maxWeight: '', price: '', pricingUnit: 'Per_Turn' });
 const num = (v: string) => (v.trim() === '' ? null : Number(v));
 
-// Cùng luật với CreateServiceCommandValidator ở backend.
 function validate(name: string, rows: PriceRow[]): string {
   if (!name.trim()) return 'Enter a service name.';
   if (name.length > 150) return 'Service name must be at most 150 characters.';
@@ -131,7 +130,7 @@ export default function ServiceFormPage() {
       };
       if (id) await updateService(id, { ...payload, isActive });
       else await createService(payload);
-      navigate(baseServicePath); // Quay về danh sách sau khi lưu
+      navigate(baseServicePath);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -158,7 +157,6 @@ export default function ServiceFormPage() {
       {loading && <p>Loading service details...</p>}
 
       <form onSubmit={onSubmit} className="form" hidden={loading}>
-        {/* Service Image Upload */}
         <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: '#0f172a' }}>
             Service Photo
@@ -251,7 +249,6 @@ export default function ServiceFormPage() {
           </label>
         )}
 
-        {/* Pricing Tiers Section */}
         <fieldset style={{ marginTop: '0.5rem', background: '#fff' }}>
           <legend style={{ fontSize: '1.05rem', color: 'var(--pine)' }}>Pricing Tiers</legend>
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.88rem', color: '#557268' }}>
@@ -350,7 +347,6 @@ export default function ServiceFormPage() {
 
         {error && <p className="msg error" role="alert">{error}</p>}
 
-        {/* Form Actions */}
         <div className="form-actions">
           <button type="submit" className="btn" disabled={saving}>
             {saving ? 'Saving changes...' : editing ? 'Save changes' : 'Create service'}

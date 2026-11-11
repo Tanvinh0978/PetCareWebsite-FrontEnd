@@ -200,7 +200,6 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
       }
     >
       <div style={{ padding: '8px 0' }}>
-        {/* Service & Pet Info Box */}
         <div
           style={{
             background: '#f8fafc',
@@ -250,7 +249,6 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
           initialValues={{ rating: 5, comment: '' }}
           onFinish={handleFinish}
         >
-          {/* Rating Stars Section */}
           <div
             style={{
               textAlign: 'center',
@@ -291,7 +289,6 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
             </div>
           </div>
 
-          {/* Quick feedback tags */}
           <div style={{ marginBottom: 16 }}>
             <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
               Quick suggestions (click to add to review):
@@ -316,7 +313,6 @@ export const CreateReviewModal: React.FC<CreateReviewModalProps> = ({
             </div>
           </div>
 
-          {/* Comment text area */}
           <Form.Item
             name="comment"
             label={<Text strong>Detailed Feedback</Text>}

@@ -29,7 +29,6 @@ const AppRoutes: React.FC = () => {
         />
       </Route>
 
-      {/* Admin routes */}
       <Route element={<ProtectedRoute requiredRole={ROLE.ADMIN} />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<Navigate to="/admin/services" replace />} />
@@ -39,7 +38,6 @@ const AppRoutes: React.FC = () => {
         </Route>
       </Route>
 
-      {/* Guest + customer routes */}
       <Route element={<HomeLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServiceListPage />} />
@@ -49,10 +47,6 @@ const AppRoutes: React.FC = () => {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
-      {/* Customer-only routes (thêm khi có màn: ví dụ /you/account, /tickets)
-      <Route element={<ProtectedRoute requiredRole={ROLE.CUSTOMER} />}>
-        <Route element={<HomeLayout />}> ... </Route>
-      </Route> */}
     </Routes>
   )
 }

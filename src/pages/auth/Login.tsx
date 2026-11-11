@@ -7,7 +7,6 @@ import { ROLE } from '@/utils/roles'
 const Login: React.FC = () => {
   const setAuth = useAuthStore((state) => state.setAuth)
 
-  // TODO: thay bằng authService.login khi backend có API đăng nhập.
   const demo = (role: string, name: string) => setAuth('demo-token', { id: 0, login: name.toLowerCase(), name, role })
 
   return (
