@@ -111,7 +111,6 @@ const AdminRoomTypeFormPage: React.FC = () => {
 
   return (
     <section className="page" style={{ maxWidth: '780px', margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
-      {/* Page Header */}
       <div
         style={{
           display: 'flex',
@@ -184,7 +183,6 @@ const AdminRoomTypeFormPage: React.FC = () => {
           </div>
         )}
 
-        {/* Luxury Card Container */}
         <div
           style={{
             background: '#ffffff',
@@ -197,7 +195,6 @@ const AdminRoomTypeFormPage: React.FC = () => {
             gap: '1.5rem',
           }}
         >
-          {/* Suite Image Upload with luxury border & centering */}
           <div
             style={{
               padding: '20px',
@@ -237,7 +234,6 @@ const AdminRoomTypeFormPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Room Type Name */}
           <div>
             <span
               style={{
@@ -270,7 +266,6 @@ const AdminRoomTypeFormPage: React.FC = () => {
             />
           </div>
 
-          {/* Description */}
           <div>
             <span
               style={{
@@ -304,7 +299,6 @@ const AdminRoomTypeFormPage: React.FC = () => {
             />
           </div>
 
-          {/* Action Buttons */}
           <div
             style={{
               display: 'flex',

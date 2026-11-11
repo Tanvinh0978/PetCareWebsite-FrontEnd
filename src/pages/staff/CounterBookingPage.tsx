@@ -578,7 +578,6 @@ export default function CounterBookingPage() {
         }
       `}</style>
 
-      {/* Page Header */}
       <div
         style={{
           display: 'flex',
@@ -644,7 +643,6 @@ export default function CounterBookingPage() {
         />
       )}
 
-      {/* Main Grid: Form Left (col-15), Sticky Summary Right (col-9) */}
       <div
         style={{
           display: 'grid',
@@ -653,9 +651,7 @@ export default function CounterBookingPage() {
           alignItems: 'start',
         }}
       >
-        {/* Left Column: Booking Form Steps */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* Section 1: Customer & Pet Identification */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -701,7 +697,6 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            {/* Customer Selector */}
             <div style={{ marginBottom: 20 }}>
               <label
                 style={{
@@ -731,7 +726,6 @@ export default function CounterBookingPage() {
               />
             </div>
 
-            {/* Pet Companions Multi-select */}
             <div>
               <div
                 style={{
@@ -893,7 +887,6 @@ export default function CounterBookingPage() {
             </div>
           </div>
 
-          {/* Section 2: Sanctuary Experience Category (Grooming vs Boarding) */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -946,7 +939,6 @@ export default function CounterBookingPage() {
                 gap: 16,
               }}
             >
-              {/* Option 1: Botanical Grooming & Spa */}
               <div
                 onClick={() => setCategory('Grooming')}
                 style={{
@@ -1014,7 +1006,6 @@ export default function CounterBookingPage() {
                 </div>
               </div>
 
-              {/* Option 2: Sanctuary Hotel Suites */}
               <div
                 onClick={() => setCategory('Boarding')}
                 style={{
@@ -1084,7 +1075,6 @@ export default function CounterBookingPage() {
             </div>
           </div>
 
-          {/* Section 3: Experience Details & Scheduling Per Pet */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -1149,7 +1139,6 @@ export default function CounterBookingPage() {
               </div>
             ) : (
               <div>
-                {/* Pet Selection Tabs (when multiple pets selected) */}
                 {selectedPetIds.length > 1 && (
                   <div
                     style={{
@@ -1216,7 +1205,6 @@ export default function CounterBookingPage() {
                   </div>
                 )}
 
-                {/* Active Pet Header Info */}
                 {activePet && (
                   <div
                     style={{
@@ -1255,7 +1243,6 @@ export default function CounterBookingPage() {
                   </div>
                 )}
 
-                {/* A. GROOMING FLOW FOR ACTIVE PET */}
                 {category === 'Grooming' && activePet && (
                   <div>
                     <label
@@ -1356,7 +1343,6 @@ export default function CounterBookingPage() {
                   </div>
                 )}
 
-                {/* B. BOARDING FLOW FOR ACTIVE PET */}
                 {category === 'Boarding' && activePet && (
                   <div style={{ marginBottom: 20 }}>
                     <label
@@ -1470,7 +1456,6 @@ export default function CounterBookingPage() {
                       })}
                     </div>
 
-                    {/* Diet Add-on Selector for Active Pet */}
                     <div>
                       <label
                         style={{
@@ -1508,7 +1493,6 @@ export default function CounterBookingPage() {
                   </div>
                 )}
 
-                {/* SHARED SCHEDULE SECTION */}
                 <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1.5px solid #eeddc8' }}>
                   {category === 'Grooming' ? (
                     <div>
@@ -1541,7 +1525,6 @@ export default function CounterBookingPage() {
                           placeholder="Select appointment date and time"
                         />
 
-                        {/* Quick Time Presets */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: 12, color: '#8c735f', marginRight: 4 }}>
                             Quick Time:
@@ -1627,7 +1610,6 @@ export default function CounterBookingPage() {
             )}
           </div>
 
-          {/* Section 4: Voucher & Concierge Notes */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -1674,7 +1656,6 @@ export default function CounterBookingPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {/* Voucher Code Input */}
               <div>
                 <label
                   style={{
@@ -1837,7 +1818,6 @@ export default function CounterBookingPage() {
                 )}
               </div>
 
-              {/* Care Notes (Full width on its own line) */}
               <div>
                 <label
                   style={{
@@ -1867,7 +1847,6 @@ export default function CounterBookingPage() {
           </div>
         </div>
 
-        {/* Right Column: Sticky Reservation Summary */}
         <div style={{ position: 'sticky', top: 24 }}>
           <div
             style={{
@@ -1916,7 +1895,6 @@ export default function CounterBookingPage() {
               </span>
             </div>
 
-            {/* Guest Details */}
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8c735f', marginBottom: 4 }}>
                 Customer
@@ -1931,7 +1909,6 @@ export default function CounterBookingPage() {
               )}
             </div>
 
-            {/* Selected Pets */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8c735f', marginBottom: 6 }}>
                 Companions ({selectedPetIds.length})
@@ -1970,7 +1947,6 @@ export default function CounterBookingPage() {
               )}
             </div>
 
-            {/* Category & Schedule */}
             <div
               style={{
                 padding: '12px 14px',
@@ -2004,7 +1980,6 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            {/* Line Items Breakdown Grouped by Pet */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8c735f', marginBottom: 8 }}>
                 Itemized Line Items
@@ -2070,7 +2045,6 @@ export default function CounterBookingPage() {
 
             <div style={{ height: 1, backgroundColor: '#eeddc8', margin: '14px 0' }} />
 
-            {/* Subtotal */}
             <div
               style={{
                 display: 'flex',
@@ -2084,7 +2058,6 @@ export default function CounterBookingPage() {
               <span style={{ fontWeight: 600, color: '#3d2d23' }}>{vnd.format(totalEstimatedCost)}</span>
             </div>
 
-            {/* Voucher Discount (View only in Summary) */}
             {appliedVoucher && voucherDiscount > 0 && (
               <div
                 style={{
@@ -2103,7 +2076,6 @@ export default function CounterBookingPage() {
               </div>
             )}
 
-            {/* Estimated Total */}
             <div
               style={{
                 display: 'flex',
@@ -2133,7 +2105,6 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            {/* Payment Method Badge */}
             <div
               style={{
                 padding: '10px 12px',
@@ -2154,7 +2125,6 @@ export default function CounterBookingPage() {
               </div>
             </div>
 
-            {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <Button
                 type="primary"

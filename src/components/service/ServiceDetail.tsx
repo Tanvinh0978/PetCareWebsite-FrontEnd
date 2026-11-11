@@ -173,7 +173,6 @@ export default function ServiceDetail({
 
   return (
     <section className="page" style={{ maxWidth: 960, margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
-      {/* Top Breadcrumb & Action Bar */}
       <div
         style={{
           display: 'flex',
@@ -255,7 +254,6 @@ export default function ServiceDetail({
         </div>
       </div>
 
-      {/* Hero Service Showcase Card */}
       <div
         style={{
           borderRadius: 20,
@@ -274,7 +272,6 @@ export default function ServiceDetail({
             flexWrap: 'wrap',
           }}
         >
-          {/* Service Image Column */}
           <div
             style={{
               width: 280,
@@ -337,11 +334,8 @@ export default function ServiceDetail({
             )}
           </div>
 
-          {/* Service Information Column */}
           <div style={{ flex: 1, minWidth: 280 }}>
-            {/* Badges Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-              {/* Category Badge */}
               <span
                 style={{
                   display: 'inline-flex',
@@ -360,7 +354,6 @@ export default function ServiceDetail({
                 <span>{badgeConfig.label}</span>
               </span>
 
-              {/* Status Badge */}
               {service.isActive ? (
                 <span
                   style={{
@@ -399,7 +392,6 @@ export default function ServiceDetail({
                 </span>
               )}
 
-              {/* Room Type Badge if Boarding */}
               {service.serviceType === 'Boarding' && service.roomTypeName && (
                 <span
                   style={{
@@ -421,7 +413,6 @@ export default function ServiceDetail({
               )}
             </div>
 
-            {/* Service Name */}
             <h1
               style={{
                 margin: '8px 0 12px',
@@ -436,7 +427,6 @@ export default function ServiceDetail({
               {service.name}
             </h1>
 
-            {/* Pricing Highlights Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
               {minPrice !== null && (
                 <div
@@ -483,7 +473,6 @@ export default function ServiceDetail({
               </div>
             </div>
 
-            {/* Description Box */}
             <div
               style={{
                 backgroundColor: 'var(--paper, #fdfbf7)',
@@ -519,7 +508,6 @@ export default function ServiceDetail({
         </div>
       </div>
 
-      {/* Weight-Bracket Pricing Tiers Card */}
       <div
         style={{
           borderRadius: 20,
@@ -725,7 +713,6 @@ export default function ServiceDetail({
         )}
       </div>
 
-      {/* Sanctuary Standards & Care Assurance */}
       <div
         style={{
           display: 'grid',
@@ -849,10 +836,8 @@ export default function ServiceDetail({
         </div>
       </div>
 
-      {/* Customer Reviews Section */}
       <ServiceReviewsSection serviceId={service.id} serviceName={service.name} />
 
-      {/* Bottom Navigation Bar */}
       <div
         style={{
           display: 'flex',

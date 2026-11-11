@@ -161,7 +161,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
 
   return (
     <section className="page" style={{ maxWidth: '820px', margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
-      {/* Top Navigation Bar */}
       <div
         style={{
           display: 'flex',
@@ -218,7 +217,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
         )}
       </div>
 
-      {/* Main Voucher Card Container */}
       <div
         style={{
           backgroundColor: '#ffffff',
@@ -229,7 +227,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
           marginBottom: '1.75rem',
         }}
       >
-        {/* Card Header with Icon, Code, and Validity Badge */}
         <div
           style={{
             display: 'flex',
@@ -298,7 +295,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
           </span>
         </div>
 
-        {/* Details Grid */}
         <div
           style={{
             display: 'grid',
@@ -306,7 +302,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
             gap: '1.5rem',
           }}
         >
-          {/* Discount Value */}
           <div
             style={{
               padding: '16px 20px',
@@ -342,7 +337,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
             </div>
           </div>
 
-          {/* Discount Type */}
           <div
             style={{
               padding: '16px 20px',
@@ -378,7 +372,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
             </div>
           </div>
 
-          {/* Start Date */}
           <div
             style={{
               padding: '16px 20px',
@@ -414,7 +407,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
             </div>
           </div>
 
-          {/* End Date */}
           <div
             style={{
               padding: '16px 20px',
@@ -450,7 +442,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
             </div>
           </div>
 
-          {/* Usage Quota */}
           <div
             style={{
               padding: '16px 20px',
@@ -488,7 +479,6 @@ export default function VoucherDetail({ backTo, editTo }: VoucherDetailProps) {
             </div>
           </div>
 
-          {/* Identifier */}
           {voucher.id && (
             <div
               style={{

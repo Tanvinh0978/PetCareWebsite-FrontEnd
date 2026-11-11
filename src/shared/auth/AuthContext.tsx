@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Role>(loadRole);
   const save = (r: Role) => {
     setRole(r);
-    try { localStorage.setItem(KEY, r); } catch { /* bỏ qua */ }
+    try { localStorage.setItem(KEY, r); } catch { }
   };
   return <AuthContext.Provider value={{ role, signIn: save, signOut: () => save('guest') }}>{children}</AuthContext.Provider>;
 }

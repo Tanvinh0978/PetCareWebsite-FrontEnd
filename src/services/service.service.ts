@@ -19,15 +19,8 @@ const fetchAllPages = async (url: string): Promise<ServiceDTO[]> => {
 }
 
 export const serviceService = {
-  /** GET /api/services: chỉ dịch vụ đang hoạt động (guest, customer). */
   fetchActive: () => fetchAllPages('/api/services'),
 
-  /**
-   * GET /api/services/admin: mọi dịch vụ, gồm cả đã ngừng hoạt động.
-   * Lọc và phân trang làm ở frontend, vì GET /api/services/admin/search
-   * của backend đang trả 500 khi bộ lọc để trống. Khi backend sửa xong,
-   * có thể chuyển sang gọi admin/search.
-   */
   fetchAllForAdmin: () => fetchAllPages('/api/services/admin'),
 
   fetchById: (id: string) => get<ServiceDetailDTO>(`/api/services/${id}`),
@@ -38,7 +31,6 @@ export const serviceService = {
   update: (id: string, payload: UpdateServicePayload) =>
     axiosClient.put<IBackendRes<string>, IBackendRes<string>>(`/api/services/${id}`, payload),
 
-  /** Xóa mềm: backend đặt isActive = false. */
   remove: (id: string) =>
     axiosClient.delete<IBackendRes<string>, IBackendRes<string>>(`/api/services/${id}`),
 }

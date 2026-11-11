@@ -193,7 +193,6 @@ export default function ServiceFormPage() {
 
   return (
     <section className="page" style={{ maxWidth: '820px', margin: '0 auto', paddingBottom: '3rem' }}>
-      {/* Page Header */}
       <div
         className="page-head"
         style={{
@@ -268,7 +267,6 @@ export default function ServiceFormPage() {
           </p>
         )}
 
-        {/* Luxury Card Container */}
         <div
           style={{
             background: '#ffffff',
@@ -281,7 +279,6 @@ export default function ServiceFormPage() {
             gap: '1.35rem',
           }}
         >
-          {/* Top Section: Photo (Left) + Details (Right) */}
           <div
             style={{
               display: 'grid',
@@ -290,7 +287,6 @@ export default function ServiceFormPage() {
               alignItems: 'start',
             }}
           >
-            {/* Left: Service Photo Card (Centered) */}
             <div
               style={{
                 background: '#fdfbf7',
@@ -351,9 +347,7 @@ export default function ServiceFormPage() {
               </div>
             </div>
 
-            {/* Right: Service Name & Category Selection */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-              {/* Service Name */}
               <div>
                 <span
                   style={{
@@ -386,7 +380,6 @@ export default function ServiceFormPage() {
                 />
               </div>
 
-              {/* Service Category (Interactive Button Cards) */}
               <div>
                 <span
                   style={{
@@ -433,7 +426,6 @@ export default function ServiceFormPage() {
                 </div>
               </div>
 
-              {/* Associated Room Type (Boarding only) */}
               {serviceType === 'Boarding' && (
                 <div>
                   <span
@@ -481,7 +473,6 @@ export default function ServiceFormPage() {
             </div>
           </div>
 
-          {/* Description */}
           <div>
             <span
               style={{
@@ -514,7 +505,6 @@ export default function ServiceFormPage() {
             />
           </div>
 
-          {/* Active Service Checkbox (Edit Mode Only) */}
           {editing && (
             <div
               style={{
@@ -558,7 +548,6 @@ export default function ServiceFormPage() {
             </div>
           )}
 
-          {/* Pricing Tiers Section */}
           <div
             style={{
               background: '#fdfbf7',
@@ -586,7 +575,6 @@ export default function ServiceFormPage() {
               </div>
             </div>
 
-            {/* Pricing Table Card */}
             <div
               style={{
                 marginTop: '0.85rem',
@@ -733,7 +721,6 @@ export default function ServiceFormPage() {
               </table>
             </div>
 
-            {/* Add Price Tier Button */}
             <div style={{ marginTop: '0.85rem' }}>
               <button
                 type="button"
@@ -767,7 +754,6 @@ export default function ServiceFormPage() {
             </div>
           </div>
 
-          {/* Form Action Buttons */}
           <div
             style={{
               display: 'flex',

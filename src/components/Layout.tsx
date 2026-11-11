@@ -263,7 +263,6 @@ export default function Layout({ role }: { role: Role }) {
 
   return (
     <div className="customer-shell">
-      {/* Top Luxury Announcement Bar */}
       <div className="customer-top-announcement">
         <span><PawIcon size={13} style={{ marginRight: 6, verticalAlign: 'middle', color: '#c69f7b' }} /> <strong>Haven &amp; Hound · PetCare</strong> — Professional Pet Sanctuary &amp; Hotel</span>
         <span><PhoneOutlined style={{ marginRight: 4 }} /> Hotline: <a href="tel:02839397387">(028) 3939-PETS</a></span>

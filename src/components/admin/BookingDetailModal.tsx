@@ -800,7 +800,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </Descriptions.Item>
             </Descriptions>
 
-            {/* Pending Alert */}
             {isPending && (
               <Alert
                 type="warning"
@@ -811,7 +810,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               />
             )}
 
-            {/* Read-only Alert when completed or cancelled */}
             {isCompleted && (
               <Alert
                 type="success"
@@ -847,7 +845,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               />
             )}
 
-            {/* Assignment warning before Check-in */}
             {isConfirmed && !isFullyAssigned && hasEligibleCheckInItems && (
               <Alert
                 type="warning"
@@ -935,7 +932,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       onClose={() => setReceiptOpen(false)}
     />
 
-    {/* Cancel Booking Reason Modal */}
     <Modal
       title="Cancel Booking"
       open={cancelModalOpen}

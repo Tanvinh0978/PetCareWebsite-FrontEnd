@@ -1,14 +1,11 @@
-/* ==========================================================================
-   Design Tokens & CSS Variables - Stitch Haven & Hound Luxury Sanctuary Theme
-   ========================================================================== */
+
 :root {
-  /* Brand Primary: Rich Warm Espresso & Chestnut Brown */
+
   --primary: #3d2d23;
   --primary-hover: #26180f;
   --primary-light: #f7f3ed;
   --primary-border: #e6e2dc;
-  
-  /* Brand Grayscale - Warm Charcoal & Soft Linen */
+
   --slate-950: #180f0a;
   --slate-900: #26180f;
   --slate-800: #33241b;
@@ -21,7 +18,6 @@
   --slate-100: #f4eee9;
   --slate-50: #faf6f2;
 
-  /* Accent & Warm Caramel / Amber Gold */
   --accent: #c69f7b;
   --accent-hover: #b38965;
   --accent-light: #fdf6ee;
@@ -36,7 +32,6 @@
   --info: #3b5a7a;
   --info-light: #edf3f8;
 
-  /* Aliases for backwards compatibility */
   --pine: var(--slate-900);
   --leaf: var(--secondary);
   --mint: var(--primary-light);
@@ -46,11 +41,9 @@
   --sun: var(--accent);
   --line: var(--slate-200);
 
-  /* Typography */
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: 'Playfair Display', Georgia, 'Plus Jakarta Sans', serif;
 
-  /* Shadows - Warm Soft Natural Elevation */
   --shadow-xs: 0 1px 2px 0 rgba(38, 24, 15, 0.04);
   --shadow-sm: 0 1px 3px 0 rgba(38, 24, 15, 0.06), 0 1px 2px -1px rgba(38, 24, 15, 0.04);
   --shadow-md: 0 4px 8px -1px rgba(38, 24, 15, 0.07), 0 2px 4px -2px rgba(38, 24, 15, 0.05);
@@ -90,9 +83,6 @@ a:hover {
   outline-offset: 2px;
 }
 
-/* ==========================================================================
-   Modern Buttons & UI Controls
-   ========================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -279,9 +269,6 @@ a:hover {
   border: 1px solid var(--primary-border);
 }
 
-/* ==========================================================================
-   Page Layout & Headings
-   ========================================================================== */
 .page {
   max-width: 1100px;
   margin: 0 auto;
@@ -309,9 +296,6 @@ a:hover {
   font-size: 0.95rem;
 }
 
-/* ==========================================================================
-   Admin & Staff Sidebar Layout
-   ========================================================================== */
 .shell {
   display: flex;
   min-height: 100vh;
@@ -395,9 +379,6 @@ a:hover {
   .sidebar-foot p { margin: 0; }
 }
 
-/* ==========================================================================
-   Customer Top Header & Shell
-   ========================================================================== */
 .customer-shell {
   display: flex;
   flex-direction: column;
@@ -509,7 +490,6 @@ a:hover {
   width: 100%;
 }
 
-/* Customer Footer */
 .customer-footer {
   background: #180f0a;
   color: #b0a195;
@@ -535,9 +515,6 @@ a:hover {
 .footer-col ul li a:hover { color: var(--accent); }
 .footer-bottom { max-width: 1280px; margin: 3rem auto 0; padding-top: 1.5rem; border-top: 1px solid #2e2017; text-align: center; font-size: 0.85rem; color: #8c7b6f; }
 
-/* ==========================================================================
-   Admin Toolbar, Search & Filter Controls
-   ========================================================================== */
 .admin-toolbar-panel {
   background: #fff;
   border: 1px solid var(--slate-200);
@@ -639,9 +616,6 @@ a:hover {
   margin-right: 0.35rem;
 }
 
-/* ==========================================================================
-   Admin Data Table & Management Table
-   ========================================================================== */
 .table-card {
   background: #fff;
   border: 1px solid var(--slate-200);
@@ -703,7 +677,6 @@ a:hover {
 .col-status { width: 120px; white-space: nowrap; }
 .col-actions { width: 210px; text-align: right; white-space: nowrap; }
 
-/* Status Badges */
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -739,7 +712,6 @@ a:hover {
   background: var(--slate-400);
 }
 
-/* Category Badges */
 .type-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
@@ -761,7 +733,6 @@ a:hover {
   gap: 0.4rem;
 }
 
-/* Table Footer & Pagination */
 .table-footer {
   display: flex;
   align-items: center;
@@ -826,9 +797,6 @@ a:hover {
   font-size: 0.95rem;
 }
 
-/* ==========================================================================
-   Admin Dashboard Metrics
-   ========================================================================== */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -866,9 +834,6 @@ a:hover {
 .stat-card.accent-inactive { border-left: 4px solid var(--danger); }
 .stat-card.accent-types { border-left: 4px solid #3b82f6; }
 
-/* ==========================================================================
-   Forms & Pricing Table Inputs
-   ========================================================================== */
 .form {
   display: grid;
   gap: 1.35rem;
@@ -953,9 +918,6 @@ legend {
   flex-wrap: wrap;
 }
 
-/* ==========================================================================
-   Modals
-   ========================================================================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1014,12 +976,6 @@ legend {
   gap: 0.75rem;
 }
 
-/* ==========================================================================
-   Customer Home Screen Sections
-   ========================================================================== */
-/* ==========================================================================
-   Customer Home Screen Sections - Stitch Haven & Hound Luxury Aesthetic
-   ========================================================================== */
 .home-hero-wrap {
   position: relative;
   overflow: hidden;
@@ -1132,7 +1088,6 @@ legend {
   font-weight: 700;
 }
 
-/* Hero Right Photography */
 .home-hero-image-wrap {
   position: relative;
   border-radius: 28px;
@@ -1180,7 +1135,6 @@ legend {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
 }
 
-/* Floating Booking Search Bar */
 .booking-search-engine {
   max-width: 1240px;
   margin: -2.5rem auto 4.5rem;
@@ -1243,7 +1197,6 @@ legend {
   box-shadow: 0 0 0 3px rgba(120, 88, 57, 0.15);
 }
 
-/* Home General Sections */
 .home-section {
   max-width: 1280px;
   margin: 5rem auto 0;
@@ -1276,7 +1229,6 @@ legend {
   margin: 0 auto;
 }
 
-/* Suites Showcase Grid */
 .suites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -1379,7 +1331,6 @@ legend {
   font-weight: 500;
 }
 
-/* Curated Rhythms / 4 Pillars Grid */
 .rhythms-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -1437,7 +1388,6 @@ legend {
   gap: 0.35rem;
 }
 
-/* Bento Grid Standards & Caregiver */
 .bento-standards {
   display: grid;
   grid-template-columns: 1.3fr 0.9fr;
@@ -1554,7 +1504,6 @@ legend {
   color: var(--slate-700);
 }
 
-/* Trust Metric Bar */
 .trust-metrics-strip {
   margin-top: 4rem;
   padding: 2rem 2.5rem;
@@ -1591,7 +1540,6 @@ legend {
   color: var(--slate-600);
 }
 
-/* Testimonials Grid */
 .testimonials-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1646,7 +1594,6 @@ legend {
   color: var(--slate-500);
 }
 
-/* FAQ Accordion */
 .faq-wrap {
   max-width: 860px;
   margin: 0 auto;
@@ -1684,7 +1631,6 @@ legend {
   line-height: 1.6;
 }
 
-/* Luxury Dark Chocolate CTA Banner */
 .cta-banner {
   background: linear-gradient(135deg, #1f140e 0%, #3d2d23 100%);
   color: #fff;
@@ -1734,7 +1680,6 @@ legend {
   color: #180f0a;
 }
 
-/* Customer Catalog Cards */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1769,7 +1714,7 @@ legend {
   font-size: 0.82rem;
   font-weight: 700;
 }
-/* Pet search bar */
+
 .filter-search-form {
   display: flex;
   align-items: stretch;
@@ -1801,14 +1746,13 @@ legend {
   white-space: nowrap;
 }
 @media (max-width: 768px) { .login-banner, .register-banner { display: none !important; } }
- 
+
 .paw-bg-card {
   background-color: #ffffff;
   background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23f1f5f9' fill-opacity='0.6' d='M25 45c-8 0-15-10-10-20 4-8 17-9 22 0 4 9-4 20-12 20zm25-15c-9 0-14-14-6-20 8-7 19 0 14 11-4 6-4 9-8 9zm25 15c-8 0-16-11-12-20 5-9 18-8 22 0 5 10-2 20-10 20zM50 85c-27 0-30-28-12-35 9-4 15-4 24 0 18 7 15 35-12 35z'/%3E%3C/svg%3E");
   background-repeat: repeat;
 }
 
-/* Persistent light/dark theme */
 :root:not([data-theme="dark"]) .sidebar {
   background: #fff;
   border-right-color: var(--slate-200);
@@ -1980,7 +1924,6 @@ legend {
 :root[data-theme="dark"] .table-card,
 :root[data-theme="dark"] .stat-card { transition: background-color .2s ease, color .2s ease; }
 
-/* Keep inline-styled panels in the same theme as the surrounding page. */
 :root[data-theme="dark"] [style*="background: rgb(255, 255, 255)"],
 :root[data-theme="dark"] [style*="background-color: rgb(255, 255, 255)"] {
   background: var(--theme-surface-inline) !important;
@@ -1996,7 +1939,6 @@ legend {
   color: #cbd5e1 !important;
 }
 
-/* Shared image picker */
 .pet-basic-info {
   background: #fdf9f3;
   border: 1px solid #eeddc8;
@@ -2058,7 +2000,6 @@ legend {
 }
 :root[data-theme="dark"] .image-upload-controls .ant-btn:hover { background: #32231b; border-color: #c69f7b; color: #ffffff; }
 
-/* Luxury Select & Input */
 .luxury-select .ant-select-selector {
   border-radius: 10px !important;
   border-color: #e8ded6 !important;
@@ -2136,9 +2077,7 @@ legend {
   border-color: #3a4759;
   background: #202b39;
 }
-/* ==========================================================================
-   Customer Booking Flow - Haven & Hound Luxury Theme
-   ========================================================================== */
+
 .booking-page-wrap {
   padding: 2.5rem 1.25rem 4rem;
   max-width: 1080px;
@@ -2214,7 +2153,6 @@ legend {
   font-size: 1.05rem;
 }
 
-/* Booking Main Card Container */
 .booking-container-card {
   border-radius: 20px;
   border: 1px solid var(--slate-200);
@@ -2229,7 +2167,6 @@ legend {
   }
 }
 
-/* Custom Booking Steps overrides */
 .booking-steps .ant-steps-item-process .ant-steps-item-icon {
   background: var(--secondary) !important;
   border-color: var(--secondary) !important;
@@ -2252,7 +2189,6 @@ legend {
   color: var(--slate-800) !important;
 }
 
-/* Pet Selection Card */
 .pet-select-card {
   background: var(--paper-card);
   border: 1.5px solid var(--slate-200);
@@ -2275,7 +2211,6 @@ legend {
   box-shadow: 0 6px 18px rgba(120, 88, 57, 0.16);
 }
 
-/* Custom Tabs in Booking */
 .booking-tabs .ant-tabs-nav::before {
   border-bottom: 1px solid var(--slate-200) !important;
 }
@@ -2297,7 +2232,6 @@ legend {
   color: var(--secondary) !important;
 }
 
-/* Dark mode for booking elements */
 :root[data-theme="dark"] .booking-flow-card {
   background-color: #231913;
   border-color: #38291f;
@@ -2336,10 +2270,6 @@ legend {
   color: var(--accent) !important;
 }
 
-
-/* ==========================================================================
-   Custom Confirmation Dialogs & Backdrops
-   ========================================================================== */
 .confirm-backdrop {
   position: fixed;
   inset: 0;

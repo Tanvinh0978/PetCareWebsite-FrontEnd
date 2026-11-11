@@ -12,9 +12,6 @@ import {
 } from '@ant-design/icons'
 import { isCat } from '@/types/pet.types'
 
-/**
- * Clean, professional vector line icon for Dogs (Lucide/Heroicons standard style).
- */
 export const DogIcon: React.FC<React.SVGProps<SVGSVGElement> & { size?: number }> = ({
   size = 16,
   width,
@@ -43,9 +40,6 @@ export const DogIcon: React.FC<React.SVGProps<SVGSVGElement> & { size?: number }
   </svg>
 )
 
-/**
- * Clean, professional vector line icon for Cats (Lucide/Heroicons standard style).
- */
 export const CatIcon: React.FC<React.SVGProps<SVGSVGElement> & { size?: number }> = ({
   size = 16,
   width,
@@ -74,9 +68,6 @@ export const CatIcon: React.FC<React.SVGProps<SVGSVGElement> & { size?: number }
   </svg>
 )
 
-/**
- * Professional vector paw print icon.
- */
 export const PawIcon: React.FC<React.SVGProps<SVGSVGElement> & { size?: number }> = ({
   size = 16,
   width,
@@ -109,9 +100,6 @@ export interface SpeciesBadgeProps {
   style?: React.CSSProperties
 }
 
-/**
- * Reusable, unified Species Badge for Dog / Cat.
- */
 export const SpeciesBadge: React.FC<SpeciesBadgeProps> = ({
   species,
   size = 'small',
@@ -175,9 +163,6 @@ export interface BookingStatusBadgeProps {
   style?: React.CSSProperties
 }
 
-/**
- * Unified, professional Booking Status Badge with crisp SVG vector icons.
- */
 export const BookingStatusBadge: React.FC<BookingStatusBadgeProps> = ({
   status,
   reason,
@@ -300,9 +285,6 @@ export interface ServiceTypeBadgeProps {
   style?: React.CSSProperties
 }
 
-/**
- * Unified Service Type Badge with vector icons.
- */
 export const ServiceTypeBadge: React.FC<ServiceTypeBadgeProps> = ({ type, style }) => {
   const isBoarding = type.toLowerCase().includes('boarding')
   const isDaycare = type.toLowerCase().includes('daycare')

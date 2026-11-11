@@ -136,7 +136,6 @@ const AdminRoomFormPage: React.FC = () => {
 
   return (
     <section className="page" style={{ maxWidth: '780px', margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
-      {/* Page Header */}
       <div
         style={{
           display: 'flex',
@@ -224,7 +223,6 @@ const AdminRoomFormPage: React.FC = () => {
             </div>
           )}
 
-          {/* Luxury Card Container */}
           <div
             style={{
               background: '#ffffff',
@@ -237,7 +235,6 @@ const AdminRoomFormPage: React.FC = () => {
               gap: '1.5rem',
             }}
           >
-            {/* Sanctuary Suite Tip Box */}
             <div
               style={{
                 display: 'flex',
@@ -255,7 +252,6 @@ const AdminRoomFormPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Room Name Input */}
             <div>
               <span
                 style={{
@@ -291,7 +287,6 @@ const AdminRoomFormPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Room Type Selector with Ant Design Select */}
             <div>
               <span
                 style={{
@@ -325,7 +320,6 @@ const AdminRoomFormPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Form Actions */}
             <div
               style={{
                 display: 'flex',

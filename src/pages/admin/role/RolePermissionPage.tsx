@@ -196,7 +196,6 @@ export default function RolePermissionPage() {
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1
@@ -270,7 +269,6 @@ export default function RolePermissionPage() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1.5rem', alignItems: 'start' }}>
-        {/* LEFT COLUMN: Role Tabs / Selector */}
         <div
           style={{
             backgroundColor: '#ffffff',
@@ -354,9 +352,7 @@ export default function RolePermissionPage() {
           )}
         </div>
 
-        {/* RIGHT COLUMN: Permission Assignment Matrix */}
         <div>
-          {/* Top Search & Enabled Counter Bar (Dropdown filter removed) */}
           <div
             style={{
               display: 'flex',
@@ -411,7 +407,6 @@ export default function RolePermissionPage() {
             </div>
           </div>
 
-          {/* Permissions Matrix */}
           {loadingDetail ? (
             <div
               style={{
@@ -472,7 +467,6 @@ export default function RolePermissionPage() {
                       boxShadow: '0 2px 12px rgba(61,45,35,0.03)',
                     }}
                   >
-                    {/* Module Header */}
                     <div
                       style={{
                         display: 'flex',
@@ -533,7 +527,6 @@ export default function RolePermissionPage() {
                       </button>
                     </div>
 
-                    {/* Permissions Grid */}
                     <div
                       style={{
                         display: 'grid',

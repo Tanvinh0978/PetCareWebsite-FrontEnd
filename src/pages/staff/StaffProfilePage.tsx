@@ -198,7 +198,6 @@ const StaffProfilePage: React.FC = () => {
                 </div>
               ) : (
                 <div style={{ paddingTop: 12 }}>
-                  {/* Top user summary bar */}
                   <div
                     style={{
                       display: 'flex',

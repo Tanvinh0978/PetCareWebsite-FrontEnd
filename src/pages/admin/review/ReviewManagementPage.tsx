@@ -182,7 +182,6 @@ export default function ReviewManagementPage() {
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1>Reviews Management</h1>
@@ -206,7 +205,6 @@ export default function ReviewManagementPage() {
         </button>
       </div>
 
-      {/* KPI Stats Grid */}
       <div className="stats-grid">
         <div className="stat-card accent-types">
           <div className="stat-val">{totalCount}</div>
@@ -232,7 +230,6 @@ export default function ReviewManagementPage() {
         </div>
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -257,7 +254,6 @@ export default function ReviewManagementPage() {
           </form>
 
           <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* Service Filter Dropdown */}
             <Select
               value={selectedServiceId || ''}
               onChange={(val) => {
@@ -278,7 +274,6 @@ export default function ReviewManagementPage() {
               }
             />
 
-            {/* Page Size Dropdown */}
             <Select
               value={pageSize}
               onChange={(val) => {
@@ -301,7 +296,6 @@ export default function ReviewManagementPage() {
           </div>
         </div>
 
-        {/* Rating Category Chips */}
         <div className="type-chips-row">
           <span className="type-chips-label">Rating:</span>
           <button
@@ -332,7 +326,6 @@ export default function ReviewManagementPage() {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Admin Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -473,7 +466,6 @@ export default function ReviewManagementPage() {
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {totalCount > 0 && (
           <div className="table-footer">
             <div>
@@ -515,7 +507,6 @@ export default function ReviewManagementPage() {
         )}
       </div>
 
-      {/* View Detail Modal */}
       {(reviewToView || viewLoading) && (
         <div className="modal-overlay" onClick={() => !viewLoading && setReviewToView(null)}>
           <div className="modal-card" style={{ maxWidth: 540 }} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
@@ -603,7 +594,6 @@ export default function ReviewManagementPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {reviewToDelete && (
         <div className="modal-overlay" onClick={() => !deleting && setReviewToDelete(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">

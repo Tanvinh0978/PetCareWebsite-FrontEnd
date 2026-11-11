@@ -551,7 +551,6 @@ const MyBookingsPage: React.FC = () => {
       }}
     >
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-      {/* Header section */}
       <div
         style={{
           display: 'flex',
@@ -584,7 +583,6 @@ const MyBookingsPage: React.FC = () => {
         </Space>
       </div>
 
-      {/* Filter Section */}
       <Card
         style={{
           borderRadius: 12,
@@ -605,7 +603,6 @@ const MyBookingsPage: React.FC = () => {
           }}
         >
           <Space wrap size={16} align="center">
-            {/* Service Date Picker */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <CalendarOutlined style={{ color: '#785839', fontSize: 15 }} />
               <Text strong style={{ fontSize: 13, color: '#334155' }}>
@@ -624,7 +621,6 @@ const MyBookingsPage: React.FC = () => {
               />
             </div>
 
-            {/* Service Type Dropdown */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Text strong style={{ fontSize: 13, color: '#334155' }}>
                 Service Type:
@@ -644,7 +640,6 @@ const MyBookingsPage: React.FC = () => {
               />
             </div>
 
-            {/* Status Filter */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Text strong style={{ fontSize: 13, color: '#334155' }}>
                 Status:
@@ -702,7 +697,6 @@ const MyBookingsPage: React.FC = () => {
               />
             </div>
 
-            {/* Reset Filter Button */}
             {(serviceDate || serviceType !== undefined || statusFilter !== undefined) && (
               <Button
                 size="small"
@@ -729,7 +723,6 @@ const MyBookingsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Bookings Table / List */}
       <Card
         style={{
           borderRadius: 12,
@@ -782,7 +775,6 @@ const MyBookingsPage: React.FC = () => {
         onClose={() => setCareHistoryItem(null)}
       />
 
-      {/* Before & After Comparison Modal */}
       <Modal
         open={Boolean(beforeAfterItem)}
         onCancel={() => setBeforeAfterItem(null)}
@@ -920,7 +912,6 @@ const MyBookingsPage: React.FC = () => {
         )}
       </Modal>
 
-      {/* Cancel Confirmation Modal */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#dc2626' }}>
@@ -960,7 +951,6 @@ const MyBookingsPage: React.FC = () => {
         </div>
       </Modal>
 
-      {/* Create / Edit Review Modal */}
       {reviewingItem && (
         <CreateReviewModal
           open={reviewModalOpen}
@@ -979,7 +969,6 @@ const MyBookingsPage: React.FC = () => {
         />
       )}
 
-      {/* View Review Modal (Read-Only) */}
       <Modal
         open={Boolean(viewingReview)}
         onCancel={() => setViewingReview(null)}

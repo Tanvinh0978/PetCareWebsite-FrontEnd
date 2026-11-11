@@ -151,7 +151,6 @@ const PaymentResultPage: React.FC = () => {
         fontFamily: 'var(--font-sans)',
       }}
     >
-      {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
           <div style={{ fontSize: '30px', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--slate-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>

@@ -204,7 +204,6 @@ const PetFormPage: React.FC = () => {
 
   return (
     <section className="page" style={{ maxWidth: 920, margin: '0 auto', padding: '2rem 1.5rem 4rem' }}>
-      {/* Header section */}
       <div
         style={{
           display: 'flex',
@@ -261,7 +260,6 @@ const PetFormPage: React.FC = () => {
         >
           <form onSubmit={onSubmit}>
             <Row gutter={[36, 24]}>
-              {/* Left Column: Dedicated Photo Profile Section */}
               <Col xs={24} md={8}>
                 <div
                   style={{
@@ -289,7 +287,6 @@ const PetFormPage: React.FC = () => {
                     />
                   </div>
 
-                  {/* Species & Name Pill Preview */}
                   <div
                     style={{
                       display: 'inline-flex',
@@ -310,7 +307,6 @@ const PetFormPage: React.FC = () => {
                     {name && <span>· {name}</span>}
                   </div>
 
-                  {/* Caregiver Tip */}
                   <div
                     style={{
                       background: '#ffffff',
@@ -335,9 +331,7 @@ const PetFormPage: React.FC = () => {
                 </div>
               </Col>
 
-              {/* Right Column: Structured Information */}
               <Col xs={24} md={16}>
-                {/* Section 1: Basic Identity */}
                 <div style={{ marginBottom: 20 }}>
                   <div
                     style={{
@@ -402,7 +396,6 @@ const PetFormPage: React.FC = () => {
                       />
                     </Col>
 
-                    {/* Breed Select with search & 'Other' custom input */}
                     <Col xs={24} sm={selectedBreed === 'Other' ? 12 : 14}>
                       <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13, color: '#334155' }}>
                         Breed
@@ -465,7 +458,6 @@ const PetFormPage: React.FC = () => {
 
                 <Divider style={{ margin: '20px 0', borderColor: '#e8ded6' }} />
 
-                {/* Section 2: Physical & Health Metrics */}
                 <div style={{ marginBottom: 20 }}>
                   <div
                     style={{
@@ -528,7 +520,6 @@ const PetFormPage: React.FC = () => {
 
                 <Divider style={{ margin: '20px 0', borderColor: '#e8ded6' }} />
 
-                {/* Section 3: Care Instructions & Special Notes */}
                 <div style={{ marginBottom: 20 }}>
                   <div
                     style={{
@@ -565,7 +556,6 @@ const PetFormPage: React.FC = () => {
                   />
                 )}
 
-                {/* Footer Buttons */}
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: 24 }}>
                   <Button
                     size="large"

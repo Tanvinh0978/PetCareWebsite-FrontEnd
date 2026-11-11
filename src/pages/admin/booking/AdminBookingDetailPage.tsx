@@ -605,7 +605,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <div style={{ marginBottom: '0.5rem' }}>
@@ -632,7 +631,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
           </p>
         </div>
 
-        {/* Action Buttons Top Bar */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           {isPending && (
             <>
@@ -786,7 +784,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
         </div>
       </div>
 
-      {/* Status Alerts */}
       {isPending && (
         <Alert
           type="warning"
@@ -842,9 +839,7 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
         />
       )}
 
-      {/* Top 3-Card Summary Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '20px' }}>
-        {/* Customer Card */}
         <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '18px', boxShadow: 'var(--shadow-xs)' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10 }}>
             Customer Information
@@ -863,7 +858,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
           </div>
         </div>
 
-        {/* Scheduled Timing Card */}
         <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '18px', boxShadow: 'var(--shadow-xs)' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10 }}>
             Scheduled Timing
@@ -884,7 +878,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
           </div>
         </div>
 
-        {/* Financials Card */}
         <div style={{ background: '#fff', border: '1px solid var(--slate-200)', borderRadius: '14px', padding: '18px', boxShadow: 'var(--shadow-xs)' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10 }}>
             Financial Settlement
@@ -910,7 +903,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
         </div>
       </div>
 
-      {/* Items & Resource Assignment Table Card */}
       <div className="table-card" style={{ marginBottom: '24px' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--slate-200)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <div>
@@ -977,7 +969,6 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
         </div>
       </div>
 
-      {/* Front Desk Check-out Modal */}
       <CheckoutBookingModal
         open={checkoutModalOpen}
         bookingId={id}
@@ -988,14 +979,12 @@ export const AdminBookingDetailPage: React.FC<AdminBookingDetailPageProps> = ({ 
         }}
       />
 
-      {/* Receipt Modal */}
       <ReceiptModal
         bookingId={id}
         open={receiptOpen}
         onClose={() => setReceiptOpen(false)}
       />
 
-      {/* Cancel Booking Reason Modal */}
       <Modal
         title="Cancel Booking"
         open={cancelModalOpen}

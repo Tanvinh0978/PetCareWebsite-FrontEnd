@@ -234,7 +234,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
           </p>
         )}
 
-        {/* 2-Column Balanced Layout */}
         <div
           style={{
             display: 'grid',
@@ -243,7 +242,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
             alignItems: 'start',
           }}
         >
-          {/* LEFT COLUMN: Dedicated Pet Profile & Photo Card */}
           <div
             style={{
               background: '#fdf9f3',
@@ -269,7 +267,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
               disabled={saving}
             />
 
-            {/* Live Identity Pill */}
             <div
               style={{
                 display: 'inline-flex',
@@ -289,7 +286,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
               {name.trim() && <span>• {name.trim()}</span>}
             </div>
 
-            {/* Caregiver Tip Box */}
             <div
               style={{
                 background: '#ffffff',
@@ -323,7 +319,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Structured Form Information Card */}
           <div
             style={{
               background: '#ffffff',
@@ -336,7 +331,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
               gap: '1.25rem',
             }}
           >
-            {/* 1. Owner (Customer) - admin / staff only */}
             {!fixedCustomerId && (
               <div>
                 <div
@@ -442,7 +436,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
               </div>
             )}
 
-            {/* 2. Pet Name & Species in 1 Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: '1rem', alignItems: 'start' }}>
               <div>
                 <span style={{ display: 'block', fontWeight: 700, fontSize: '0.88rem', color: '#3d2d23', marginBottom: '0.4rem' }}>
@@ -518,7 +511,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
               </div>
             </div>
 
-            {/* 3. Breed (Dynamic by Species + Search), Age, Weight */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div
                 style={{
@@ -620,7 +612,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
                 )}
               </div>
 
-              {/* Sub-row for Age & Weight when 'Other' breed is selected */}
               {selectedBreed === 'Other' && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
                   <div>
@@ -669,7 +660,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
               )}
             </div>
 
-            {/* 4. Health & Special Care Notes */}
             <div>
               <span style={{ display: 'block', fontWeight: 700, fontSize: '0.88rem', color: '#3d2d23', marginBottom: '0.4rem' }}>
                 Health &amp; Special Care Notes
@@ -688,7 +678,6 @@ export const PetForm: React.FC<PetFormProps> = ({ backPath, fixedCustomerId }) =
               />
             </div>
 
-            {/* Action Buttons */}
             <div
               style={{
                 display: 'flex',

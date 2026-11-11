@@ -110,7 +110,6 @@ const CustomerManagement: React.FC = () => {
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1
@@ -153,7 +152,6 @@ const CustomerManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -180,7 +178,6 @@ const CustomerManagement: React.FC = () => {
           </form>
 
           <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* Status Dropdown */}
             <Select
               value={status}
               onChange={(val) => {
@@ -195,7 +192,6 @@ const CustomerManagement: React.FC = () => {
               ]}
             />
 
-            {/* Page Size Dropdown */}
             <Select
               value={pageSize}
               onChange={(val) => {
@@ -239,7 +235,6 @@ const CustomerManagement: React.FC = () => {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -461,7 +456,6 @@ const CustomerManagement: React.FC = () => {
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {data && totalCount > 0 && (
           <div
             style={{
@@ -489,7 +483,6 @@ const CustomerManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Confirmation Modal for Toggling Status */}
       {customerToToggle && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">

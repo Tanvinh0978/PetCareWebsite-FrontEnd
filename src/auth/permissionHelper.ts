@@ -77,9 +77,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   ],
 }
 
-/**
- * Parses JWT token payload claims (role, roles, permissions)
- */
 export function parseJwtClaims(token: string): any {
   try {
     const base64Url = token.split('.')[1]
@@ -97,9 +94,6 @@ export function parseJwtClaims(token: string): any {
   }
 }
 
-/**
- * Returns effective permission codes for the given user.
- */
 export function getUserEffectivePermissions(user: IUser | null): string[] {
   if (!user) return []
 
@@ -149,9 +143,6 @@ export function getUserEffectivePermissions(user: IUser | null): string[] {
   return Array.from(aggregated)
 }
 
-/**
- * Guess role name if not explicitly set (e.g. from email or login)
- */
 export function guessRoleFromUser(user: IUser | null): string {
   if (!user) return 'Staff'
   const email = (user.email || user.login || '').toLowerCase()
@@ -168,9 +159,6 @@ export function guessRoleFromUser(user: IUser | null): string {
   return 'Receptionist'
 }
 
-/**
- * Checks whether user has permission code(s).
- */
 export function hasPermission(
   user: IUser | null,
   requiredPerm: string | string[]
@@ -190,9 +178,6 @@ export function hasPermission(
   return effective.includes(requiredPerm)
 }
 
-/**
- * Build dynamic navigation menu for staff based on permissions.
- */
 export function getStaffNavItems(user: IUser | null): NavItem[] {
   const items: NavItem[] = []
   const effective = getUserEffectivePermissions(user)
@@ -259,9 +244,6 @@ export function getStaffNavItems(user: IUser | null): NavItem[] {
   return items.filter((item, index, self) => index === self.findIndex((t) => t.to === item.to))
 }
 
-/**
- * Async sync user permissions from backend /api/auth/my-permissions or /api/Roles
- */
 export async function syncUserPermissions(): Promise<string[]> {
   const user = useAuthStore.getState().user
   if (!user || user.role === 'customer' || user.role === 'guest') return []

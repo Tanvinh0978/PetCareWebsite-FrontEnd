@@ -324,7 +324,6 @@ export default function PawstayAuthPage() {
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23c69f7b' fill-opacity='0.08' d='M12,2C10.5,2 9,3 9,4.5C9,5 9,6.5 12,9C15,6.5 15,5 15,4.5C15,3 13.5,2 12,2M6,6C4.5,6 3,7 3,8.5C3,9 3,10.5 6,13C9,10.5 9,9 9,8.5C9,7 7.5,6 6,6M18,6C16.5,6 15,7 15,8.5C15,9 15,10.5 18,13C21,10.5 21,9 21,8.5C21,7 19.5,6 18,6M12,11.5C9,11.5 5,14.5 5,19C5,21.5 8.5,22 12,22C15.5,22 19,21.5 19,19C19,14.5 15,11.5 12,11.5Z'/%3E%3C/svg%3E")`,
             backgroundSize: '48px 48px'
         }}>
-            {/* LEFT PANEL: HERO & BRAND STORY */}
             <div style={{ flex: 1, padding: '24px 24px 24px 6vw', display: 'flex' }}>
                 <div style={{
                     width: '100%', height: '100%', minHeight: 'calc(100vh - 48px)', borderRadius: 24, overflow: 'hidden', position: 'relative',
@@ -359,7 +358,6 @@ export default function PawstayAuthPage() {
                 </div>
             </div>
 
-            {/* RIGHT PANEL: FORM */}
             <div style={{ 
                 width: '100%', maxWidth: 550, flexShrink: 0, display: 'flex', flexDirection: 'column', 
                 alignItems: 'center', padding: 24, boxSizing: 'border-box',
@@ -401,7 +399,6 @@ export default function PawstayAuthPage() {
                         </p>
                     </div>
 
-                    {/* Box Form */}
                     <div style={{
                         background: '#ffffff',
                         border: `1px solid ${colors.border}`,

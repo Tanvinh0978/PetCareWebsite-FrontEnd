@@ -145,7 +145,6 @@ const AdminRoomListPage: React.FC = () => {
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1
@@ -188,7 +187,6 @@ const AdminRoomListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -210,7 +208,6 @@ const AdminRoomListPage: React.FC = () => {
           </form>
 
           <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* Room Type Filter */}
             <Select
               value={roomTypeIdFilter}
               onChange={(val) => {
@@ -224,7 +221,6 @@ const AdminRoomListPage: React.FC = () => {
               ]}
             />
 
-            {/* Status Filter */}
             <Select
               value={status}
               onChange={(val) => {
@@ -240,7 +236,6 @@ const AdminRoomListPage: React.FC = () => {
               ]}
             />
 
-            {/* Page Size Filter */}
             <Select
               value={pageSize}
               onChange={(val) => {
@@ -284,7 +279,6 @@ const AdminRoomListPage: React.FC = () => {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -502,7 +496,6 @@ const AdminRoomListPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Table Footer with Pagination */}
         {data && totalCount > 0 && (
           <div
             style={{
@@ -530,7 +523,6 @@ const AdminRoomListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Delete Room Confirmation Dialog */}
       {roomToDelete && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">
@@ -564,7 +556,6 @@ const AdminRoomListPage: React.FC = () => {
         </div>
       )}
 
-      {/* Toggle Status Confirmation Dialog */}
       {roomToToggle && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">

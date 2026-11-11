@@ -17,7 +17,6 @@ import { DiscountType, DISCOUNT_TYPE_LABEL } from '@/types/voucher.types';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { parseUtcDate, formatDateTime } from '@/utils/format';
 
-/* ── helpers ── */
 const formatDate = (iso: string) => formatDateTime(iso);
 
 const formatValue = (v: VoucherDTO) => {
@@ -49,7 +48,6 @@ const VoucherListPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const canManage = hasPermission(user, PERMISSIONS.VOUCHER_MANAGE);
 
-  /* ── data fetching ── */
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -92,7 +90,6 @@ const VoucherListPage: React.FC = () => {
     };
   }, [page, pageSize, keyword, validFilter, discountTypeFilter, reload]);
 
-  /* ── event handlers ── */
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
     setPage(1);
@@ -130,12 +127,10 @@ const VoucherListPage: React.FC = () => {
     }
   }
 
-  /* ── pagination ── */
   const totalCount = data?.totalCount ?? 0;
   const startEntry = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, totalCount);
 
-  /* ── validity badge ── */
   const getValidityBadge = (v: VoucherDTO) => {
     const now = new Date();
     const end = parseUtcDate(v.endDate);
@@ -187,10 +182,8 @@ const VoucherListPage: React.FC = () => {
     return { bg: '#faf5ff', color: '#7e22ce', border: '#e9d5ff', label: 'Fixed Amount' };
   };
 
-  /* ── render ── */
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1
@@ -233,7 +226,6 @@ const VoucherListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -260,7 +252,6 @@ const VoucherListPage: React.FC = () => {
           </form>
 
           <div className="filter-dropdowns" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* Discount Type Dropdown */}
             <Select
               value={discountTypeFilter}
               onChange={(val) => {
@@ -275,7 +266,6 @@ const VoucherListPage: React.FC = () => {
               ]}
             />
 
-            {/* Validity Dropdown */}
             <Select
               value={validFilter}
               onChange={(val) => {
@@ -290,7 +280,6 @@ const VoucherListPage: React.FC = () => {
               ]}
             />
 
-            {/* Page Size Dropdown */}
             <Select
               value={pageSize}
               onChange={(val) => {
@@ -334,7 +323,6 @@ const VoucherListPage: React.FC = () => {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -553,7 +541,6 @@ const VoucherListPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination footer */}
         {data && totalCount > 0 && (
           <div
             style={{
@@ -581,7 +568,6 @@ const VoucherListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Delete confirmation modal */}
       {voucherToDelete && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">

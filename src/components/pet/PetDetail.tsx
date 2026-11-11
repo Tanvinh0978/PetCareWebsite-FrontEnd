@@ -133,7 +133,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
 
   return (
     <section className="page" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem 4rem' }}>
-      {/* Top Header / Breadcrumbs Bar */}
       <div
         style={{
           display: 'flex',
@@ -163,7 +162,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
           <span>{isCustomer ? 'Back to My Pets' : 'Back to Pet List'}</span>
         </Link>
 
-        {/* Action CTAs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {isCustomer && (
             <Link
@@ -209,7 +207,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
         </div>
       </div>
 
-      {/* Hero Showcase Card */}
       <Card
         style={{
           borderRadius: 20,
@@ -230,7 +227,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
             borderBottom: '1px solid #f1ece7',
           }}
         >
-          {/* Pet Avatar with double ring */}
           <div style={{ position: 'relative' }}>
             {pet.imageUrl ? (
               <img
@@ -264,7 +260,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
               </div>
             )}
 
-            {/* Micro Species Tag on avatar */}
             <div
               style={{
                 position: 'absolute',
@@ -287,7 +282,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
             </div>
           </div>
 
-          {/* Core Identity Info */}
           <div style={{ flex: 1, minWidth: 240 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
               <h1
@@ -303,7 +297,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
                 {pet.name}
               </h1>
 
-              {/* Status Pill */}
               <Tag
                 style={{
                   borderRadius: 999,
@@ -332,7 +325,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
               </Tag>
             </div>
 
-            {/* Badges row: Species, Breed, Gender */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
               <span
                 style={{
@@ -389,7 +381,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
               )}
             </div>
 
-            {/* Subtitle / Sanctuary Dossier ID */}
             <div style={{ fontSize: 13, color: '#8c7662', display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>Haven & Hound Registered Companion</span>
               {pet.id && <span>· ID: #{pet.id.slice(0, 8)}</span>}
@@ -397,10 +388,8 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
           </div>
         </div>
 
-        {/* 4 Metric Highlight Tiles */}
         <div style={{ paddingTop: 28 }}>
           <Row gutter={[20, 20]}>
-            {/* Tile 1: Species */}
             <Col xs={12} sm={6}>
               <div
                 style={{
@@ -424,7 +413,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
               </div>
             </Col>
 
-            {/* Tile 2: Breed Lineage */}
             <Col xs={12} sm={6}>
               <div
                 style={{
@@ -458,7 +446,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
               </div>
             </Col>
 
-            {/* Tile 3: Weight */}
             <Col xs={12} sm={6}>
               <div
                 style={{
@@ -481,7 +468,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
               </div>
             </Col>
 
-            {/* Tile 4: Age */}
             <Col xs={12} sm={6}>
               <div
                 style={{
@@ -507,7 +493,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
         </div>
       </Card>
 
-      {/* Health Notes & Sanctuary Care Instructions */}
       <Card
         style={{
           borderRadius: 20,
@@ -591,7 +576,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
         )}
       </Card>
 
-      {/* Staff & Admin Only: Owner Information Card */}
       {!isCustomer && ownerInfo && (
         <Card
           style={{
@@ -639,7 +623,6 @@ export default function PetDetail({ backTo, editTo }: PetDetailProps) {
         </Card>
       )}
 
-      {/* Bottom Reservation Callout Banner (For Customers) */}
       {isCustomer && (
         <div
           style={{

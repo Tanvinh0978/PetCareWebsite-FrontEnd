@@ -714,7 +714,6 @@ const CreateBookingPage: React.FC = () => {
   const boardingOptions = services.filter(s => String(s.serviceType || '').toLowerCase() === 'boarding');
   const dietOptions = services.filter(s => String(s.serviceType || '').toLowerCase() === 'diet');
 
-
   const disabledGroomingTime = (selectedDate: Dayjs | null) => {
     const now = dayjs();
     const OPEN_HOUR = 8;
@@ -1034,7 +1033,6 @@ const CreateBookingPage: React.FC = () => {
                           <HomeOutlined style={{ color: 'var(--secondary)', fontSize: '20px' }} /> Sanctuary Suites &amp; Rooms
                         </Title>
 
-                        {/* Species header banner */}
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -1137,7 +1135,6 @@ const CreateBookingPage: React.FC = () => {
                                         }}
                                       >
                                         <div>
-                                          {/* Top Badge + Radio */}
                                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                             <span style={{
                                               display: 'inline-flex',
@@ -1156,7 +1153,6 @@ const CreateBookingPage: React.FC = () => {
                                             <Radio value={srv.id} checked={isItemChecked} style={{ pointerEvents: 'none' }} />
                                           </div>
 
-                                          {/* Media + Title */}
                                           <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
                                             {srv.imageUrl ? (
                                               <img
@@ -1192,7 +1188,6 @@ const CreateBookingPage: React.FC = () => {
                                             </div>
                                           </div>
 
-                                          {/* Description */}
                                           {srv.description && (
                                             <p style={{
                                               fontSize: '13px',
@@ -1208,7 +1203,6 @@ const CreateBookingPage: React.FC = () => {
                                             </p>
                                           )}
 
-                                          {/* Feature Highlights */}
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '14px' }}>
                                             {tier.features.slice(0, 2).map((feat, fIdx) => (
                                               <span key={fIdx} style={{
@@ -1224,7 +1218,6 @@ const CreateBookingPage: React.FC = () => {
                                           </div>
                                         </div>
 
-                                        {/* Price Footer */}
                                         <div style={{
                                           display: 'flex',
                                           justifyContent: 'space-between',
@@ -1493,7 +1486,6 @@ const CreateBookingPage: React.FC = () => {
 
                   return (
                     <div key={petId} style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px dashed #eeddc8' }}>
-                      {/* Prominent Pet Dossier Header */}
                       <div 
                         style={{ 
                           display: 'flex', 
@@ -1566,7 +1558,6 @@ const CreateBookingPage: React.FC = () => {
                         </div>
                       </div>
                       
-                      {/* Booked Services Cards with 72x72 images & fixed right price */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {bookingType === 'Grooming' && srvs.groomingIds?.map((gId: string) => {
                           const s = services.find(x => x.id === gId);
@@ -1758,7 +1749,6 @@ const CreateBookingPage: React.FC = () => {
                   <GiftOutlined style={{ color: 'var(--secondary)' }} /> Privileges &amp; Payment
                 </Title>
                 
-                {/* Promo / Privilege Voucher Section */}
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: '#26180f', marginBottom: 8 }}>
                     <GiftOutlined style={{ color: '#785839' }} /> Promo / Privilege Voucher
@@ -2033,7 +2023,6 @@ const CreateBookingPage: React.FC = () => {
                 </div>
 
                 <div style={{ marginTop: 'auto', paddingTop: '18px', borderTop: '1px solid var(--slate-300)' }}>
-                  {/* Privilege Voucher Badge in breakdown */}
                   {appliedVoucher && (
                     <div
                       style={{
@@ -2093,7 +2082,6 @@ const CreateBookingPage: React.FC = () => {
 
   return (
     <div className="booking-page-wrap">
-      {/* Top Bar Switch & Brand */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <button
           type="button"
@@ -2201,7 +2189,6 @@ const CreateBookingPage: React.FC = () => {
         </Form>
       </div>
 
-      {/* Browse Available Vouchers Modal */}
       <Modal
         open={showVoucherModal}
         onCancel={() => setShowVoucherModal(false)}

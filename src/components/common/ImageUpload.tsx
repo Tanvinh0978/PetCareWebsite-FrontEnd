@@ -106,7 +106,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           width: '100%',
         }}
       >
-        {/* Preview / Placeholder container */}
         <div
           className={`image-upload-preview${value ? ' has-image' : ''}${isCircle ? ' is-circle' : ''}`}
           style={{
@@ -141,7 +140,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                   display: 'block',
                 }}
               />
-              {/* Overlay with preview & change button */}
               <div
                 style={{
                   position: 'absolute',
@@ -192,7 +190,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           )}
         </div>
 
-        {/* Action Controls */}
         <div
           className="image-upload-controls"
           style={{
@@ -226,7 +223,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         </div>
       </div>
 
-      {/* Hidden Image for Preview */}
       {value && (
         <div style={{ display: 'none' }}>
           <Image

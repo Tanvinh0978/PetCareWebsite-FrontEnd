@@ -100,7 +100,6 @@ const AdminRoomTypeListPage: React.FC = () => {
 
   return (
     <section className="page wide">
-      {/* Page Header */}
       <div className="page-head">
         <div>
           <h1
@@ -143,7 +142,6 @@ const AdminRoomTypeListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Filter and Search Panel */}
       <div className="admin-toolbar-panel">
         <div className="admin-toolbar-row">
           <form className="search-wrapper" onSubmit={onSearch}>
@@ -208,7 +206,6 @@ const AdminRoomTypeListPage: React.FC = () => {
 
       {error && <p className="msg error" role="alert">{error}</p>}
 
-      {/* Main Data Table */}
       <div className="table-card">
         <div className="table-scroll">
           <table className="admin-table">
@@ -403,7 +400,6 @@ const AdminRoomTypeListPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination Bar */}
         {totalCount > 0 && (
           <div
             style={{
@@ -431,7 +427,6 @@ const AdminRoomTypeListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Delete Room Type Confirmation Dialog */}
       {roomTypeToDelete && (
         <div className="confirm-backdrop">
           <div className="confirm-dialog" role="dialog" aria-modal="true">

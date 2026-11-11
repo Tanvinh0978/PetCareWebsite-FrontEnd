@@ -303,7 +303,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
 
           {summary && (
             <div style={{ padding: '4px 0' }}>
-              {/* Customer Overview */}
               <div
                 style={{
                   background: '#fdfbf7',
@@ -414,7 +413,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
                 </div>
               </div>
 
-              {/* Items Table */}
               <div style={{ marginBottom: 16 }}>
                 <div
                   style={{
@@ -472,7 +470,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
                 </div>
               )}
 
-              {/* Financial Summary Card */}
               <div
                 style={{
                   background: '#fdfbf7',
@@ -543,7 +540,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
                 </div>
               </div>
 
-              {/* Condition Banner / Payment Options */}
               {isFullyPaid ? (
                 <div
                   style={{
@@ -697,7 +693,6 @@ export const CheckoutBookingModal: React.FC<CheckoutBookingModalProps> = ({
                 </div>
               )}
 
-              {/* Actions */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 20 }}>
                 <Button
                   onClick={onClose}

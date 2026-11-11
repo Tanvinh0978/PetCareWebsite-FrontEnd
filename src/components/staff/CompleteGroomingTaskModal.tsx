@@ -161,7 +161,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
       }
     >
       <div style={{ padding: '12px 0' }}>
-        {/* Task Summary Banner */}
         <div
           style={{
             backgroundColor: '#fdfbf7',
@@ -258,7 +257,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
             )}
           </div>
 
-          {/* Health Alert Note if present */}
           {task.petHealthNotes && (
             <div
               style={{
@@ -294,7 +292,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
         )}
 
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          {/* Images Section */}
           <div style={{ marginBottom: 20 }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: '#3d2d23', display: 'block', marginBottom: 10 }}>
               Pet Photography (Before & After Service)
@@ -362,7 +359,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
             </Row>
           </div>
 
-          {/* Quick Tags Suggestions */}
           <div style={{ marginBottom: 16 }}>
             <span style={{ fontSize: 12, color: '#8c735f', display: 'block', marginBottom: 8, fontWeight: 600 }}>
               Quick note suggestions (Click to append):
@@ -390,7 +386,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
             </div>
           </div>
 
-          {/* Result Note */}
           <Form.Item
             name="resultNote"
             label={<span style={{ fontWeight: 700, color: '#3d2d23' }}>Care Notes & Result Feedback</span>}
@@ -415,7 +410,6 @@ export const CompleteGroomingTaskModal: React.FC<CompleteGroomingTaskModalProps>
 
           <Divider style={{ margin: '18px 0', borderColor: '#f1ece5' }} />
 
-          {/* Actions */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
             <button
               type="button"

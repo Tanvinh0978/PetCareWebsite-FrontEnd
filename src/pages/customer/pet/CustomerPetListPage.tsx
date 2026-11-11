@@ -52,7 +52,6 @@ const CustomerPetListPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 1.5rem 4rem' }}>
-      {/* Header Banner */}
       <div
         style={{
           display: 'flex',
@@ -228,7 +227,6 @@ const CustomerPetListPage: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Attributes Badges */}
                   <div
                     style={{
                       display: 'flex',
@@ -264,7 +262,6 @@ const CustomerPetListPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Health notes snippet */}
                   {pet.healthNotes && (
                     <div
                       style={{
@@ -283,7 +280,6 @@ const CustomerPetListPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Card Actions */}
                 <div
                   style={{
                     display: 'flex',
@@ -323,7 +319,6 @@ const CustomerPetListPage: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {petToDelete && (
         <Modal
           open={Boolean(petToDelete)}
